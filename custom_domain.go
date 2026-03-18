@@ -3,6 +3,7 @@ package pgbeam
 import (
 	"context"
 	"fmt"
+	"time"
 )
 
 // DomainsService handles operations on custom domains.
@@ -86,4 +87,44 @@ func (s *DomainsService) Verify(ctx context.Context, projectID, domainID string)
 		return nil, fmt.Errorf("verify custom domain %s: %w", domainID, err)
 	}
 	return &resp, nil
+}
+
+// CustomDomain represents a custom domain attached to a project.
+type CustomDomain struct {
+	ID                   string           `json:"id"`
+	ProjectID            string           `json:"project_id"`
+	Domain               string           `json:"domain"`
+	Verified             bool             `json:"verified"`
+	VerifiedAt           *time.Time       `json:"verified_at,omitempty"`
+	TLSCertExpiry        *time.Time       `json:"tls_cert_expiry,omitempty"`
+	DNSVerificationToken string           `json:"dns_verification_token,omitempty"`
+	DNSInstructions      *DNSInstructions `json:"dns_instructions,omitempty"`
+	CreatedAt            string           `json:"created_at"`
+	UpdatedAt            string           `json:"updated_at"`
+}
+
+// DNSInstructions contains the DNS records needed for domain verification.
+type DNSInstructions struct {
+	CNAMEHost       string `json:"cname_host,omitempty"`
+	CNAMETarget     string `json:"cname_target,omitempty"`
+	TXTHost         string `json:"txt_host,omitempty"`
+	TXTValue        string `json:"txt_value,omitempty"`
+	ACMECNAMEHost   string `json:"acme_cname_host,omitempty"`
+	ACMECNAMETarget string `json:"acme_cname_target,omitempty"`
+}
+
+// CreateCustomDomainRequest is the request body for creating a custom domain.
+type CreateCustomDomainRequest struct {
+	Domain string `json:"domain"`
+}
+
+// ListCustomDomainsResponse is the response from listing custom domains.
+type ListCustomDomainsResponse struct {
+	Domains       []CustomDomain `json:"domains"`
+	NextPageToken string         `json:"next_page_token,omitempty"`
+}
+
+// VerifyCustomDomainResponse is the response from verifying a custom domain.
+type VerifyCustomDomainResponse struct {
+	Verified bool `json:"verified"`
 }

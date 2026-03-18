@@ -81,3 +81,71 @@ func (s *DatabasesService) TestConnection(ctx context.Context, projectID, databa
 	}
 	return &resp, nil
 }
+
+// Database represents an upstream database connection.
+type Database struct {
+	ID               string      `json:"id"`
+	ProjectID        string      `json:"project_id"`
+	Host             string      `json:"host"`
+	Port             int         `json:"port"`
+	Name             string      `json:"name"`
+	Username         string      `json:"username"`
+	SSLMode          string      `json:"ssl_mode,omitempty"`
+	Role             string      `json:"role,omitempty"`
+	PoolRegion       *string     `json:"pool_region,omitempty"`
+	CacheConfig      CacheConfig `json:"cache_config"`
+	PoolConfig       PoolConfig  `json:"pool_config"`
+	ConnectionString *string     `json:"connection_string,omitempty"`
+	CreatedAt        string      `json:"created_at"`
+	UpdatedAt        string      `json:"updated_at"`
+}
+
+// CacheConfig configures query caching for a database.
+type CacheConfig struct {
+	Enabled    bool `json:"enabled"`
+	TTLSeconds int  `json:"ttl_seconds"`
+	MaxEntries int  `json:"max_entries"`
+	SWRSeconds int  `json:"swr_seconds"`
+}
+
+// PoolConfig configures connection pooling for a database.
+type PoolConfig struct {
+	PoolSize    int    `json:"pool_size"`
+	MinPoolSize int    `json:"min_pool_size"`
+	PoolMode    string `json:"pool_mode"`
+	MaxActive   *int   `json:"max_active,omitempty"`
+}
+
+// CreateDatabaseRequest is the request body for creating a database.
+type CreateDatabaseRequest struct {
+	Host        string       `json:"host"`
+	Port        int          `json:"port"`
+	Name        string       `json:"name"`
+	Username    string       `json:"username"`
+	Password    string       `json:"password"`
+	SSLMode     string       `json:"ssl_mode,omitempty"`
+	Role        string       `json:"role,omitempty"`
+	PoolRegion  *string      `json:"pool_region,omitempty"`
+	CacheConfig *CacheConfig `json:"cache_config,omitempty"`
+	PoolConfig  *PoolConfig  `json:"pool_config,omitempty"`
+}
+
+// UpdateDatabaseRequest is the request body for updating a database.
+type UpdateDatabaseRequest struct {
+	Host        *string      `json:"host,omitempty"`
+	Port        *int         `json:"port,omitempty"`
+	Name        *string      `json:"name,omitempty"`
+	Username    *string      `json:"username,omitempty"`
+	Password    *string      `json:"password,omitempty"`
+	SSLMode     *string      `json:"ssl_mode,omitempty"`
+	Role        *string      `json:"role,omitempty"`
+	PoolRegion  *string      `json:"pool_region,omitempty"`
+	CacheConfig *CacheConfig `json:"cache_config,omitempty"`
+	PoolConfig  *PoolConfig  `json:"pool_config,omitempty"`
+}
+
+// ListDatabasesResponse is the response from listing databases.
+type ListDatabasesResponse struct {
+	Databases     []Database `json:"databases"`
+	NextPageToken string     `json:"next_page_token,omitempty"`
+}

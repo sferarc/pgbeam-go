@@ -81,3 +81,39 @@ func (s *CacheRulesService) Disable(ctx context.Context, projectID, databaseID, 
 	}
 	return nil
 }
+
+// CacheRule represents a per-query cache rule.
+type CacheRule struct {
+	QueryHash        string  `json:"query_hash"`
+	NormalizedSQL    string  `json:"normalized_sql,omitempty"`
+	QueryType        string  `json:"query_type,omitempty"`
+	CacheEnabled     bool    `json:"cache_enabled"`
+	CacheTTLSeconds  *int    `json:"cache_ttl_seconds,omitempty"`
+	CacheSWRSeconds  *int    `json:"cache_swr_seconds,omitempty"`
+	CallCount        int64   `json:"call_count,omitempty"`
+	AvgLatencyMs     float64 `json:"avg_latency_ms,omitempty"`
+	P95LatencyMs     float64 `json:"p95_latency_ms,omitempty"`
+	AvgResponseBytes int64   `json:"avg_response_bytes,omitempty"`
+	StabilityRate    float64 `json:"stability_rate,omitempty"`
+	Recommendation   string  `json:"recommendation,omitempty"`
+	FirstSeenAt      string  `json:"first_seen_at,omitempty"`
+	LastSeenAt       string  `json:"last_seen_at,omitempty"`
+}
+
+// UpdateCacheRuleRequest is the request body for updating a cache rule.
+type UpdateCacheRuleRequest struct {
+	CacheEnabled    bool `json:"cache_enabled"`
+	CacheTTLSeconds *int `json:"cache_ttl_seconds,omitempty"`
+	CacheSWRSeconds *int `json:"cache_swr_seconds,omitempty"`
+}
+
+// UpdateCacheRuleResponse is the response from updating a cache rule.
+type UpdateCacheRuleResponse struct {
+	Entry CacheRule `json:"entry"`
+}
+
+// ListCacheRulesResponse is the response from listing cache rules.
+type ListCacheRulesResponse struct {
+	Entries       []CacheRule `json:"entries"`
+	NextPageToken string      `json:"next_page_token,omitempty"`
+}

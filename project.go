@@ -75,3 +75,48 @@ func (s *ProjectsService) Delete(ctx context.Context, projectID string) error {
 	}
 	return nil
 }
+
+// Project represents a PgBeam project.
+type Project struct {
+	ID                string   `json:"id"`
+	OrgID             string   `json:"org_id"`
+	Name              string   `json:"name"`
+	Description       *string  `json:"description,omitempty"`
+	Tags              []string `json:"tags,omitempty"`
+	Cloud             string   `json:"cloud,omitempty"`
+	ProxyHost         string   `json:"proxy_host,omitempty"`
+	QueriesPerSecond  int32    `json:"queries_per_second,omitempty"`
+	BurstSize         int32    `json:"burst_size,omitempty"`
+	MaxConnections    int32    `json:"max_connections,omitempty"`
+	DatabaseCount     int      `json:"database_count,omitempty"`
+	ActiveConnections int      `json:"active_connections,omitempty"`
+	Status            string   `json:"status"`
+	CreatedAt         string   `json:"created_at"`
+	UpdatedAt         string   `json:"updated_at"`
+}
+
+// CreateProjectRequest is the request body for creating a project.
+type CreateProjectRequest struct {
+	Name        string                `json:"name"`
+	OrgID       string                `json:"org_id"`
+	Description *string               `json:"description,omitempty"`
+	Tags        []string              `json:"tags,omitempty"`
+	Cloud       string                `json:"cloud,omitempty"`
+	Database    CreateDatabaseRequest `json:"database"`
+}
+
+// CreateProjectResponse is the response from creating a project.
+type CreateProjectResponse struct {
+	Project  Project   `json:"project"`
+	Database *Database `json:"database,omitempty"`
+}
+
+// UpdateProjectRequest is the request body for updating a project.
+type UpdateProjectRequest struct {
+	Name             *string   `json:"name,omitempty"`
+	Description      *string   `json:"description,omitempty"`
+	Tags             *[]string `json:"tags,omitempty"`
+	QueriesPerSecond *int32    `json:"queries_per_second,omitempty"`
+	BurstSize        *int32    `json:"burst_size,omitempty"`
+	MaxConnections   *int32    `json:"max_connections,omitempty"`
+}

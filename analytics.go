@@ -3,6 +3,7 @@ package pgbeam
 import (
 	"context"
 	"fmt"
+	"time"
 )
 
 // AnalyticsService handles operations on organization plans and spend limits.
@@ -37,4 +38,36 @@ func (s *AnalyticsService) RemoveSpendLimit(ctx context.Context, orgID string) e
 		return fmt.Errorf("remove spend limit for org %s: %w", orgID, err)
 	}
 	return nil
+}
+
+// OrganizationPlan represents an organization's billing plan.
+type OrganizationPlan struct {
+	OrgID              string     `json:"org_id"`
+	Plan               string     `json:"plan"`
+	BillingProvider    *string    `json:"billing_provider,omitempty"`
+	SubscriptionStatus *string    `json:"subscription_status,omitempty"`
+	CurrentPeriodEnd   *time.Time `json:"current_period_end,omitempty"`
+	Enabled            *bool      `json:"enabled,omitempty"`
+	CustomPricing      *bool      `json:"custom_pricing,omitempty"`
+	SpendLimit         *float64   `json:"spend_limit"`
+	Limits             PlanLimits `json:"limits"`
+	CreatedAt          *string    `json:"created_at,omitempty"`
+	UpdatedAt          *string    `json:"updated_at,omitempty"`
+}
+
+// PlanLimits defines the limits for a billing plan.
+type PlanLimits struct {
+	QueriesPerDay    int64 `json:"queries_per_day"`
+	MaxProjects      int   `json:"max_projects"`
+	MaxDatabases     int   `json:"max_databases"`
+	MaxConnections   int   `json:"max_connections"`
+	QueriesPerSecond int   `json:"queries_per_second"`
+	BytesPerMonth    int64 `json:"bytes_per_month"`
+	MaxQueryShapes   int   `json:"max_query_shapes"`
+	IncludedSeats    int   `json:"included_seats"`
+}
+
+// UpdateSpendLimitRequest is the request body for updating a spend limit.
+type UpdateSpendLimitRequest struct {
+	SpendLimit *float64 `json:"spend_limit"`
 }

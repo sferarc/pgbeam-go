@@ -76,3 +76,27 @@ func (s *ReplicasService) Delete(ctx context.Context, databaseID, replicaID stri
 	}
 	return nil
 }
+
+// Replica represents a read replica endpoint.
+type Replica struct {
+	ID         string `json:"id"`
+	DatabaseID string `json:"database_id"`
+	Host       string `json:"host"`
+	Port       int    `json:"port"`
+	SSLMode    string `json:"ssl_mode,omitempty"`
+	CreatedAt  string `json:"created_at"`
+	UpdatedAt  string `json:"updated_at"`
+}
+
+// CreateReplicaRequest is the request body for creating a replica.
+type CreateReplicaRequest struct {
+	Host    string `json:"host"`
+	Port    int    `json:"port"`
+	SSLMode string `json:"ssl_mode,omitempty"`
+}
+
+// ListReplicasResponse is the response from listing replicas.
+type ListReplicasResponse struct {
+	Replicas      []Replica `json:"replicas"`
+	NextPageToken string    `json:"next_page_token,omitempty"`
+}
