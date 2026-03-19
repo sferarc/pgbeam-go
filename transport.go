@@ -23,6 +23,7 @@ import (
 	mrand "math/rand/v2"
 	"net/http"
 	"net/url"
+	"reflect"
 	"strconv"
 	"strings"
 	"time"
@@ -61,31 +62,16 @@ type ClientOptions struct {
 	Retry *RetryConfig
 }
 
-// Client is the PgBeam API client. Access API operations through the
-// tag-based service fields (Projects, Databases, etc.), mirroring
-// the TypeScript SDK's api.projects.*, api.databases.* pattern.
-type Client struct {
-	// Projects provides operations for managing PgBeam projects.
-	Projects *ProjectsService
-	// Databases provides operations for managing upstream databases.
-	Databases *DatabasesService
-	// Replicas provides operations for managing read replicas.
-	Replicas *ReplicasService
-	// Domains provides operations for managing custom domains.
-	Domains *DomainsService
-	// CacheRules provides operations for managing per-query cache rules.
-	CacheRules *CacheRulesService
-	// Analytics provides operations for organization plans and spend limits.
-	Analytics *AnalyticsService
-
+// transport handles HTTP communication with the PgBeam API. It is not
+// exported — users interact with the generated Client type.
+type transport struct {
 	baseURL    string
 	apiKey     string
 	httpClient *http.Client
 	retry      RetryConfig
 }
 
-// NewClient creates a new PgBeam API client.
-func NewClient(opts *ClientOptions) *Client {
+func newTransport(opts *ClientOptions) *transport {
 	baseURL := opts.BaseURL
 	if baseURL == "" {
 		baseURL = DefaultBaseURL
@@ -102,21 +88,12 @@ func NewClient(opts *ClientOptions) *Client {
 		retry = *opts.Retry
 	}
 
-	c := &Client{
+	return &transport{
 		baseURL:    baseURL,
 		apiKey:     opts.APIKey,
 		httpClient: httpClient,
 		retry:      retry,
 	}
-
-	c.Projects = &ProjectsService{client: c}
-	c.Databases = &DatabasesService{client: c}
-	c.Replicas = &ReplicasService{client: c}
-	c.Domains = &DomainsService{client: c}
-	c.CacheRules = &CacheRulesService{client: c}
-	c.Analytics = &AnalyticsService{client: c}
-
-	return c
 }
 
 var retryableStatusCodes = map[int]bool{
@@ -127,8 +104,8 @@ func isMutatingMethod(method string) bool {
 	return method == http.MethodPost || method == http.MethodPatch
 }
 
-func (c *Client) do(ctx context.Context, method, path string, body any, result any) error {
-	u := c.baseURL + path
+func (t *transport) do(ctx context.Context, method, path string, body any, result any) error {
+	u := t.baseURL + path
 
 	var bodyData []byte
 	if body != nil {
@@ -141,12 +118,12 @@ func (c *Client) do(ctx context.Context, method, path string, body any, result a
 
 	// Generate idempotency key once, reused across all attempts.
 	var idempotencyKey string
-	if c.retry.MaxRetries > 0 && isMutatingMethod(method) {
+	if t.retry.MaxRetries > 0 && isMutatingMethod(method) {
 		idempotencyKey = generateUUID()
 	}
 
 	var lastErr error
-	for attempt := 0; attempt <= c.retry.MaxRetries; attempt++ {
+	for attempt := 0; attempt <= t.retry.MaxRetries; attempt++ {
 		if err := ctx.Err(); err != nil {
 			return err
 		}
@@ -161,7 +138,7 @@ func (c *Client) do(ctx context.Context, method, path string, body any, result a
 			return fmt.Errorf("pgbeam: create request: %w", err)
 		}
 
-		req.Header.Set("Authorization", "Bearer "+c.apiKey)
+		req.Header.Set("Authorization", "Bearer "+t.apiKey)
 		if body != nil {
 			req.Header.Set("Content-Type", "application/json")
 		}
@@ -171,14 +148,14 @@ func (c *Client) do(ctx context.Context, method, path string, body any, result a
 			req.Header.Set("Idempotency-Key", idempotencyKey)
 		}
 
-		resp, err := c.httpClient.Do(req)
+		resp, err := t.httpClient.Do(req)
 		if err != nil {
 			// Network error — retry if attempts remain.
 			lastErr = fmt.Errorf("pgbeam: execute request: %w", err)
-			if attempt == c.retry.MaxRetries {
+			if attempt == t.retry.MaxRetries {
 				return lastErr
 			}
-			sleepWithContext(ctx, backoff(attempt, c.retry.InitialDelay, c.retry.MaxDelay))
+			sleepWithContext(ctx, backoff(attempt, t.retry.InitialDelay, t.retry.MaxDelay))
 			continue
 		}
 
@@ -204,7 +181,7 @@ func (c *Client) do(ctx context.Context, method, path string, body any, result a
 		}
 
 		// Non-retryable or last attempt — return error.
-		if !retryableStatusCodes[resp.StatusCode] || attempt == c.retry.MaxRetries {
+		if !retryableStatusCodes[resp.StatusCode] || attempt == t.retry.MaxRetries {
 			return apiErr
 		}
 
@@ -212,7 +189,7 @@ func (c *Client) do(ctx context.Context, method, path string, body any, result a
 		lastErr = apiErr
 		delay, hasRetryAfter := parseRetryAfter(resp)
 		if !hasRetryAfter {
-			delay = backoff(attempt, c.retry.InitialDelay, c.retry.MaxDelay)
+			delay = backoff(attempt, t.retry.InitialDelay, t.retry.MaxDelay)
 		}
 		sleepWithContext(ctx, delay)
 	}
@@ -221,6 +198,79 @@ func (c *Client) do(ctx context.Context, method, path string, body any, result a
 		return lastErr
 	}
 	return errors.New("pgbeam: exhausted all retry attempts")
+}
+
+// doJSON executes a request and unmarshals the JSON response into *T.
+func doJSON[T any](t *transport, ctx context.Context, method, path string, body any) (*T, error) {
+	var result T
+	if err := t.do(ctx, method, path, body, &result); err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// doVoid executes a request that returns no body (e.g. 204 No Content).
+func doVoid(t *transport, ctx context.Context, method, path string, body any) error {
+	return t.do(ctx, method, path, body, nil)
+}
+
+// doQuery executes a GET request with query parameters encoded from a struct.
+// Struct fields are encoded using their json tags.
+func doQuery[T any](t *transport, ctx context.Context, path string, params any) (*T, error) {
+	if params != nil {
+		if q := encodeQuery(params); q != "" {
+			path = path + "?" + q
+		}
+	}
+	return doJSON[T](t, ctx, "GET", path, nil)
+}
+
+// encodeQuery encodes a struct's non-zero fields as URL query parameters.
+// It uses json struct tags for parameter names and skips zero-value fields.
+func encodeQuery(params any) string {
+	v := reflect.ValueOf(params)
+	if v.Kind() == reflect.Ptr {
+		if v.IsNil() {
+			return ""
+		}
+		v = v.Elem()
+	}
+	if v.Kind() != reflect.Struct {
+		return ""
+	}
+
+	vals := url.Values{}
+	t := v.Type()
+	for i := 0; i < t.NumField(); i++ {
+		field := t.Field(i)
+		fv := v.Field(i)
+
+		// Use json tag for param name.
+		tag := field.Tag.Get("json")
+		if tag == "" || tag == "-" {
+			tag = field.Tag.Get("form")
+		}
+		if tag == "" || tag == "-" {
+			continue
+		}
+		name := strings.Split(tag, ",")[0]
+
+		// Handle pointer fields.
+		if fv.Kind() == reflect.Ptr {
+			if fv.IsNil() {
+				continue
+			}
+			fv = fv.Elem()
+		}
+
+		// Skip zero values.
+		if fv.IsZero() {
+			continue
+		}
+
+		vals.Set(name, fmt.Sprintf("%v", fv.Interface()))
+	}
+	return vals.Encode()
 }
 
 // backoff computes exponential backoff with jitter.
@@ -270,41 +320,4 @@ func sleepWithContext(ctx context.Context, d time.Duration) {
 	case <-ctx.Done():
 	case <-t.C:
 	}
-}
-
-func (c *Client) get(ctx context.Context, path string, result any) error {
-	return c.do(ctx, http.MethodGet, path, nil, result)
-}
-
-func (c *Client) post(ctx context.Context, path string, body, result any) error {
-	return c.do(ctx, http.MethodPost, path, body, result)
-}
-
-func (c *Client) patch(ctx context.Context, path string, body, result any) error {
-	return c.do(ctx, http.MethodPatch, path, body, result)
-}
-
-func (c *Client) put(ctx context.Context, path string, body, result any) error {
-	return c.do(ctx, http.MethodPut, path, body, result)
-}
-
-func (c *Client) del(ctx context.Context, path string) error {
-	return c.do(ctx, http.MethodDelete, path, nil, nil)
-}
-
-// addQueryParams adds query parameters to a path.
-func addQueryParams(path string, params map[string]string) string {
-	if len(params) == 0 {
-		return path
-	}
-	v := url.Values{}
-	for k, val := range params {
-		if val != "" {
-			v.Set(k, val)
-		}
-	}
-	if encoded := v.Encode(); encoded != "" {
-		return path + "?" + encoded
-	}
-	return path
 }

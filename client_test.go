@@ -11,6 +11,15 @@ import (
 	"time"
 )
 
+// newTestTransport creates a transport pointing at the given test server.
+func newTestTransport(srv *httptest.Server, retry *RetryConfig) *transport {
+	return newTransport(&ClientOptions{
+		APIKey:  "test",
+		BaseURL: srv.URL,
+		Retry:   retry,
+	})
+}
+
 func TestRetry_503_ThenSuccess(t *testing.T) {
 	var calls atomic.Int32
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -25,14 +34,10 @@ func TestRetry_503_ThenSuccess(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	client := NewClient(&ClientOptions{
-		APIKey:  "test",
-		BaseURL: srv.URL,
-		Retry:   &RetryConfig{MaxRetries: 5, InitialDelay: 10 * time.Millisecond, MaxDelay: 50 * time.Millisecond},
-	})
+	tr := newTestTransport(srv, &RetryConfig{MaxRetries: 5, InitialDelay: 10 * time.Millisecond, MaxDelay: 50 * time.Millisecond})
 
 	var result map[string]string
-	err := client.do(context.Background(), http.MethodGet, "/v1/test", nil, &result)
+	err := tr.do(context.Background(), http.MethodGet, "/v1/test", nil, &result)
 	if err != nil {
 		t.Fatalf("expected success after retries, got: %v", err)
 	}
@@ -53,13 +58,9 @@ func TestRetry_400_NoRetry(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	client := NewClient(&ClientOptions{
-		APIKey:  "test",
-		BaseURL: srv.URL,
-		Retry:   &RetryConfig{MaxRetries: 3, InitialDelay: 10 * time.Millisecond, MaxDelay: 50 * time.Millisecond},
-	})
+	tr := newTestTransport(srv, &RetryConfig{MaxRetries: 3, InitialDelay: 10 * time.Millisecond, MaxDelay: 50 * time.Millisecond})
 
-	err := client.do(context.Background(), http.MethodPost, "/v1/test", map[string]string{"name": "x"}, nil)
+	err := tr.do(context.Background(), http.MethodPost, "/v1/test", map[string]string{"name": "x"}, nil)
 	if err == nil {
 		t.Fatal("expected error for 400")
 	}
@@ -88,13 +89,9 @@ func TestRetry_IdempotencyKey_POST(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	client := NewClient(&ClientOptions{
-		APIKey:  "test",
-		BaseURL: srv.URL,
-		Retry:   &RetryConfig{MaxRetries: 5, InitialDelay: 10 * time.Millisecond, MaxDelay: 50 * time.Millisecond},
-	})
+	tr := newTestTransport(srv, &RetryConfig{MaxRetries: 5, InitialDelay: 10 * time.Millisecond, MaxDelay: 50 * time.Millisecond})
 
-	err := client.do(context.Background(), http.MethodPost, "/v1/projects", map[string]string{"name": "test"}, nil)
+	err := tr.do(context.Background(), http.MethodPost, "/v1/projects", map[string]string{"name": "test"}, nil)
 	if err != nil {
 		t.Fatalf("expected success, got: %v", err)
 	}
@@ -127,13 +124,9 @@ func TestRetry_NoIdempotencyKey_GET(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	client := NewClient(&ClientOptions{
-		APIKey:  "test",
-		BaseURL: srv.URL,
-		Retry:   &RetryConfig{MaxRetries: 3, InitialDelay: 10 * time.Millisecond, MaxDelay: 50 * time.Millisecond},
-	})
+	tr := newTestTransport(srv, &RetryConfig{MaxRetries: 3, InitialDelay: 10 * time.Millisecond, MaxDelay: 50 * time.Millisecond})
 
-	err := client.do(context.Background(), http.MethodGet, "/v1/projects/prj_1", nil, nil)
+	err := tr.do(context.Background(), http.MethodGet, "/v1/projects/prj_1", nil, nil)
 	if err != nil {
 		t.Fatalf("expected success, got: %v", err)
 	}
@@ -151,16 +144,12 @@ func TestRetry_ContextCancellation(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	client := NewClient(&ClientOptions{
-		APIKey:  "test",
-		BaseURL: srv.URL,
-		Retry:   &RetryConfig{MaxRetries: 10, InitialDelay: 1 * time.Second, MaxDelay: 5 * time.Second},
-	})
+	tr := newTestTransport(srv, &RetryConfig{MaxRetries: 10, InitialDelay: 1 * time.Second, MaxDelay: 5 * time.Second})
 
 	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
 	defer cancel()
 
-	err := client.do(ctx, http.MethodGet, "/v1/test", nil, nil)
+	err := tr.do(ctx, http.MethodGet, "/v1/test", nil, nil)
 	if err == nil {
 		t.Fatal("expected error from cancelled context")
 	}
@@ -174,13 +163,9 @@ func TestRetry_Disabled(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	client := NewClient(&ClientOptions{
-		APIKey:  "test",
-		BaseURL: srv.URL,
-		Retry:   &RetryConfig{MaxRetries: 0},
-	})
+	tr := newTestTransport(srv, &RetryConfig{MaxRetries: 0})
 
-	err := client.do(context.Background(), http.MethodGet, "/v1/test", nil, nil)
+	err := tr.do(context.Background(), http.MethodGet, "/v1/test", nil, nil)
 	if err == nil {
 		t.Fatal("expected error")
 	}
@@ -190,15 +175,15 @@ func TestRetry_Disabled(t *testing.T) {
 }
 
 func TestRetry_DefaultConfig(t *testing.T) {
-	client := NewClient(&ClientOptions{APIKey: "test"})
-	if client.retry.MaxRetries != 5 {
-		t.Fatalf("expected default MaxRetries=5, got %d", client.retry.MaxRetries)
+	tr := newTransport(&ClientOptions{APIKey: "test"})
+	if tr.retry.MaxRetries != 5 {
+		t.Fatalf("expected default MaxRetries=5, got %d", tr.retry.MaxRetries)
 	}
-	if client.retry.InitialDelay != 500*time.Millisecond {
-		t.Fatalf("expected default InitialDelay=500ms, got %v", client.retry.InitialDelay)
+	if tr.retry.InitialDelay != 500*time.Millisecond {
+		t.Fatalf("expected default InitialDelay=500ms, got %v", tr.retry.InitialDelay)
 	}
-	if client.retry.MaxDelay != 30*time.Second {
-		t.Fatalf("expected default MaxDelay=30s, got %v", client.retry.MaxDelay)
+	if tr.retry.MaxDelay != 30*time.Second {
+		t.Fatalf("expected default MaxDelay=30s, got %v", tr.retry.MaxDelay)
 	}
 }
 
@@ -217,13 +202,9 @@ func TestRetry_RetryAfterHeader(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	client := NewClient(&ClientOptions{
-		APIKey:  "test",
-		BaseURL: srv.URL,
-		Retry:   &RetryConfig{MaxRetries: 3, InitialDelay: 5 * time.Second, MaxDelay: 10 * time.Second},
-	})
+	tr := newTestTransport(srv, &RetryConfig{MaxRetries: 3, InitialDelay: 5 * time.Second, MaxDelay: 10 * time.Second})
 
-	err := client.do(context.Background(), http.MethodGet, "/v1/test", nil, nil)
+	err := tr.do(context.Background(), http.MethodGet, "/v1/test", nil, nil)
 	if err != nil {
 		t.Fatalf("expected success, got: %v", err)
 	}
@@ -231,4 +212,48 @@ func TestRetry_RetryAfterHeader(t *testing.T) {
 	if elapsed := time.Since(start); elapsed > 1*time.Second {
 		t.Fatalf("expected fast retry with Retry-After: 0, took %v", elapsed)
 	}
+}
+
+func TestEncodeQuery(t *testing.T) {
+	type params struct {
+		OrgID    string `json:"org_id"`
+		PageSize *int   `json:"page_size,omitempty"`
+	}
+
+	ps := 20
+	q := encodeQuery(params{OrgID: "org_123", PageSize: &ps})
+	if q == "" {
+		t.Fatal("expected non-empty query string")
+	}
+	if !contains(q, "org_id=org_123") {
+		t.Fatalf("expected org_id in query, got: %s", q)
+	}
+	if !contains(q, "page_size=20") {
+		t.Fatalf("expected page_size in query, got: %s", q)
+	}
+}
+
+func TestEncodeQuery_NilPointer(t *testing.T) {
+	type params struct {
+		OrgID    string `json:"org_id"`
+		PageSize *int   `json:"page_size,omitempty"`
+	}
+
+	q := encodeQuery(params{OrgID: "org_123"})
+	if contains(q, "page_size") {
+		t.Fatalf("expected no page_size in query, got: %s", q)
+	}
+}
+
+func contains(s, substr string) bool {
+	return len(s) >= len(substr) && (s == substr || len(s) > 0 && containsSubstr(s, substr))
+}
+
+func containsSubstr(s, sub string) bool {
+	for i := 0; i <= len(s)-len(sub); i++ {
+		if s[i:i+len(sub)] == sub {
+			return true
+		}
+	}
+	return false
 }
