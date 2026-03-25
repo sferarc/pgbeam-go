@@ -176,6 +176,7 @@ func (e McpResponseJsonrpc) Valid() bool {
 // Defines values for OrganizationPlanBillingProvider.
 const (
 	OrganizationPlanBillingProviderAws    OrganizationPlanBillingProvider = "aws"
+	OrganizationPlanBillingProviderManual OrganizationPlanBillingProvider = "manual"
 	OrganizationPlanBillingProviderStripe OrganizationPlanBillingProvider = "stripe"
 	OrganizationPlanBillingProviderVercel OrganizationPlanBillingProvider = "vercel"
 )
@@ -184,6 +185,8 @@ const (
 func (e OrganizationPlanBillingProvider) Valid() bool {
 	switch e {
 	case OrganizationPlanBillingProviderAws:
+		return true
+	case OrganizationPlanBillingProviderManual:
 		return true
 	case OrganizationPlanBillingProviderStripe:
 		return true
