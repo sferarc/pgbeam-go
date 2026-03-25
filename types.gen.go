@@ -1555,20 +1555,11 @@ type UpdateProjectRequest struct {
 	// AllowedCidrs IP filtering rules as CIDR ranges with optional labels. Empty array means allow all. Both IPv4 and IPv6 CIDR notation are supported.
 	AllowedCidrs *[]CidrEntry `json:"allowed_cidrs,omitempty"`
 
-	// BurstSize Burst allowance above steady-state rate.
-	BurstSize *int32 `json:"burst_size,omitempty"`
-
 	// Description Updated project description.
 	Description *string `json:"description,omitempty"`
 
-	// MaxConnections Maximum concurrent proxy connections. 0 means unlimited.
-	MaxConnections *int32 `json:"max_connections,omitempty"`
-
 	// Name Updated project name.
 	Name *string `json:"name,omitempty"`
-
-	// QueriesPerSecond Maximum queries per second. 0 means unlimited.
-	QueriesPerSecond *int32 `json:"queries_per_second,omitempty"`
 
 	// Status Project lifecycle status.
 	Status *ProjectStatus `json:"status,omitempty"`
