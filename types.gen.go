@@ -713,6 +713,15 @@ type CancellationFeedbackRequest struct {
 	Reason *string `json:"reason,omitempty"`
 }
 
+// CidrEntry An IP filtering rule with a CIDR range and optional human-readable label.
+type CidrEntry struct {
+	// Cidr CIDR range in IPv4 (e.g. 203.0.113.0/24) or IPv6 (e.g. 2001:db8::/32) notation. A plain IP without prefix length defaults to /32 (IPv4) or /128 (IPv6).
+	Cidr string `json:"cidr"`
+
+	// Label Optional human-readable label for this CIDR entry (e.g. "Office", "VPC").
+	Label *string `json:"label,omitempty"`
+}
+
 // CreateCustomDomainRequest Request body for attaching a custom domain to a project.
 type CreateCustomDomainRequest struct {
 	// Domain The custom domain name to add (e.g., db.example.com).
@@ -1276,8 +1285,8 @@ type Project struct {
 	// ActiveConnections Current active connections (latest metrics snapshot). 0 when no metrics data.
 	ActiveConnections *int `json:"active_connections,omitempty"`
 
-	// AllowedCidrs IP allowlist as CIDR ranges (e.g., ["10.0.0.0/8", "203.0.113.5/32"]). When non-empty, only connections from matching IPs are accepted. Empty array means all IPs are allowed (default).
-	AllowedCidrs *[]string `json:"allowed_cidrs,omitempty"`
+	// AllowedCidrs IP filtering rules as CIDR ranges with optional labels. When non-empty, only connections from matching IPs are accepted. Empty array means all IPs are allowed (default). Both IPv4 (e.g. 10.0.0.0/8) and IPv6 (e.g. 2001:db8::/32) are supported.
+	AllowedCidrs *[]CidrEntry `json:"allowed_cidrs,omitempty"`
 
 	// BurstSize Burst allowance above the steady-state rate. 0 uses queries_per_second as burst.
 	BurstSize *int32 `json:"burst_size,omitempty"`
@@ -1543,8 +1552,8 @@ type UpdateOnboardingRequestStep string
 
 // UpdateProjectRequest Request body for partially updating a project.
 type UpdateProjectRequest struct {
-	// AllowedCidrs IP allowlist as CIDR ranges. Empty array means allow all.
-	AllowedCidrs *[]string `json:"allowed_cidrs,omitempty"`
+	// AllowedCidrs IP filtering rules as CIDR ranges with optional labels. Empty array means allow all. Both IPv4 and IPv6 CIDR notation are supported.
+	AllowedCidrs *[]CidrEntry `json:"allowed_cidrs,omitempty"`
 
 	// BurstSize Burst allowance above steady-state rate.
 	BurstSize *int32 `json:"burst_size,omitempty"`
