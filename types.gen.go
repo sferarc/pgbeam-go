@@ -14,6 +14,27 @@ const (
 	BearerAuthScopes bearerAuthContextKey = "BearerAuth.Scopes"
 )
 
+// Defines values for AgentCredentialStatus.
+const (
+	AgentCredentialStatusActive   AgentCredentialStatus = "active"
+	AgentCredentialStatusDisabled AgentCredentialStatus = "disabled"
+	AgentCredentialStatusRevoked  AgentCredentialStatus = "revoked"
+)
+
+// Valid indicates whether the value is a known member of the AgentCredentialStatus enum.
+func (e AgentCredentialStatus) Valid() bool {
+	switch e {
+	case AgentCredentialStatusActive:
+		return true
+	case AgentCredentialStatusDisabled:
+		return true
+	case AgentCredentialStatusRevoked:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for CacheRuleEntryQueryType.
 const (
 	Other CacheRuleEntryQueryType = "other"
@@ -110,6 +131,27 @@ func (e HealthResponseStatus) Valid() bool {
 	case Degraded:
 		return true
 	case Ok:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for MaskingRuleKind.
+const (
+	Hash   MaskingRuleKind = "hash"
+	Null   MaskingRuleKind = "null"
+	Redact MaskingRuleKind = "redact"
+)
+
+// Valid indicates whether the value is a known member of the MaskingRuleKind enum.
+func (e MaskingRuleKind) Valid() bool {
+	switch e {
+	case Hash:
+		return true
+	case Null:
+		return true
+	case Redact:
 		return true
 	default:
 		return false
@@ -260,6 +302,42 @@ func (e OrganizationPlanSubscriptionStatus) Valid() bool {
 	}
 }
 
+// Defines values for PolicyProfileAccessMode.
+const (
+	PolicyProfileAccessModeReadOnly  PolicyProfileAccessMode = "read_only"
+	PolicyProfileAccessModeReadWrite PolicyProfileAccessMode = "read_write"
+)
+
+// Valid indicates whether the value is a known member of the PolicyProfileAccessMode enum.
+func (e PolicyProfileAccessMode) Valid() bool {
+	switch e {
+	case PolicyProfileAccessModeReadOnly:
+		return true
+	case PolicyProfileAccessModeReadWrite:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for PolicyProfileInputAccessMode.
+const (
+	PolicyProfileInputAccessModeReadOnly  PolicyProfileInputAccessMode = "read_only"
+	PolicyProfileInputAccessModeReadWrite PolicyProfileInputAccessMode = "read_write"
+)
+
+// Valid indicates whether the value is a known member of the PolicyProfileInputAccessMode enum.
+func (e PolicyProfileInputAccessMode) Valid() bool {
+	switch e {
+	case PolicyProfileInputAccessModeReadOnly:
+		return true
+	case PolicyProfileInputAccessModeReadWrite:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for PoolMode.
 const (
 	Session     PoolMode = "session"
@@ -346,19 +424,19 @@ func (e RegionProvider) Valid() bool {
 
 // Defines values for RegionStatus.
 const (
-	Active   RegionStatus = "active"
-	Draining RegionStatus = "draining"
-	Inactive RegionStatus = "inactive"
+	RegionStatusActive   RegionStatus = "active"
+	RegionStatusDraining RegionStatus = "draining"
+	RegionStatusInactive RegionStatus = "inactive"
 )
 
 // Valid indicates whether the value is a known member of the RegionStatus enum.
 func (e RegionStatus) Valid() bool {
 	switch e {
-	case Active:
+	case RegionStatusActive:
 		return true
-	case Draining:
+	case RegionStatusDraining:
 		return true
-	case Inactive:
+	case RegionStatusInactive:
 		return true
 	default:
 		return false
@@ -389,6 +467,24 @@ func (e SSLMode) Valid() bool {
 	case VerifyCa:
 		return true
 	case VerifyFull:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for UpdateAgentCredentialStatusRequestStatus.
+const (
+	Active   UpdateAgentCredentialStatusRequestStatus = "active"
+	Disabled UpdateAgentCredentialStatusRequestStatus = "disabled"
+)
+
+// Valid indicates whether the value is a known member of the UpdateAgentCredentialStatusRequestStatus enum.
+func (e UpdateAgentCredentialStatusRequestStatus) Valid() bool {
+	switch e {
+	case Active:
+		return true
+	case Disabled:
 		return true
 	default:
 		return false
@@ -629,6 +725,114 @@ type AccountExport struct {
 	} `json:"user"`
 }
 
+// AgentCredential A PgBeam-issued, scoped Postgres login plus hosted MCP token for an AI agent.
+type AgentCredential struct {
+	// CreatedAt When the credential was created.
+	CreatedAt time.Time `json:"created_at"`
+
+	// Id Unique agent credential identifier (prefixed).
+	Id string `json:"id"`
+
+	// LastUsedAt When the credential was last used to connect, if ever.
+	LastUsedAt *time.Time `json:"last_used_at,omitempty"`
+
+	// Name Human-readable label for the credential.
+	Name string `json:"name"`
+
+	// PgUsername The Postgres username this credential presents to the proxy.
+	PgUsername string `json:"pg_username"`
+
+	// PolicyProfileId Policy profile enforced for this credential.
+	PolicyProfileId string `json:"policy_profile_id"`
+
+	// ProjectId Owning project ID.
+	ProjectId string `json:"project_id"`
+
+	// Status Lifecycle status of the credential.
+	Status AgentCredentialStatus `json:"status"`
+
+	// UpdatedAt When the credential was last updated.
+	UpdatedAt time.Time `json:"updated_at"`
+}
+
+// AgentCredentialStatus Lifecycle status of the credential.
+type AgentCredentialStatus string
+
+// AgentCredentialSecrets One-time secrets returned only at creation. The connection string and MCP token are not retrievable again.
+type AgentCredentialSecrets struct {
+	// ConnectionString Guarded Postgres connection string for this agent credential.
+	ConnectionString string `json:"connection_string"`
+
+	// Credential A PgBeam-issued, scoped Postgres login plus hosted MCP token for an AI agent.
+	Credential AgentCredential `json:"credential"`
+
+	// McpToken Bearer token for the hosted MCP endpoint (shown once).
+	McpToken string `json:"mcp_token"`
+
+	// McpUrl Hosted MCP endpoint URL for this credential.
+	McpUrl string `json:"mcp_url"`
+}
+
+// AuditLogEntry One agent statement recorded by the gateway.
+type AuditLogEntry struct {
+	// BytesOut Bytes sent to the agent.
+	BytesOut *int64 `json:"bytes_out,omitempty"`
+
+	// CacheStatus Cache outcome for the statement.
+	CacheStatus *string `json:"cache_status,omitempty"`
+
+	// ClientIp Source IP of the agent connection.
+	ClientIp *string `json:"client_ip,omitempty"`
+
+	// CredentialId Agent credential that issued the statement, if known.
+	CredentialId *string `json:"credential_id,omitempty"`
+
+	// DecisionRule Machine-readable rule that produced a block, if any.
+	DecisionRule *string `json:"decision_rule,omitempty"`
+
+	// Event Event type (query, blocked, masked, budget_exhausted, truncated, auth_failed).
+	Event string `json:"event"`
+
+	// Id Unique audit entry identifier.
+	Id string `json:"id"`
+
+	// LatencyMs Statement latency in milliseconds.
+	LatencyMs *float32 `json:"latency_ms,omitempty"`
+
+	// NormalizedSql Statement with literals replaced by placeholders.
+	NormalizedSql *string `json:"normalized_sql,omitempty"`
+
+	// ProjectId Owning project ID.
+	ProjectId string `json:"project_id"`
+
+	// QueryHash Hash of the normalized statement.
+	QueryHash *string `json:"query_hash,omitempty"`
+
+	// Reason Human-readable explanation of the decision.
+	Reason *string `json:"reason,omitempty"`
+
+	// Region Data plane region that served the statement.
+	Region *string `json:"region,omitempty"`
+
+	// RowsReturned Rows returned to the agent.
+	RowsReturned *int64 `json:"rows_returned,omitempty"`
+
+	// SessionId Identifier grouping a connection's statements.
+	SessionId *string `json:"session_id,omitempty"`
+
+	// Source Statement origin (wire or mcp).
+	Source *string `json:"source,omitempty"`
+
+	// Sql The statement text (truncated).
+	Sql *string `json:"sql,omitempty"`
+
+	// StatementKind Parsed statement kind.
+	StatementKind *string `json:"statement_kind,omitempty"`
+
+	// Ts When the statement executed.
+	Ts time.Time `json:"ts"`
+}
+
 // CacheConfig Query cache configuration.
 type CacheConfig struct {
 	// Enabled Whether query caching is enabled. When false, all queries bypass the cache.
@@ -723,6 +927,15 @@ type CidrEntry struct {
 
 	// Label Optional human-readable label for this CIDR entry (e.g. "Office", "VPC").
 	Label *string `json:"label,omitempty"`
+}
+
+// CreateAgentCredentialRequest Request body for issuing a new agent credential.
+type CreateAgentCredentialRequest struct {
+	// Name Human-readable label for the credential.
+	Name string `json:"name"`
+
+	// PolicyProfileId The policy profile to enforce for this credential.
+	PolicyProfileId string `json:"policy_profile_id"`
 }
 
 // CreateCustomDomainRequest Request body for attaching a custom domain to a project.
@@ -983,6 +1196,24 @@ type LatencySummary struct {
 	P99Ms float64 `json:"p99_ms"`
 }
 
+// ListAgentCredentialsResponse Cursor-paginated list of agent credentials for a project.
+type ListAgentCredentialsResponse struct {
+	// Agents Agent credentials on the current page.
+	Agents []AgentCredential `json:"agents"`
+
+	// NextPageToken Token for the next page. Empty if no more results.
+	NextPageToken *string `json:"next_page_token,omitempty"`
+}
+
+// ListAuditLogsResponse Time-ordered page of audit entries (newest first).
+type ListAuditLogsResponse struct {
+	// Entries Audit entries on the current page.
+	Entries []AuditLogEntry `json:"entries"`
+
+	// NextPageToken Cursor for the next page. Empty if no more results.
+	NextPageToken *string `json:"next_page_token,omitempty"`
+}
+
 // ListCacheRulesResponse Cursor-paginated cache-rule entries for a database.
 type ListCacheRulesResponse struct {
 	// Entries Query shapes returned for the current page.
@@ -1016,6 +1247,15 @@ type ListPlansResponse struct {
 	Plans []PlanInfo `json:"plans"`
 }
 
+// ListPolicyProfilesResponse Cursor-paginated list of policy profiles for a project.
+type ListPolicyProfilesResponse struct {
+	// NextPageToken Token for the next page. Empty if no more results.
+	NextPageToken *string `json:"next_page_token,omitempty"`
+
+	// Policies Policy profiles on the current page.
+	Policies []PolicyProfile `json:"policies"`
+}
+
 // ListProjectsResponse Cursor-paginated list of projects for an organization.
 type ListProjectsResponse struct {
 	// NextPageToken Token for the next page. Empty if no more results.
@@ -1042,6 +1282,21 @@ type ListReplicasResponse struct {
 	// Replicas Read replicas attached to the database.
 	Replicas []Replica `json:"replicas"`
 }
+
+// MaskingRule A column masking rule applied to agent query results.
+type MaskingRule struct {
+	// Column Column to mask.
+	Column string `json:"column"`
+
+	// Kind How to mask. redact replaces with a token, null returns NULL, hash returns a SHA-256 hex.
+	Kind MaskingRuleKind `json:"kind"`
+
+	// Table Relation name, optionally schema-qualified (e.g. "public.users" or "users").
+	Table string `json:"table"`
+}
+
+// MaskingRuleKind How to mask. redact replaces with a token, null returns NULL, hash returns a SHA-256 hex.
+type MaskingRuleKind string
 
 // McpRequest JSON-RPC 2.0 request envelope for MCP over Streamable HTTP.
 type McpRequest struct {
@@ -1265,6 +1520,90 @@ type PlanLimits struct {
 	QueriesPerSecond int `json:"queries_per_second"`
 }
 
+// PolicyProfile A named bundle of rules enforced on agent credentials in the data plane.
+type PolicyProfile struct {
+	// AccessMode read_only blocks all data and schema mutations.
+	AccessMode PolicyProfileAccessMode `json:"access_mode"`
+
+	// BudgetQueriesPerDay Max queries per day window. 0 means unlimited.
+	BudgetQueriesPerDay *int `json:"budget_queries_per_day,omitempty"`
+
+	// BudgetQueriesPerHour Max queries per rolling hour window. 0 means unlimited.
+	BudgetQueriesPerHour *int `json:"budget_queries_per_hour,omitempty"`
+
+	// CreatedAt When the policy profile was created.
+	CreatedAt time.Time `json:"created_at"`
+
+	// Id Unique policy profile identifier (prefixed).
+	Id string `json:"id"`
+
+	// MaskingRules Column masking rules applied to query results.
+	MaskingRules []MaskingRule `json:"masking_rules"`
+
+	// MaxRows Max rows returned per query. 0 means unlimited.
+	MaxRows *int `json:"max_rows,omitempty"`
+
+	// Name Human-readable name for the policy profile.
+	Name string `json:"name"`
+
+	// ProjectId Owning project ID.
+	ProjectId string `json:"project_id"`
+
+	// StatementRules Per-statement-kind allow/deny lists. Empty allow means all kinds permitted by the access mode.
+	StatementRules *StatementRules `json:"statement_rules,omitempty"`
+
+	// StatementTimeoutMs Upstream statement timeout for agent sessions. 0 uses the project default.
+	StatementTimeoutMs *int `json:"statement_timeout_ms,omitempty"`
+
+	// TableAllowlist If non-empty, only these relations are reachable. Schema-qualified or bare names.
+	TableAllowlist []string `json:"table_allowlist"`
+
+	// TableDenylist Relations explicitly blocked (takes precedence over the allowlist).
+	TableDenylist []string `json:"table_denylist"`
+
+	// UpdatedAt When the policy profile was last updated.
+	UpdatedAt time.Time `json:"updated_at"`
+}
+
+// PolicyProfileAccessMode read_only blocks all data and schema mutations.
+type PolicyProfileAccessMode string
+
+// PolicyProfileInput Mutable fields of a policy profile (used for create and update).
+type PolicyProfileInput struct {
+	// AccessMode read_only blocks all data and schema mutations.
+	AccessMode *PolicyProfileInputAccessMode `json:"access_mode,omitempty"`
+
+	// BudgetQueriesPerDay Max queries per day window. 0 means unlimited.
+	BudgetQueriesPerDay *int `json:"budget_queries_per_day,omitempty"`
+
+	// BudgetQueriesPerHour Max queries per rolling hour window. 0 means unlimited.
+	BudgetQueriesPerHour *int `json:"budget_queries_per_hour,omitempty"`
+
+	// MaskingRules Column masking rules applied to query results.
+	MaskingRules *[]MaskingRule `json:"masking_rules,omitempty"`
+
+	// MaxRows Max rows returned per query. 0 means unlimited.
+	MaxRows *int `json:"max_rows,omitempty"`
+
+	// Name Human-readable name for the policy profile.
+	Name string `json:"name"`
+
+	// StatementRules Per-statement-kind allow/deny lists. Empty allow means all kinds permitted by the access mode.
+	StatementRules *StatementRules `json:"statement_rules,omitempty"`
+
+	// StatementTimeoutMs Upstream statement timeout for agent sessions. 0 uses the project default.
+	StatementTimeoutMs *int `json:"statement_timeout_ms,omitempty"`
+
+	// TableAllowlist If non-empty, only these relations are reachable.
+	TableAllowlist *[]string `json:"table_allowlist,omitempty"`
+
+	// TableDenylist Relations explicitly blocked.
+	TableDenylist *[]string `json:"table_denylist,omitempty"`
+}
+
+// PolicyProfileInputAccessMode read_only blocks all data and schema mutations.
+type PolicyProfileInputAccessMode string
+
 // PoolConfig Connection pool configuration.
 type PoolConfig struct {
 	// MaxActive Maximum concurrent upstream connections per pool.
@@ -1469,6 +1808,15 @@ type Replica struct {
 // SSLMode PostgreSQL SSL connection mode.
 type SSLMode string
 
+// StatementRules Per-statement-kind allow/deny lists. Empty allow means all kinds permitted by the access mode.
+type StatementRules struct {
+	// Allow Allowed statement kinds (select, insert, update, delete, ddl, copy, set, show, explain, transaction).
+	Allow *[]string `json:"allow,omitempty"`
+
+	// Deny Denied statement kinds (takes precedence over allow).
+	Deny *[]string `json:"deny,omitempty"`
+}
+
 // TestConnectionResult Result of testing connectivity to an upstream database.
 type TestConnectionResult struct {
 	// Error Error message if the connection test failed.
@@ -1483,6 +1831,15 @@ type TestConnectionResult struct {
 	// ServerVersion PostgreSQL server version string, if available.
 	ServerVersion *string `json:"server_version,omitempty"`
 }
+
+// UpdateAgentCredentialStatusRequest Request body for enabling or disabling an agent credential.
+type UpdateAgentCredentialStatusRequest struct {
+	// Status Set active to re-enable or disabled to kill-switch. Use DELETE to revoke permanently.
+	Status UpdateAgentCredentialStatusRequestStatus `json:"status"`
+}
+
+// UpdateAgentCredentialStatusRequestStatus Set active to re-enable or disabled to kill-switch. Use DELETE to revoke permanently.
+type UpdateAgentCredentialStatusRequestStatus string
 
 // UpdateCacheRuleRequest Request body for updating cache behavior of a query shape.
 type UpdateCacheRuleRequest struct {
@@ -1595,6 +1952,9 @@ type VerifyCustomDomainResponse struct {
 	Verified bool `json:"verified"`
 }
 
+// AgentId defines model for AgentId.
+type AgentId = string
+
 // DatabaseId defines model for DatabaseId.
 type DatabaseId = string
 
@@ -1609,6 +1969,9 @@ type PageSize = int
 
 // PageToken defines model for PageToken.
 type PageToken = string
+
+// PolicyId defines model for PolicyId.
+type PolicyId = string
 
 // ProjectId defines model for ProjectId.
 type ProjectId = string
@@ -1667,6 +2030,30 @@ type ListProjectsParams struct {
 // ListProjectsParamsSortBy defines parameters for ListProjects.
 type ListProjectsParamsSortBy string
 
+// ListAgentCredentialsParams defines parameters for ListAgentCredentials.
+type ListAgentCredentialsParams struct {
+	// PageSize Maximum number of items to return (1-100, default 20).
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken Opaque token for cursor-based pagination.
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+}
+
+// ListAuditLogsParams defines parameters for ListAuditLogs.
+type ListAuditLogsParams struct {
+	// CredentialId Filter to a single agent credential.
+	CredentialId *string `form:"credential_id,omitempty" json:"credential_id,omitempty"`
+
+	// Event Filter to a single event type (e.g. blocked).
+	Event *string `form:"event,omitempty" json:"event,omitempty"`
+
+	// Before Return entries strictly older than this timestamp (cursor).
+	Before *time.Time `form:"before,omitempty" json:"before,omitempty"`
+
+	// PageSize Maximum number of items to return (1-100, default 20).
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+}
+
 // ListDatabasesParams defines parameters for ListDatabases.
 type ListDatabasesParams struct {
 	// PageSize Maximum number of items to return (1-100, default 20).
@@ -1715,6 +2102,15 @@ type GetProjectMetricsParams struct {
 	Region *string `form:"region,omitempty" json:"region,omitempty"`
 }
 
+// ListPolicyProfilesParams defines parameters for ListPolicyProfiles.
+type ListPolicyProfilesParams struct {
+	// PageSize Maximum number of items to return (1-100, default 20).
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken Opaque token for cursor-based pagination.
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+}
+
 // GetProjectUsageParams defines parameters for GetProjectUsage.
 type GetProjectUsageParams struct {
 	// StartDate Start date (inclusive, YYYY-MM-DD).
@@ -1745,6 +2141,12 @@ type CreateProjectJSONRequestBody = CreateProjectRequest
 // UpdateProjectJSONRequestBody defines body for UpdateProject for application/json ContentType.
 type UpdateProjectJSONRequestBody = UpdateProjectRequest
 
+// CreateAgentCredentialJSONRequestBody defines body for CreateAgentCredential for application/json ContentType.
+type CreateAgentCredentialJSONRequestBody = CreateAgentCredentialRequest
+
+// UpdateAgentCredentialStatusJSONRequestBody defines body for UpdateAgentCredentialStatus for application/json ContentType.
+type UpdateAgentCredentialStatusJSONRequestBody = UpdateAgentCredentialStatusRequest
+
 // CreateDatabaseJSONRequestBody defines body for CreateDatabase for application/json ContentType.
 type CreateDatabaseJSONRequestBody = CreateDatabaseRequest
 
@@ -1756,3 +2158,9 @@ type UpdateCacheRuleJSONRequestBody = UpdateCacheRuleRequest
 
 // CreateCustomDomainJSONRequestBody defines body for CreateCustomDomain for application/json ContentType.
 type CreateCustomDomainJSONRequestBody = CreateCustomDomainRequest
+
+// CreatePolicyProfileJSONRequestBody defines body for CreatePolicyProfile for application/json ContentType.
+type CreatePolicyProfileJSONRequestBody = PolicyProfileInput
+
+// UpdatePolicyProfileJSONRequestBody defines body for UpdatePolicyProfile for application/json ContentType.
+type UpdatePolicyProfileJSONRequestBody = PolicyProfileInput
