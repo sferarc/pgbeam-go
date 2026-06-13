@@ -14,6 +14,42 @@ const (
 	BearerAuthScopes bearerAuthContextKey = "BearerAuth.Scopes"
 )
 
+// Defines values for AgentCredentialAuthMethod.
+const (
+	Cleartext   AgentCredentialAuthMethod = "cleartext"
+	ScramSha256 AgentCredentialAuthMethod = "scram-sha-256"
+)
+
+// Valid indicates whether the value is a known member of the AgentCredentialAuthMethod enum.
+func (e AgentCredentialAuthMethod) Valid() bool {
+	switch e {
+	case Cleartext:
+		return true
+	case ScramSha256:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for AgentCredentialPrincipalType.
+const (
+	AgentCredentialPrincipalTypeAgent AgentCredentialPrincipalType = "agent"
+	AgentCredentialPrincipalTypeHuman AgentCredentialPrincipalType = "human"
+)
+
+// Valid indicates whether the value is a known member of the AgentCredentialPrincipalType enum.
+func (e AgentCredentialPrincipalType) Valid() bool {
+	switch e {
+	case AgentCredentialPrincipalTypeAgent:
+		return true
+	case AgentCredentialPrincipalTypeHuman:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for AgentCredentialStatus.
 const (
 	AgentCredentialStatusActive   AgentCredentialStatus = "active"
@@ -29,6 +65,78 @@ func (e AgentCredentialStatus) Valid() bool {
 	case AgentCredentialStatusDisabled:
 		return true
 	case AgentCredentialStatusRevoked:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for AnomalyAlertSeverity.
+const (
+	AnomalyAlertSeverityCritical AnomalyAlertSeverity = "critical"
+	AnomalyAlertSeverityInfo     AnomalyAlertSeverity = "info"
+	AnomalyAlertSeverityWarning  AnomalyAlertSeverity = "warning"
+)
+
+// Valid indicates whether the value is a known member of the AnomalyAlertSeverity enum.
+func (e AnomalyAlertSeverity) Valid() bool {
+	switch e {
+	case AnomalyAlertSeverityCritical:
+		return true
+	case AnomalyAlertSeverityInfo:
+		return true
+	case AnomalyAlertSeverityWarning:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for AnomalyAlertStatus.
+const (
+	AnomalyAlertStatusAcknowledged AnomalyAlertStatus = "acknowledged"
+	AnomalyAlertStatusOpen         AnomalyAlertStatus = "open"
+	AnomalyAlertStatusResolved     AnomalyAlertStatus = "resolved"
+)
+
+// Valid indicates whether the value is a known member of the AnomalyAlertStatus enum.
+func (e AnomalyAlertStatus) Valid() bool {
+	switch e {
+	case AnomalyAlertStatusAcknowledged:
+		return true
+	case AnomalyAlertStatusOpen:
+		return true
+	case AnomalyAlertStatusResolved:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ApprovalRequestStatus.
+const (
+	ApprovalRequestStatusApproved ApprovalRequestStatus = "approved"
+	ApprovalRequestStatusExecuted ApprovalRequestStatus = "executed"
+	ApprovalRequestStatusExpired  ApprovalRequestStatus = "expired"
+	ApprovalRequestStatusFailed   ApprovalRequestStatus = "failed"
+	ApprovalRequestStatusPending  ApprovalRequestStatus = "pending"
+	ApprovalRequestStatusRejected ApprovalRequestStatus = "rejected"
+)
+
+// Valid indicates whether the value is a known member of the ApprovalRequestStatus enum.
+func (e ApprovalRequestStatus) Valid() bool {
+	switch e {
+	case ApprovalRequestStatusApproved:
+		return true
+	case ApprovalRequestStatusExecuted:
+		return true
+	case ApprovalRequestStatusExpired:
+		return true
+	case ApprovalRequestStatusFailed:
+		return true
+	case ApprovalRequestStatusPending:
+		return true
+	case ApprovalRequestStatusRejected:
 		return true
 	default:
 		return false
@@ -80,6 +188,24 @@ func (e CacheRuleEntryRecommendation) Valid() bool {
 	}
 }
 
+// Defines values for CreateAgentCredentialRequestPrincipalType.
+const (
+	CreateAgentCredentialRequestPrincipalTypeAgent CreateAgentCredentialRequestPrincipalType = "agent"
+	CreateAgentCredentialRequestPrincipalTypeHuman CreateAgentCredentialRequestPrincipalType = "human"
+)
+
+// Valid indicates whether the value is a known member of the CreateAgentCredentialRequestPrincipalType enum.
+func (e CreateAgentCredentialRequestPrincipalType) Valid() bool {
+	switch e {
+	case CreateAgentCredentialRequestPrincipalTypeAgent:
+		return true
+	case CreateAgentCredentialRequestPrincipalTypeHuman:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for CreateProjectRequestCloud.
 const (
 	CreateProjectRequestCloudAws   CreateProjectRequestCloud = "aws"
@@ -95,6 +221,30 @@ func (e CreateProjectRequestCloud) Valid() bool {
 	case CreateProjectRequestCloudAzure:
 		return true
 	case CreateProjectRequestCloudGcp:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for DatabaseBranchStatus.
+const (
+	DatabaseBranchStatusDiscarded DatabaseBranchStatus = "discarded"
+	DatabaseBranchStatusError     DatabaseBranchStatus = "error"
+	DatabaseBranchStatusPending   DatabaseBranchStatus = "pending"
+	DatabaseBranchStatusReady     DatabaseBranchStatus = "ready"
+)
+
+// Valid indicates whether the value is a known member of the DatabaseBranchStatus enum.
+func (e DatabaseBranchStatus) Valid() bool {
+	switch e {
+	case DatabaseBranchStatusDiscarded:
+		return true
+	case DatabaseBranchStatusError:
+		return true
+	case DatabaseBranchStatusPending:
+		return true
+	case DatabaseBranchStatusReady:
 		return true
 	default:
 		return false
@@ -215,6 +365,27 @@ func (e McpResponseJsonrpc) Valid() bool {
 	}
 }
 
+// Defines values for MigrationFindingSeverity.
+const (
+	MigrationFindingSeverityError   MigrationFindingSeverity = "error"
+	MigrationFindingSeverityInfo    MigrationFindingSeverity = "info"
+	MigrationFindingSeverityWarning MigrationFindingSeverity = "warning"
+)
+
+// Valid indicates whether the value is a known member of the MigrationFindingSeverity enum.
+func (e MigrationFindingSeverity) Valid() bool {
+	switch e {
+	case MigrationFindingSeverityError:
+		return true
+	case MigrationFindingSeverityInfo:
+		return true
+	case MigrationFindingSeverityWarning:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for OrganizationPlanBillingProvider.
 const (
 	OrganizationPlanBillingProviderAws    OrganizationPlanBillingProvider = "aws"
@@ -320,6 +491,72 @@ func (e PolicyProfileAccessMode) Valid() bool {
 	}
 }
 
+// Defines values for PolicyProfileApprovalMode.
+const (
+	PolicyProfileApprovalModeAll    PolicyProfileApprovalMode = "all"
+	PolicyProfileApprovalModeDdl    PolicyProfileApprovalMode = "ddl"
+	PolicyProfileApprovalModeOff    PolicyProfileApprovalMode = "off"
+	PolicyProfileApprovalModeWrites PolicyProfileApprovalMode = "writes"
+)
+
+// Valid indicates whether the value is a known member of the PolicyProfileApprovalMode enum.
+func (e PolicyProfileApprovalMode) Valid() bool {
+	switch e {
+	case PolicyProfileApprovalModeAll:
+		return true
+	case PolicyProfileApprovalModeDdl:
+		return true
+	case PolicyProfileApprovalModeOff:
+		return true
+	case PolicyProfileApprovalModeWrites:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for PolicyProfileMigrationSafety.
+const (
+	PolicyProfileMigrationSafetyBlock PolicyProfileMigrationSafety = "block"
+	PolicyProfileMigrationSafetyOff   PolicyProfileMigrationSafety = "off"
+	PolicyProfileMigrationSafetyWarn  PolicyProfileMigrationSafety = "warn"
+)
+
+// Valid indicates whether the value is a known member of the PolicyProfileMigrationSafety enum.
+func (e PolicyProfileMigrationSafety) Valid() bool {
+	switch e {
+	case PolicyProfileMigrationSafetyBlock:
+		return true
+	case PolicyProfileMigrationSafetyOff:
+		return true
+	case PolicyProfileMigrationSafetyWarn:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for PolicyProfileWriteMode.
+const (
+	PolicyProfileWriteModeNormal   PolicyProfileWriteMode = "normal"
+	PolicyProfileWriteModeRollback PolicyProfileWriteMode = "rollback"
+	PolicyProfileWriteModeSandbox  PolicyProfileWriteMode = "sandbox"
+)
+
+// Valid indicates whether the value is a known member of the PolicyProfileWriteMode enum.
+func (e PolicyProfileWriteMode) Valid() bool {
+	switch e {
+	case PolicyProfileWriteModeNormal:
+		return true
+	case PolicyProfileWriteModeRollback:
+		return true
+	case PolicyProfileWriteModeSandbox:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for PolicyProfileInputAccessMode.
 const (
 	PolicyProfileInputAccessModeReadOnly  PolicyProfileInputAccessMode = "read_only"
@@ -332,6 +569,72 @@ func (e PolicyProfileInputAccessMode) Valid() bool {
 	case PolicyProfileInputAccessModeReadOnly:
 		return true
 	case PolicyProfileInputAccessModeReadWrite:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for PolicyProfileInputApprovalMode.
+const (
+	PolicyProfileInputApprovalModeAll    PolicyProfileInputApprovalMode = "all"
+	PolicyProfileInputApprovalModeDdl    PolicyProfileInputApprovalMode = "ddl"
+	PolicyProfileInputApprovalModeOff    PolicyProfileInputApprovalMode = "off"
+	PolicyProfileInputApprovalModeWrites PolicyProfileInputApprovalMode = "writes"
+)
+
+// Valid indicates whether the value is a known member of the PolicyProfileInputApprovalMode enum.
+func (e PolicyProfileInputApprovalMode) Valid() bool {
+	switch e {
+	case PolicyProfileInputApprovalModeAll:
+		return true
+	case PolicyProfileInputApprovalModeDdl:
+		return true
+	case PolicyProfileInputApprovalModeOff:
+		return true
+	case PolicyProfileInputApprovalModeWrites:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for PolicyProfileInputMigrationSafety.
+const (
+	PolicyProfileInputMigrationSafetyBlock PolicyProfileInputMigrationSafety = "block"
+	PolicyProfileInputMigrationSafetyOff   PolicyProfileInputMigrationSafety = "off"
+	PolicyProfileInputMigrationSafetyWarn  PolicyProfileInputMigrationSafety = "warn"
+)
+
+// Valid indicates whether the value is a known member of the PolicyProfileInputMigrationSafety enum.
+func (e PolicyProfileInputMigrationSafety) Valid() bool {
+	switch e {
+	case PolicyProfileInputMigrationSafetyBlock:
+		return true
+	case PolicyProfileInputMigrationSafetyOff:
+		return true
+	case PolicyProfileInputMigrationSafetyWarn:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for PolicyProfileInputWriteMode.
+const (
+	PolicyProfileInputWriteModeNormal   PolicyProfileInputWriteMode = "normal"
+	PolicyProfileInputWriteModeRollback PolicyProfileInputWriteMode = "rollback"
+	PolicyProfileInputWriteModeSandbox  PolicyProfileInputWriteMode = "sandbox"
+)
+
+// Valid indicates whether the value is a known member of the PolicyProfileInputWriteMode enum.
+func (e PolicyProfileInputWriteMode) Valid() bool {
+	switch e {
+	case PolicyProfileInputWriteModeNormal:
+		return true
+	case PolicyProfileInputWriteModeRollback:
+		return true
+	case PolicyProfileInputWriteModeSandbox:
 		return true
 	default:
 		return false
@@ -491,6 +794,24 @@ func (e UpdateAgentCredentialStatusRequestStatus) Valid() bool {
 	}
 }
 
+// Defines values for UpdateAnomalyAlertRequestStatus.
+const (
+	UpdateAnomalyAlertRequestStatusAcknowledged UpdateAnomalyAlertRequestStatus = "acknowledged"
+	UpdateAnomalyAlertRequestStatusResolved     UpdateAnomalyAlertRequestStatus = "resolved"
+)
+
+// Valid indicates whether the value is a known member of the UpdateAnomalyAlertRequestStatus enum.
+func (e UpdateAnomalyAlertRequestStatus) Valid() bool {
+	switch e {
+	case UpdateAnomalyAlertRequestStatusAcknowledged:
+		return true
+	case UpdateAnomalyAlertRequestStatusResolved:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for UpdateOnboardingRequestStep.
 const (
 	ConnectionStringCopied UpdateOnboardingRequestStep = "connection_string_copied"
@@ -518,6 +839,54 @@ func (e UpdateOnboardingRequestStep) Valid() bool {
 	}
 }
 
+// Defines values for WebhookEndpointFormat.
+const (
+	WebhookEndpointFormatDatadog   WebhookEndpointFormat = "datadog"
+	WebhookEndpointFormatElastic   WebhookEndpointFormat = "elastic"
+	WebhookEndpointFormatJson      WebhookEndpointFormat = "json"
+	WebhookEndpointFormatSplunkHec WebhookEndpointFormat = "splunk_hec"
+)
+
+// Valid indicates whether the value is a known member of the WebhookEndpointFormat enum.
+func (e WebhookEndpointFormat) Valid() bool {
+	switch e {
+	case WebhookEndpointFormatDatadog:
+		return true
+	case WebhookEndpointFormatElastic:
+		return true
+	case WebhookEndpointFormatJson:
+		return true
+	case WebhookEndpointFormatSplunkHec:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for WebhookEndpointInputFormat.
+const (
+	WebhookEndpointInputFormatDatadog   WebhookEndpointInputFormat = "datadog"
+	WebhookEndpointInputFormatElastic   WebhookEndpointInputFormat = "elastic"
+	WebhookEndpointInputFormatJson      WebhookEndpointInputFormat = "json"
+	WebhookEndpointInputFormatSplunkHec WebhookEndpointInputFormat = "splunk_hec"
+)
+
+// Valid indicates whether the value is a known member of the WebhookEndpointInputFormat enum.
+func (e WebhookEndpointInputFormat) Valid() bool {
+	switch e {
+	case WebhookEndpointInputFormatDatadog:
+		return true
+	case WebhookEndpointInputFormatElastic:
+		return true
+	case WebhookEndpointInputFormatJson:
+		return true
+	case WebhookEndpointInputFormatSplunkHec:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for ListProjectsParamsSortBy.
 const (
 	ActiveConnections ListProjectsParamsSortBy = "active_connections"
@@ -533,6 +902,81 @@ func (e ListProjectsParamsSortBy) Valid() bool {
 	case CreatedAt:
 		return true
 	case Name:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ListAnomalyAlertsParamsStatus.
+const (
+	Acknowledged ListAnomalyAlertsParamsStatus = "acknowledged"
+	Open         ListAnomalyAlertsParamsStatus = "open"
+	Resolved     ListAnomalyAlertsParamsStatus = "resolved"
+)
+
+// Valid indicates whether the value is a known member of the ListAnomalyAlertsParamsStatus enum.
+func (e ListAnomalyAlertsParamsStatus) Valid() bool {
+	switch e {
+	case Acknowledged:
+		return true
+	case Open:
+		return true
+	case Resolved:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ListApprovalRequestsParamsStatus.
+const (
+	ListApprovalRequestsParamsStatusApproved ListApprovalRequestsParamsStatus = "approved"
+	ListApprovalRequestsParamsStatusExecuted ListApprovalRequestsParamsStatus = "executed"
+	ListApprovalRequestsParamsStatusExpired  ListApprovalRequestsParamsStatus = "expired"
+	ListApprovalRequestsParamsStatusFailed   ListApprovalRequestsParamsStatus = "failed"
+	ListApprovalRequestsParamsStatusPending  ListApprovalRequestsParamsStatus = "pending"
+	ListApprovalRequestsParamsStatusRejected ListApprovalRequestsParamsStatus = "rejected"
+)
+
+// Valid indicates whether the value is a known member of the ListApprovalRequestsParamsStatus enum.
+func (e ListApprovalRequestsParamsStatus) Valid() bool {
+	switch e {
+	case ListApprovalRequestsParamsStatusApproved:
+		return true
+	case ListApprovalRequestsParamsStatusExecuted:
+		return true
+	case ListApprovalRequestsParamsStatusExpired:
+		return true
+	case ListApprovalRequestsParamsStatusFailed:
+		return true
+	case ListApprovalRequestsParamsStatusPending:
+		return true
+	case ListApprovalRequestsParamsStatusRejected:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ListDatabaseBranchesParamsStatus.
+const (
+	ListDatabaseBranchesParamsStatusDiscarded ListDatabaseBranchesParamsStatus = "discarded"
+	ListDatabaseBranchesParamsStatusError     ListDatabaseBranchesParamsStatus = "error"
+	ListDatabaseBranchesParamsStatusPending   ListDatabaseBranchesParamsStatus = "pending"
+	ListDatabaseBranchesParamsStatusReady     ListDatabaseBranchesParamsStatus = "ready"
+)
+
+// Valid indicates whether the value is a known member of the ListDatabaseBranchesParamsStatus enum.
+func (e ListDatabaseBranchesParamsStatus) Valid() bool {
+	switch e {
+	case ListDatabaseBranchesParamsStatusDiscarded:
+		return true
+	case ListDatabaseBranchesParamsStatusError:
+		return true
+	case ListDatabaseBranchesParamsStatusPending:
+		return true
+	case ListDatabaseBranchesParamsStatusReady:
 		return true
 	default:
 		return false
@@ -727,6 +1171,9 @@ type AccountExport struct {
 
 // AgentCredential A PgBeam-issued, scoped Postgres login plus hosted MCP token for an AI agent.
 type AgentCredential struct {
+	// AuthMethod Postgres auth method the proxy presents for this credential.
+	AuthMethod *AgentCredentialAuthMethod `json:"auth_method,omitempty"`
+
 	// CreatedAt When the credential was created.
 	CreatedAt time.Time `json:"created_at"`
 
@@ -745,6 +1192,9 @@ type AgentCredential struct {
 	// PolicyProfileId Policy profile enforced for this credential.
 	PolicyProfileId string `json:"policy_profile_id"`
 
+	// PrincipalType Whether this credential represents an autonomous agent or a human operator.
+	PrincipalType *AgentCredentialPrincipalType `json:"principal_type,omitempty"`
+
 	// ProjectId Owning project ID.
 	ProjectId string `json:"project_id"`
 
@@ -754,6 +1204,12 @@ type AgentCredential struct {
 	// UpdatedAt When the credential was last updated.
 	UpdatedAt time.Time `json:"updated_at"`
 }
+
+// AgentCredentialAuthMethod Postgres auth method the proxy presents for this credential.
+type AgentCredentialAuthMethod string
+
+// AgentCredentialPrincipalType Whether this credential represents an autonomous agent or a human operator.
+type AgentCredentialPrincipalType string
 
 // AgentCredentialStatus Lifecycle status of the credential.
 type AgentCredentialStatus string
@@ -772,6 +1228,111 @@ type AgentCredentialSecrets struct {
 	// McpUrl Hosted MCP endpoint URL for this credential.
 	McpUrl string `json:"mcp_url"`
 }
+
+// AnomalyAlert A surfaced anomalous-behavior alert for review.
+type AnomalyAlert struct {
+	// AcknowledgedAt When the alert was acknowledged, if any.
+	AcknowledgedAt *time.Time `json:"acknowledged_at,omitempty"`
+
+	// AcknowledgedBy User who acknowledged the alert, if any.
+	AcknowledgedBy *string `json:"acknowledged_by,omitempty"`
+
+	// CreatedAt When the alert was raised.
+	CreatedAt time.Time `json:"created_at"`
+
+	// CredentialId Agent credential implicated, if any.
+	CredentialId *string `json:"credential_id,omitempty"`
+
+	// Details Structured details about the anomaly.
+	Details *map[string]interface{} `json:"details,omitempty"`
+
+	// Id Unique anomaly alert identifier (prefixed).
+	Id string `json:"id"`
+
+	// Kind Machine-readable anomaly kind (e.g. egress_spike, novel_query_shape).
+	Kind string `json:"kind"`
+
+	// ProjectId Owning project ID.
+	ProjectId string `json:"project_id"`
+
+	// Severity Alert severity.
+	Severity AnomalyAlertSeverity `json:"severity"`
+
+	// Status Triage state of the alert.
+	Status AnomalyAlertStatus `json:"status"`
+
+	// Title Human-readable summary.
+	Title string `json:"title"`
+
+	// WindowEnd End of the observation window, if applicable.
+	WindowEnd *time.Time `json:"window_end,omitempty"`
+
+	// WindowStart Start of the observation window, if applicable.
+	WindowStart *time.Time `json:"window_start,omitempty"`
+}
+
+// AnomalyAlertSeverity Alert severity.
+type AnomalyAlertSeverity string
+
+// AnomalyAlertStatus Triage state of the alert.
+type AnomalyAlertStatus string
+
+// ApprovalDecisionRequest Optional note attached to an approve/reject decision.
+type ApprovalDecisionRequest struct {
+	// Reason Human-readable note explaining the decision.
+	Reason *string `json:"reason,omitempty"`
+}
+
+// ApprovalRequest A statement held by the gateway awaiting a human approval decision.
+type ApprovalRequest struct {
+	// CredentialId Agent credential that submitted the statement, if known.
+	CredentialId *string `json:"credential_id,omitempty"`
+
+	// DecidedAt When a decision was recorded, if any.
+	DecidedAt *time.Time `json:"decided_at,omitempty"`
+
+	// DecidedBy User who decided, if any.
+	DecidedBy *string `json:"decided_by,omitempty"`
+
+	// ExpiresAt When the request expires if undecided.
+	ExpiresAt time.Time `json:"expires_at"`
+
+	// Id Unique approval request identifier (prefixed).
+	Id string `json:"id"`
+
+	// NormalizedSql Statement with literals replaced by placeholders.
+	NormalizedSql *string `json:"normalized_sql,omitempty"`
+
+	// PolicyProfileId Policy profile that required approval.
+	PolicyProfileId string `json:"policy_profile_id"`
+
+	// ProjectId Owning project ID.
+	ProjectId string `json:"project_id"`
+
+	// Reason Human-readable note attached to a decision.
+	Reason *string `json:"reason,omitempty"`
+
+	// Region Data plane region that held the statement.
+	Region *string `json:"region,omitempty"`
+
+	// RequestedAt When the statement was first held.
+	RequestedAt time.Time `json:"requested_at"`
+
+	// SessionId Identifier grouping a connection's statements.
+	SessionId *string `json:"session_id,omitempty"`
+
+	// Sql The held statement text.
+	Sql string `json:"sql"`
+
+	// StatementKind Parsed statement kind (e.g. update, delete, ddl).
+	StatementKind *string `json:"statement_kind,omitempty"`
+
+	// Status Current state of the approval request.
+	Status ApprovalRequestStatus `json:"status"`
+}
+
+// ApprovalRequestStatus Current state of the approval request.
+type ApprovalRequestStatus string
 
 // AuditLogEntry One agent statement recorded by the gateway.
 type AuditLogEntry struct {
@@ -936,7 +1497,13 @@ type CreateAgentCredentialRequest struct {
 
 	// PolicyProfileId The policy profile to enforce for this credential.
 	PolicyProfileId string `json:"policy_profile_id"`
+
+	// PrincipalType Whether this credential represents an autonomous agent or a human operator.
+	PrincipalType *CreateAgentCredentialRequestPrincipalType `json:"principal_type,omitempty"`
 }
+
+// CreateAgentCredentialRequestPrincipalType Whether this credential represents an autonomous agent or a human operator.
+type CreateAgentCredentialRequestPrincipalType string
 
 // CreateCustomDomainRequest Request body for attaching a custom domain to a project.
 type CreateCustomDomainRequest struct {
@@ -1133,6 +1700,57 @@ type Database struct {
 	Username string `json:"username"`
 }
 
+// DatabaseBranch An ephemeral sandbox branch of a database used for write isolation.
+type DatabaseBranch struct {
+	// BranchName Provider branch name.
+	BranchName string `json:"branch_name"`
+
+	// CreatedAt When the branch was created.
+	CreatedAt time.Time `json:"created_at"`
+
+	// CredentialId Agent credential that requested the branch, if known.
+	CredentialId *string `json:"credential_id,omitempty"`
+
+	// DatabaseId Database this branch was created from.
+	DatabaseId string `json:"database_id"`
+
+	// DiscardedAt When the branch was discarded, if any.
+	DiscardedAt *time.Time `json:"discarded_at,omitempty"`
+
+	// Error Provisioning error, if any.
+	Error *string `json:"error,omitempty"`
+
+	// ExpiresAt When the branch expires, if set.
+	ExpiresAt *time.Time `json:"expires_at,omitempty"`
+
+	// Host Branch host.
+	Host *string `json:"host,omitempty"`
+
+	// Id Unique sandbox branch identifier (prefixed).
+	Id string `json:"id"`
+
+	// Name Branch database name.
+	Name *string `json:"name,omitempty"`
+
+	// Port Branch port.
+	Port *int32 `json:"port,omitempty"`
+
+	// Provider Branch provider (e.g. internal, neon).
+	Provider string `json:"provider"`
+
+	// SessionId Identifier grouping a connection's statements.
+	SessionId *string `json:"session_id,omitempty"`
+
+	// Status Provisioning state of the branch.
+	Status DatabaseBranchStatus `json:"status"`
+
+	// Username Branch username.
+	Username *string `json:"username,omitempty"`
+}
+
+// DatabaseBranchStatus Provisioning state of the branch.
+type DatabaseBranchStatus string
+
 // DatabaseRole Database role. Primary receives writes, replicas receive reads.
 type DatabaseRole string
 
@@ -1205,6 +1823,24 @@ type ListAgentCredentialsResponse struct {
 	NextPageToken *string `json:"next_page_token,omitempty"`
 }
 
+// ListAnomalyAlertsResponse Cursor-paginated list of anomaly alerts for a project.
+type ListAnomalyAlertsResponse struct {
+	// Anomalies Anomaly alerts on the current page.
+	Anomalies []AnomalyAlert `json:"anomalies"`
+
+	// NextPageToken Token for the next page. Empty if no more results.
+	NextPageToken *string `json:"next_page_token,omitempty"`
+}
+
+// ListApprovalRequestsResponse Cursor-paginated list of approval requests for a project.
+type ListApprovalRequestsResponse struct {
+	// Approvals Approval requests on the current page.
+	Approvals []ApprovalRequest `json:"approvals"`
+
+	// NextPageToken Token for the next page. Empty if no more results.
+	NextPageToken *string `json:"next_page_token,omitempty"`
+}
+
 // ListAuditLogsResponse Time-ordered page of audit entries (newest first).
 type ListAuditLogsResponse struct {
 	// Entries Audit entries on the current page.
@@ -1227,6 +1863,15 @@ type ListCacheRulesResponse struct {
 type ListCustomDomainsResponse struct {
 	// Domains Custom domains on the current page.
 	Domains []CustomDomain `json:"domains"`
+
+	// NextPageToken Token for the next page. Empty if no more results.
+	NextPageToken *string `json:"next_page_token,omitempty"`
+}
+
+// ListDatabaseBranchesResponse Cursor-paginated list of sandbox branches for a project.
+type ListDatabaseBranchesResponse struct {
+	// Branches Sandbox branches on the current page.
+	Branches []DatabaseBranch `json:"branches"`
 
 	// NextPageToken Token for the next page. Empty if no more results.
 	NextPageToken *string `json:"next_page_token,omitempty"`
@@ -1281,6 +1926,15 @@ type ListReplicasResponse struct {
 
 	// Replicas Read replicas attached to the database.
 	Replicas []Replica `json:"replicas"`
+}
+
+// ListWebhookEndpointsResponse Cursor-paginated list of webhook endpoints for a project.
+type ListWebhookEndpointsResponse struct {
+	// NextPageToken Token for the next page. Empty if no more results.
+	NextPageToken *string `json:"next_page_token,omitempty"`
+
+	// Webhooks Webhook endpoints on the current page.
+	Webhooks []WebhookEndpoint `json:"webhooks"`
 }
 
 // MaskingRule A column masking rule applied to agent query results.
@@ -1380,6 +2034,45 @@ type MetricsSnapshot struct {
 
 	// Region Region where the traffic was served.
 	Region string `json:"region"`
+}
+
+// MigrationFinding A single issue found while linting a migration.
+type MigrationFinding struct {
+	// Hint Suggested safer alternative, if any.
+	Hint *string `json:"hint,omitempty"`
+
+	// Message Human-readable description of the issue.
+	Message string `json:"message"`
+
+	// Rule Machine-readable rule identifier (e.g. drop_table, add_not_null_no_default).
+	Rule string `json:"rule"`
+
+	// Severity How serious the finding is. error indicates an unsafe change.
+	Severity MigrationFindingSeverity `json:"severity"`
+
+	// Statement The statement that triggered the finding.
+	Statement *string `json:"statement,omitempty"`
+}
+
+// MigrationFindingSeverity How serious the finding is. error indicates an unsafe change.
+type MigrationFindingSeverity string
+
+// MigrationLintRequest A migration script to lint for unsafe schema changes.
+type MigrationLintRequest struct {
+	// DatabaseId Optional database to scope the lint to.
+	DatabaseId *string `json:"database_id,omitempty"`
+
+	// Sql The migration SQL to analyze. May contain multiple statements.
+	Sql string `json:"sql"`
+}
+
+// MigrationLintResponse Result of linting a migration script.
+type MigrationLintResponse struct {
+	// Findings Findings detected across all statements.
+	Findings []MigrationFinding `json:"findings"`
+
+	// Safe True when no error-severity findings were detected.
+	Safe bool `json:"safe"`
 }
 
 // OnboardingProgress Progress state for the dashboard onboarding checklist.
@@ -1525,6 +2218,15 @@ type PolicyProfile struct {
 	// AccessMode read_only blocks all data and schema mutations.
 	AccessMode PolicyProfileAccessMode `json:"access_mode"`
 
+	// ApprovalAutoMaxRows Statements touching at most this many rows are auto-approved. 0 means none.
+	ApprovalAutoMaxRows *int `json:"approval_auto_max_rows,omitempty"`
+
+	// ApprovalMode Which statement classes require human approval before execution.
+	ApprovalMode *PolicyProfileApprovalMode `json:"approval_mode,omitempty"`
+
+	// ApprovalTimeoutSeconds How long a held statement waits for a decision before expiring.
+	ApprovalTimeoutSeconds *int `json:"approval_timeout_seconds,omitempty"`
+
 	// BudgetQueriesPerDay Max queries per day window. 0 means unlimited.
 	BudgetQueriesPerDay *int `json:"budget_queries_per_day,omitempty"`
 
@@ -1533,6 +2235,9 @@ type PolicyProfile struct {
 
 	// CreatedAt When the policy profile was created.
 	CreatedAt time.Time `json:"created_at"`
+
+	// EgressBytesPerDay Per-day egress budget in bytes. 0 means unlimited.
+	EgressBytesPerDay *int64 `json:"egress_bytes_per_day,omitempty"`
 
 	// Id Unique policy profile identifier (prefixed).
 	Id string `json:"id"`
@@ -1543,11 +2248,17 @@ type PolicyProfile struct {
 	// MaxRows Max rows returned per query. 0 means unlimited.
 	MaxRows *int `json:"max_rows,omitempty"`
 
+	// MigrationSafety Migration safety mode. warn surfaces findings, block refuses unsafe DDL.
+	MigrationSafety *PolicyProfileMigrationSafety `json:"migration_safety,omitempty"`
+
 	// Name Human-readable name for the policy profile.
 	Name string `json:"name"`
 
 	// ProjectId Owning project ID.
 	ProjectId string `json:"project_id"`
+
+	// RowFilters Per-relation row filters ANDed into agent reads.
+	RowFilters *[]RowFilter `json:"row_filters,omitempty"`
 
 	// StatementRules Per-statement-kind allow/deny lists. Empty allow means all kinds permitted by the access mode.
 	StatementRules *StatementRules `json:"statement_rules,omitempty"`
@@ -1563,15 +2274,36 @@ type PolicyProfile struct {
 
 	// UpdatedAt When the policy profile was last updated.
 	UpdatedAt time.Time `json:"updated_at"`
+
+	// WriteMode How writes are handled. normal commits, rollback auto-rolls back, sandbox routes to an ephemeral branch.
+	WriteMode *PolicyProfileWriteMode `json:"write_mode,omitempty"`
 }
 
 // PolicyProfileAccessMode read_only blocks all data and schema mutations.
 type PolicyProfileAccessMode string
 
+// PolicyProfileApprovalMode Which statement classes require human approval before execution.
+type PolicyProfileApprovalMode string
+
+// PolicyProfileMigrationSafety Migration safety mode. warn surfaces findings, block refuses unsafe DDL.
+type PolicyProfileMigrationSafety string
+
+// PolicyProfileWriteMode How writes are handled. normal commits, rollback auto-rolls back, sandbox routes to an ephemeral branch.
+type PolicyProfileWriteMode string
+
 // PolicyProfileInput Mutable fields of a policy profile (used for create and update).
 type PolicyProfileInput struct {
 	// AccessMode read_only blocks all data and schema mutations.
 	AccessMode *PolicyProfileInputAccessMode `json:"access_mode,omitempty"`
+
+	// ApprovalAutoMaxRows Statements touching at most this many rows are auto-approved. 0 means none.
+	ApprovalAutoMaxRows *int `json:"approval_auto_max_rows,omitempty"`
+
+	// ApprovalMode Which statement classes require human approval before execution.
+	ApprovalMode *PolicyProfileInputApprovalMode `json:"approval_mode,omitempty"`
+
+	// ApprovalTimeoutSeconds How long a held statement waits for a decision before expiring.
+	ApprovalTimeoutSeconds *int `json:"approval_timeout_seconds,omitempty"`
 
 	// BudgetQueriesPerDay Max queries per day window. 0 means unlimited.
 	BudgetQueriesPerDay *int `json:"budget_queries_per_day,omitempty"`
@@ -1579,14 +2311,23 @@ type PolicyProfileInput struct {
 	// BudgetQueriesPerHour Max queries per rolling hour window. 0 means unlimited.
 	BudgetQueriesPerHour *int `json:"budget_queries_per_hour,omitempty"`
 
+	// EgressBytesPerDay Per-day egress budget in bytes. 0 means unlimited.
+	EgressBytesPerDay *int64 `json:"egress_bytes_per_day,omitempty"`
+
 	// MaskingRules Column masking rules applied to query results.
 	MaskingRules *[]MaskingRule `json:"masking_rules,omitempty"`
 
 	// MaxRows Max rows returned per query. 0 means unlimited.
 	MaxRows *int `json:"max_rows,omitempty"`
 
+	// MigrationSafety Migration safety mode. warn surfaces findings, block refuses unsafe DDL.
+	MigrationSafety *PolicyProfileInputMigrationSafety `json:"migration_safety,omitempty"`
+
 	// Name Human-readable name for the policy profile.
 	Name string `json:"name"`
+
+	// RowFilters Per-relation row filters ANDed into agent reads.
+	RowFilters *[]RowFilter `json:"row_filters,omitempty"`
 
 	// StatementRules Per-statement-kind allow/deny lists. Empty allow means all kinds permitted by the access mode.
 	StatementRules *StatementRules `json:"statement_rules,omitempty"`
@@ -1599,10 +2340,22 @@ type PolicyProfileInput struct {
 
 	// TableDenylist Relations explicitly blocked.
 	TableDenylist *[]string `json:"table_denylist,omitempty"`
+
+	// WriteMode How writes are handled. normal commits, rollback auto-rolls back, sandbox routes to an ephemeral branch.
+	WriteMode *PolicyProfileInputWriteMode `json:"write_mode,omitempty"`
 }
 
 // PolicyProfileInputAccessMode read_only blocks all data and schema mutations.
 type PolicyProfileInputAccessMode string
+
+// PolicyProfileInputApprovalMode Which statement classes require human approval before execution.
+type PolicyProfileInputApprovalMode string
+
+// PolicyProfileInputMigrationSafety Migration safety mode. warn surfaces findings, block refuses unsafe DDL.
+type PolicyProfileInputMigrationSafety string
+
+// PolicyProfileInputWriteMode How writes are handled. normal commits, rollback auto-rolls back, sandbox routes to an ephemeral branch.
+type PolicyProfileInputWriteMode string
 
 // PoolConfig Connection pool configuration.
 type PoolConfig struct {
@@ -1641,6 +2394,9 @@ type Project struct {
 
 	// DatabaseCount Number of databases attached to this project.
 	DatabaseCount *int `json:"database_count,omitempty"`
+
+	// DefaultPolicyProfileId When set, passthrough/human connections are enforced against this policy profile.
+	DefaultPolicyProfileId *string `json:"default_policy_profile_id,omitempty"`
 
 	// Description Optional project description.
 	Description *string `json:"description,omitempty"`
@@ -1805,6 +2561,15 @@ type Replica struct {
 	UpdatedAt time.Time `json:"updated_at"`
 }
 
+// RowFilter A per-relation row filter. The predicate is a raw SQL boolean expression ANDed into the WHERE clause for the matching relation.
+type RowFilter struct {
+	// Predicate Raw SQL boolean expression ANDed into WHERE for this relation.
+	Predicate string `json:"predicate"`
+
+	// Table Relation name, optionally schema-qualified (e.g. "public.orders").
+	Table string `json:"table"`
+}
+
 // SSLMode PostgreSQL SSL connection mode.
 type SSLMode string
 
@@ -1840,6 +2605,15 @@ type UpdateAgentCredentialStatusRequest struct {
 
 // UpdateAgentCredentialStatusRequestStatus Set active to re-enable or disabled to kill-switch. Use DELETE to revoke permanently.
 type UpdateAgentCredentialStatusRequestStatus string
+
+// UpdateAnomalyAlertRequest Request body for triaging an anomaly alert.
+type UpdateAnomalyAlertRequest struct {
+	// Status New triage state for the alert.
+	Status UpdateAnomalyAlertRequestStatus `json:"status"`
+}
+
+// UpdateAnomalyAlertRequestStatus New triage state for the alert.
+type UpdateAnomalyAlertRequestStatus string
 
 // UpdateCacheRuleRequest Request body for updating cache behavior of a query shape.
 type UpdateCacheRuleRequest struct {
@@ -1915,6 +2689,9 @@ type UpdateProjectRequest struct {
 	// AllowedCidrs IP filtering rules as CIDR ranges with optional labels. Empty array means allow all. Both IPv4 and IPv6 CIDR notation are supported.
 	AllowedCidrs *[]CidrEntry `json:"allowed_cidrs,omitempty"`
 
+	// DefaultPolicyProfileId When set, passthrough/human connections are enforced against this policy profile. Send an empty string to clear.
+	DefaultPolicyProfileId *string `json:"default_policy_profile_id,omitempty"`
+
 	// Description Updated project description.
 	Description *string `json:"description,omitempty"`
 
@@ -1952,8 +2729,89 @@ type VerifyCustomDomainResponse struct {
 	Verified bool `json:"verified"`
 }
 
+// WebhookEndpoint A delivery target for project audit/event notifications.
+type WebhookEndpoint struct {
+	// CreatedAt When the endpoint was created.
+	CreatedAt time.Time `json:"created_at"`
+
+	// Description Human-readable label for the endpoint.
+	Description *string `json:"description,omitempty"`
+
+	// Enabled Whether deliveries are active for this endpoint.
+	Enabled bool `json:"enabled"`
+
+	// EventTypes Event types to deliver. Empty means all events.
+	EventTypes *[]string `json:"event_types,omitempty"`
+
+	// Format Payload format for delivered events.
+	Format WebhookEndpointFormat `json:"format"`
+
+	// Id Unique webhook endpoint identifier (prefixed).
+	Id string `json:"id"`
+
+	// ProjectId Owning project ID.
+	ProjectId string `json:"project_id"`
+
+	// UpdatedAt When the endpoint was last updated.
+	UpdatedAt time.Time `json:"updated_at"`
+
+	// Url HTTPS endpoint that receives event deliveries.
+	Url string `json:"url"`
+}
+
+// WebhookEndpointFormat Payload format for delivered events.
+type WebhookEndpointFormat string
+
+// WebhookEndpointInput Mutable fields of a webhook endpoint (used for create and update).
+type WebhookEndpointInput struct {
+	// Description Human-readable label for the endpoint.
+	Description *string `json:"description,omitempty"`
+
+	// Enabled Whether deliveries are active for this endpoint.
+	Enabled *bool `json:"enabled,omitempty"`
+
+	// EventTypes Event types to deliver. Empty means all events.
+	EventTypes *[]string `json:"event_types,omitempty"`
+
+	// Format Payload format for delivered events.
+	Format *WebhookEndpointInputFormat `json:"format,omitempty"`
+
+	// Secret Shared secret used to sign delivery payloads. Write-only.
+	Secret *string `json:"secret,omitempty"`
+
+	// Url HTTPS endpoint that receives event deliveries.
+	Url string `json:"url"`
+}
+
+// WebhookEndpointInputFormat Payload format for delivered events.
+type WebhookEndpointInputFormat string
+
+// WebhookTestResponse Result of sending a synthetic test event to a webhook endpoint.
+type WebhookTestResponse struct {
+	// DeliveryId Identifier of the test delivery.
+	DeliveryId string `json:"delivery_id"`
+
+	// Error Error detail when the test delivery failed.
+	Error *string `json:"error,omitempty"`
+
+	// Status Outcome of the test delivery (delivered or failed).
+	Status string `json:"status"`
+
+	// StatusCode HTTP status code returned by the endpoint, if a response was received.
+	StatusCode *int `json:"status_code,omitempty"`
+}
+
 // AgentId defines model for AgentId.
 type AgentId = string
+
+// AnomalyId defines model for AnomalyId.
+type AnomalyId = string
+
+// ApprovalId defines model for ApprovalId.
+type ApprovalId = string
+
+// BranchId defines model for BranchId.
+type BranchId = string
 
 // DatabaseId defines model for DatabaseId.
 type DatabaseId = string
@@ -1978,6 +2836,9 @@ type ProjectId = string
 
 // ReplicaId defines model for ReplicaId.
 type ReplicaId = string
+
+// WebhookId defines model for WebhookId.
+type WebhookId = string
 
 // BadRequest Standard error response envelope for PgBeam API requests.
 type BadRequest = Error
@@ -2039,6 +2900,36 @@ type ListAgentCredentialsParams struct {
 	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
 }
 
+// ListAnomalyAlertsParams defines parameters for ListAnomalyAlerts.
+type ListAnomalyAlertsParams struct {
+	// Status Filter to a single status.
+	Status *ListAnomalyAlertsParamsStatus `form:"status,omitempty" json:"status,omitempty"`
+
+	// PageSize Maximum number of items to return (1-100, default 20).
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken Opaque token for cursor-based pagination.
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+}
+
+// ListAnomalyAlertsParamsStatus defines parameters for ListAnomalyAlerts.
+type ListAnomalyAlertsParamsStatus string
+
+// ListApprovalRequestsParams defines parameters for ListApprovalRequests.
+type ListApprovalRequestsParams struct {
+	// Status Filter to a single status.
+	Status *ListApprovalRequestsParamsStatus `form:"status,omitempty" json:"status,omitempty"`
+
+	// PageSize Maximum number of items to return (1-100, default 20).
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken Opaque token for cursor-based pagination.
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+}
+
+// ListApprovalRequestsParamsStatus defines parameters for ListApprovalRequests.
+type ListApprovalRequestsParamsStatus string
+
 // ListAuditLogsParams defines parameters for ListAuditLogs.
 type ListAuditLogsParams struct {
 	// CredentialId Filter to a single agent credential.
@@ -2053,6 +2944,21 @@ type ListAuditLogsParams struct {
 	// PageSize Maximum number of items to return (1-100, default 20).
 	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
 }
+
+// ListDatabaseBranchesParams defines parameters for ListDatabaseBranches.
+type ListDatabaseBranchesParams struct {
+	// Status Filter to a single status.
+	Status *ListDatabaseBranchesParamsStatus `form:"status,omitempty" json:"status,omitempty"`
+
+	// PageSize Maximum number of items to return (1-100, default 20).
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken Opaque token for cursor-based pagination.
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+}
+
+// ListDatabaseBranchesParamsStatus defines parameters for ListDatabaseBranches.
+type ListDatabaseBranchesParamsStatus string
 
 // ListDatabasesParams defines parameters for ListDatabases.
 type ListDatabasesParams struct {
@@ -2120,6 +3026,15 @@ type GetProjectUsageParams struct {
 	EndDate openapi_types.Date `form:"end_date" json:"end_date"`
 }
 
+// ListWebhookEndpointsParams defines parameters for ListWebhookEndpoints.
+type ListWebhookEndpointsParams struct {
+	// PageSize Maximum number of items to return (1-100, default 20).
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken Opaque token for cursor-based pagination.
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+}
+
 // CreateReplicaJSONRequestBody defines body for CreateReplica for application/json ContentType.
 type CreateReplicaJSONRequestBody = CreateReplicaRequest
 
@@ -2147,6 +3062,15 @@ type CreateAgentCredentialJSONRequestBody = CreateAgentCredentialRequest
 // UpdateAgentCredentialStatusJSONRequestBody defines body for UpdateAgentCredentialStatus for application/json ContentType.
 type UpdateAgentCredentialStatusJSONRequestBody = UpdateAgentCredentialStatusRequest
 
+// UpdateAnomalyAlertJSONRequestBody defines body for UpdateAnomalyAlert for application/json ContentType.
+type UpdateAnomalyAlertJSONRequestBody = UpdateAnomalyAlertRequest
+
+// ApproveApprovalRequestJSONRequestBody defines body for ApproveApprovalRequest for application/json ContentType.
+type ApproveApprovalRequestJSONRequestBody = ApprovalDecisionRequest
+
+// RejectApprovalRequestJSONRequestBody defines body for RejectApprovalRequest for application/json ContentType.
+type RejectApprovalRequestJSONRequestBody = ApprovalDecisionRequest
+
 // CreateDatabaseJSONRequestBody defines body for CreateDatabase for application/json ContentType.
 type CreateDatabaseJSONRequestBody = CreateDatabaseRequest
 
@@ -2159,8 +3083,17 @@ type UpdateCacheRuleJSONRequestBody = UpdateCacheRuleRequest
 // CreateCustomDomainJSONRequestBody defines body for CreateCustomDomain for application/json ContentType.
 type CreateCustomDomainJSONRequestBody = CreateCustomDomainRequest
 
+// LintMigrationJSONRequestBody defines body for LintMigration for application/json ContentType.
+type LintMigrationJSONRequestBody = MigrationLintRequest
+
 // CreatePolicyProfileJSONRequestBody defines body for CreatePolicyProfile for application/json ContentType.
 type CreatePolicyProfileJSONRequestBody = PolicyProfileInput
 
 // UpdatePolicyProfileJSONRequestBody defines body for UpdatePolicyProfile for application/json ContentType.
 type UpdatePolicyProfileJSONRequestBody = PolicyProfileInput
+
+// CreateWebhookEndpointJSONRequestBody defines body for CreateWebhookEndpoint for application/json ContentType.
+type CreateWebhookEndpointJSONRequestBody = WebhookEndpointInput
+
+// UpdateWebhookEndpointJSONRequestBody defines body for UpdateWebhookEndpoint for application/json ContentType.
+type UpdateWebhookEndpointJSONRequestBody = WebhookEndpointInput
