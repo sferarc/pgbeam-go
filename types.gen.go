@@ -1657,7 +1657,7 @@ type Project struct {
 	// OrgId Better Auth organization ID that owns this project.
 	OrgId string `json:"org_id"`
 
-	// ProxyHost Proxy hostname for connecting through PgBeam (e.g., myproject.aws.pgbeam.app).
+	// ProxyHost Proxy hostname for connecting through PgBeam (e.g., myproject.proxy.pgbeam.app).
 	ProxyHost *string `json:"proxy_host,omitempty"`
 
 	// QueriesPerSecond Maximum queries per second for this project. 0 means unlimited.
