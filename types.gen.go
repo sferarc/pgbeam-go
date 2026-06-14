@@ -146,19 +146,19 @@ func (e ApprovalRequestStatus) Valid() bool {
 
 // Defines values for CacheRuleEntryQueryType.
 const (
-	Other CacheRuleEntryQueryType = "other"
-	Read  CacheRuleEntryQueryType = "read"
-	Write CacheRuleEntryQueryType = "write"
+	CacheRuleEntryQueryTypeOther CacheRuleEntryQueryType = "other"
+	CacheRuleEntryQueryTypeRead  CacheRuleEntryQueryType = "read"
+	CacheRuleEntryQueryTypeWrite CacheRuleEntryQueryType = "write"
 )
 
 // Valid indicates whether the value is a known member of the CacheRuleEntryQueryType enum.
 func (e CacheRuleEntryQueryType) Valid() bool {
 	switch e {
-	case Other:
+	case CacheRuleEntryQueryTypeOther:
 		return true
-	case Read:
+	case CacheRuleEntryQueryTypeRead:
 		return true
-	case Write:
+	case CacheRuleEntryQueryTypeWrite:
 		return true
 	default:
 		return false
@@ -290,19 +290,19 @@ func (e HealthResponseStatus) Valid() bool {
 
 // Defines values for MaskingRuleKind.
 const (
-	Hash   MaskingRuleKind = "hash"
-	Null   MaskingRuleKind = "null"
-	Redact MaskingRuleKind = "redact"
+	MaskingRuleKindHash   MaskingRuleKind = "hash"
+	MaskingRuleKindNull   MaskingRuleKind = "null"
+	MaskingRuleKindRedact MaskingRuleKind = "redact"
 )
 
 // Valid indicates whether the value is a known member of the MaskingRuleKind enum.
 func (e MaskingRuleKind) Valid() bool {
 	switch e {
-	case Hash:
+	case MaskingRuleKindHash:
 		return true
-	case Null:
+	case MaskingRuleKindNull:
 		return true
-	case Redact:
+	case MaskingRuleKindRedact:
 		return true
 	default:
 		return false
@@ -468,6 +468,78 @@ func (e OrganizationPlanSubscriptionStatus) Valid() bool {
 	case OrganizationPlanSubscriptionStatusTrialing:
 		return true
 	case OrganizationPlanSubscriptionStatusUnpaid:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for PiiSuggestionMaskKind.
+const (
+	PiiSuggestionMaskKindHash   PiiSuggestionMaskKind = "hash"
+	PiiSuggestionMaskKindNull   PiiSuggestionMaskKind = "null"
+	PiiSuggestionMaskKindRedact PiiSuggestionMaskKind = "redact"
+)
+
+// Valid indicates whether the value is a known member of the PiiSuggestionMaskKind enum.
+func (e PiiSuggestionMaskKind) Valid() bool {
+	switch e {
+	case PiiSuggestionMaskKindHash:
+		return true
+	case PiiSuggestionMaskKindNull:
+		return true
+	case PiiSuggestionMaskKindRedact:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for PiiSuggestionPiiType.
+const (
+	PiiSuggestionPiiTypeApiSecret     PiiSuggestionPiiType = "api_secret"
+	PiiSuggestionPiiTypeBankAccount   PiiSuggestionPiiType = "bank_account"
+	PiiSuggestionPiiTypeCreditCard    PiiSuggestionPiiType = "credit_card"
+	PiiSuggestionPiiTypeDateOfBirth   PiiSuggestionPiiType = "date_of_birth"
+	PiiSuggestionPiiTypeEmail         PiiSuggestionPiiType = "email"
+	PiiSuggestionPiiTypeFullName      PiiSuggestionPiiType = "full_name"
+	PiiSuggestionPiiTypeIpAddress     PiiSuggestionPiiType = "ip_address"
+	PiiSuggestionPiiTypeNationalId    PiiSuggestionPiiType = "national_id"
+	PiiSuggestionPiiTypeOther         PiiSuggestionPiiType = "other"
+	PiiSuggestionPiiTypePassport      PiiSuggestionPiiType = "passport"
+	PiiSuggestionPiiTypePhone         PiiSuggestionPiiType = "phone"
+	PiiSuggestionPiiTypeSsn           PiiSuggestionPiiType = "ssn"
+	PiiSuggestionPiiTypeStreetAddress PiiSuggestionPiiType = "street_address"
+)
+
+// Valid indicates whether the value is a known member of the PiiSuggestionPiiType enum.
+func (e PiiSuggestionPiiType) Valid() bool {
+	switch e {
+	case PiiSuggestionPiiTypeApiSecret:
+		return true
+	case PiiSuggestionPiiTypeBankAccount:
+		return true
+	case PiiSuggestionPiiTypeCreditCard:
+		return true
+	case PiiSuggestionPiiTypeDateOfBirth:
+		return true
+	case PiiSuggestionPiiTypeEmail:
+		return true
+	case PiiSuggestionPiiTypeFullName:
+		return true
+	case PiiSuggestionPiiTypeIpAddress:
+		return true
+	case PiiSuggestionPiiTypeNationalId:
+		return true
+	case PiiSuggestionPiiTypeOther:
+		return true
+	case PiiSuggestionPiiTypePassport:
+		return true
+	case PiiSuggestionPiiTypePhone:
+		return true
+	case PiiSuggestionPiiTypeSsn:
+		return true
+	case PiiSuggestionPiiTypeStreetAddress:
 		return true
 	default:
 		return false
@@ -2232,6 +2304,45 @@ type OrganizationPlanPlan string
 // OrganizationPlanSubscriptionStatus Stripe subscription status.
 type OrganizationPlanSubscriptionStatus string
 
+// PiiSuggestion A single likely-PII column detected by the scanner, with a recommended masking rule. Suggestions are advisory only — nothing is applied until the operator reviews and adds it to a policy profile.
+type PiiSuggestion struct {
+	// Column The detected column name.
+	Column string `json:"column"`
+
+	// Confidence Confidence score in [0,1]. Combines column-name signal and sampled-value signal; higher is stronger evidence.
+	Confidence float32 `json:"confidence"`
+
+	// DataType PostgreSQL data type of the column.
+	DataType string `json:"data_type"`
+
+	// MaskKind Recommended masking kind for this column. hash is suggested for join/group keys (e.g. email), redact for free-text PII, null for highly sensitive secrets.
+	MaskKind PiiSuggestionMaskKind `json:"mask_kind"`
+
+	// PiiType The kind of personally identifiable information detected.
+	PiiType PiiSuggestionPiiType `json:"pii_type"`
+
+	// Reasons Human-readable explanations for why the column was flagged.
+	Reasons []string `json:"reasons"`
+
+	// SampleMatchCount Number of sampled non-null values that matched the PII pattern.
+	SampleMatchCount *int `json:"sample_match_count,omitempty"`
+
+	// SampleSize Number of non-null values sampled from the column.
+	SampleSize *int `json:"sample_size,omitempty"`
+
+	// Schema Schema the column belongs to (e.g. "public").
+	Schema string `json:"schema"`
+
+	// Table Table the column belongs to.
+	Table string `json:"table"`
+}
+
+// PiiSuggestionMaskKind Recommended masking kind for this column. hash is suggested for join/group keys (e.g. email), redact for free-text PII, null for highly sensitive secrets.
+type PiiSuggestionMaskKind string
+
+// PiiSuggestionPiiType The kind of personally identifiable information detected.
+type PiiSuggestionPiiType string
+
 // PlanInfo Publicly visible plan metadata and limits.
 type PlanInfo struct {
 	// AnnualPrice Annual price in dollars (if applicable).
@@ -2645,6 +2756,24 @@ type RowFilter struct {
 
 // SSLMode PostgreSQL SSL connection mode.
 type SSLMode string
+
+// ScanPiiResult Result of a PII detection scan over a database's schema.
+type ScanPiiResult struct {
+	// Error Present when the scan failed to connect or read the schema.
+	Error *string `json:"error,omitempty"`
+
+	// ScannedColumns Number of columns inspected.
+	ScannedColumns int `json:"scanned_columns"`
+
+	// ScannedTables Number of tables inspected.
+	ScannedTables int `json:"scanned_tables"`
+
+	// Suggestions Ranked masking suggestions, highest confidence first. Empty when no likely-PII columns were found.
+	Suggestions []PiiSuggestion `json:"suggestions"`
+
+	// Truncated True when the scan stopped early at the column limit and some columns were not inspected.
+	Truncated *bool `json:"truncated,omitempty"`
+}
 
 // SlackEventPayload Slack event forwarded from the dashboard webhook handler.
 type SlackEventPayload struct {

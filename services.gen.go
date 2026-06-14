@@ -135,6 +135,10 @@ func (s *DatabasesService) TestDatabaseConnection(ctx context.Context, projectID
 	return doJSON[TestConnectionResult](s.t, ctx, "POST", fmt.Sprintf("/v1/projects/%s/databases/%s/test-connection", projectID, databaseID), nil)
 }
 
+func (s *DatabasesService) ScanDatabaseForPii(ctx context.Context, projectID string, databaseID string) (*ScanPiiResult, error) {
+	return doJSON[ScanPiiResult](s.t, ctx, "POST", fmt.Sprintf("/v1/projects/%s/databases/%s/scan-pii", projectID, databaseID), nil)
+}
+
 // PoliciesService provides policies operations.
 type PoliciesService struct{ t *transport }
 
