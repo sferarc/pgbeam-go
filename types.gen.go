@@ -10,8 +10,9 @@ import (
 )
 
 const (
-	ApiKeyAuthScopes apiKeyAuthContextKey = "ApiKeyAuth.Scopes"
-	BearerAuthScopes bearerAuthContextKey = "BearerAuth.Scopes"
+	ApiKeyAuthScopes     apiKeyAuthContextKey     = "ApiKeyAuth.Scopes"
+	BearerAuthScopes     bearerAuthContextKey     = "BearerAuth.Scopes"
+	InternalSecretScopes internalSecretContextKey = "InternalSecret.Scopes"
 )
 
 // Defines values for AgentCredentialAuthMethod.
@@ -776,6 +777,42 @@ func (e SSLMode) Valid() bool {
 	}
 }
 
+// Defines values for SupportCaseStatus.
+const (
+	SupportCaseStatusClosed SupportCaseStatus = "closed"
+	SupportCaseStatusOpen   SupportCaseStatus = "open"
+)
+
+// Valid indicates whether the value is a known member of the SupportCaseStatus enum.
+func (e SupportCaseStatus) Valid() bool {
+	switch e {
+	case SupportCaseStatusClosed:
+		return true
+	case SupportCaseStatusOpen:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for SupportMessageSource.
+const (
+	Slack SupportMessageSource = "slack"
+	User  SupportMessageSource = "user"
+)
+
+// Valid indicates whether the value is a known member of the SupportMessageSource enum.
+func (e SupportMessageSource) Valid() bool {
+	switch e {
+	case Slack:
+		return true
+	case User:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for UpdateAgentCredentialStatusRequestStatus.
 const (
 	Active   UpdateAgentCredentialStatusRequestStatus = "active"
@@ -913,19 +950,19 @@ func (e ListProjectsParamsSortBy) Valid() bool {
 
 // Defines values for ListAnomalyAlertsParamsStatus.
 const (
-	Acknowledged ListAnomalyAlertsParamsStatus = "acknowledged"
-	Open         ListAnomalyAlertsParamsStatus = "open"
-	Resolved     ListAnomalyAlertsParamsStatus = "resolved"
+	ListAnomalyAlertsParamsStatusAcknowledged ListAnomalyAlertsParamsStatus = "acknowledged"
+	ListAnomalyAlertsParamsStatusOpen         ListAnomalyAlertsParamsStatus = "open"
+	ListAnomalyAlertsParamsStatusResolved     ListAnomalyAlertsParamsStatus = "resolved"
 )
 
 // Valid indicates whether the value is a known member of the ListAnomalyAlertsParamsStatus enum.
 func (e ListAnomalyAlertsParamsStatus) Valid() bool {
 	switch e {
-	case Acknowledged:
+	case ListAnomalyAlertsParamsStatusAcknowledged:
 		return true
-	case Open:
+	case ListAnomalyAlertsParamsStatusOpen:
 		return true
-	case Resolved:
+	case ListAnomalyAlertsParamsStatusResolved:
 		return true
 	default:
 		return false
@@ -1604,6 +1641,27 @@ type CreateReplicaRequest struct {
 	SslMode *SSLMode `json:"ssl_mode,omitempty"`
 }
 
+// CreateSupportCaseRequest Request body for creating a support case.
+type CreateSupportCaseRequest struct {
+	// Body Initial message body.
+	Body string `json:"body"`
+
+	// OrgId Organization ID.
+	OrgId string `json:"org_id"`
+
+	// Severity Severity level: 1=Critical, 2=High, 3=Normal, 4=Low.
+	Severity *int `json:"severity,omitempty"`
+
+	// Title Brief summary of the issue.
+	Title string `json:"title"`
+}
+
+// CreateSupportMessageRequest Request body for adding a message to a support case.
+type CreateSupportMessageRequest struct {
+	// Body Message content.
+	Body string `json:"body"`
+}
+
 // CustomDomain Custom database hostname attached to a project.
 type CustomDomain struct {
 	// CreatedAt When the custom domain was created.
@@ -1781,6 +1839,15 @@ type Error struct {
 	} `json:"error"`
 }
 
+// GetSupportCaseResponse Support case with its message thread.
+type GetSupportCaseResponse struct {
+	// Case A support case filed by an organization member.
+	Case SupportCase `json:"case"`
+
+	// Messages Messages in the support case thread.
+	Messages []SupportMessage `json:"messages"`
+}
+
 // HealthResponse Health status and build metadata for the API service.
 type HealthResponse struct {
 	// ImageSha Resolved image SHA (digest or SHA tag).
@@ -1920,6 +1987,15 @@ type ListReplicasResponse struct {
 
 	// Replicas Read replicas attached to the database.
 	Replicas []Replica `json:"replicas"`
+}
+
+// ListSupportCasesResponse Paginated list of support cases.
+type ListSupportCasesResponse struct {
+	// Cases Support cases for the current page.
+	Cases []SupportCase `json:"cases"`
+
+	// Total Total number of cases matching the filter.
+	Total int64 `json:"total"`
 }
 
 // ListWebhookEndpointsResponse Cursor-paginated list of webhook endpoints for a project.
@@ -2570,6 +2646,21 @@ type RowFilter struct {
 // SSLMode PostgreSQL SSL connection mode.
 type SSLMode string
 
+// SlackEventPayload Slack event forwarded from the dashboard webhook handler.
+type SlackEventPayload struct {
+	// ChannelId Slack channel ID where the message was posted.
+	ChannelId string `json:"channel_id"`
+
+	// Text Message text from Slack.
+	Text string `json:"text"`
+
+	// ThreadTs Slack thread timestamp identifying the support case thread.
+	ThreadTs string `json:"thread_ts"`
+
+	// UserId Slack user ID of the message author.
+	UserId string `json:"user_id"`
+}
+
 // StatementRules Per-statement-kind allow/deny lists. Empty allow means all kinds permitted by the access mode.
 type StatementRules struct {
 	// Allow Allowed statement kinds (select, insert, update, delete, ddl, copy, set, show, explain, transaction).
@@ -2578,6 +2669,81 @@ type StatementRules struct {
 	// Deny Denied statement kinds (takes precedence over allow).
 	Deny *[]string `json:"deny,omitempty"`
 }
+
+// SupportCase A support case filed by an organization member.
+type SupportCase struct {
+	// CaseNumber Human-readable sequential case number.
+	CaseNumber *int `json:"case_number,omitempty"`
+
+	// ClosedAt When the case was closed, if applicable.
+	ClosedAt *time.Time `json:"closed_at,omitempty"`
+
+	// CreatedAt When the case was created.
+	CreatedAt time.Time `json:"created_at"`
+
+	// Id Unique support case identifier (prefixed).
+	Id string `json:"id"`
+
+	// MessageCount Number of messages in the case.
+	MessageCount *int64 `json:"message_count,omitempty"`
+
+	// OrgId Organization that owns this case.
+	OrgId string `json:"org_id"`
+
+	// Severity Severity level: 1=Critical, 2=High, 3=Normal, 4=Low.
+	Severity int `json:"severity"`
+
+	// SlackChannelId Slack channel where the case thread lives.
+	SlackChannelId *string `json:"slack_channel_id,omitempty"`
+
+	// SlackThreadTs Slack thread timestamp for the case.
+	SlackThreadTs *string `json:"slack_thread_ts,omitempty"`
+
+	// Status Current status of the support case.
+	Status SupportCaseStatus `json:"status"`
+
+	// Title Brief summary of the issue.
+	Title string `json:"title"`
+
+	// UpdatedAt When the case was last updated.
+	UpdatedAt time.Time `json:"updated_at"`
+
+	// UserId User who created the case.
+	UserId string `json:"user_id"`
+}
+
+// SupportCaseStatus Current status of the support case.
+type SupportCaseStatus string
+
+// SupportMessage A message within a support case thread.
+type SupportMessage struct {
+	// AuthorImage URL to the author's avatar.
+	AuthorImage *string `json:"author_image,omitempty"`
+
+	// AuthorName Display name of the message author.
+	AuthorName string `json:"author_name"`
+
+	// Body Message content.
+	Body string `json:"body"`
+
+	// CaseId Parent support case ID.
+	CaseId string `json:"case_id"`
+
+	// CreatedAt When the message was created.
+	CreatedAt time.Time `json:"created_at"`
+
+	// Id Unique message identifier (prefixed).
+	Id string `json:"id"`
+
+	// SlackUserId Slack user ID (for Slack-sourced messages).
+	SlackUserId *string `json:"slack_user_id,omitempty"`
+
+	// Source Origin of the message.
+	Source SupportMessageSource `json:"source"`
+}
+
+// SupportMessageSource Origin of the message.
+type SupportMessageSource string
 
 // TestConnectionResult Result of testing connectivity to an upstream database.
 type TestConnectionResult struct {
@@ -2708,6 +2874,12 @@ type UpdateSpendLimitRequest struct {
 	SpendLimit *float64 `json:"spend_limit,omitempty"`
 }
 
+// UpdateSupportCaseRequest Request body for updating a support case status.
+type UpdateSupportCaseRequest struct {
+	// Status Current status of the support case.
+	Status *SupportCaseStatus `json:"status,omitempty"`
+}
+
 // UsageResponse Response envelope for organization usage queries.
 type UsageResponse struct {
 	// Usage Daily usage entries aggregated across the organization.
@@ -2834,6 +3006,9 @@ type ProjectId = string
 // ReplicaId defines model for ReplicaId.
 type ReplicaId = string
 
+// SupportCaseId defines model for SupportCaseId.
+type SupportCaseId = string
+
 // WebhookId defines model for WebhookId.
 type WebhookId = string
 
@@ -2860,6 +3035,24 @@ type apiKeyAuthContextKey string
 
 // bearerAuthContextKey is the context key for BearerAuth security scheme
 type bearerAuthContextKey string
+
+// internalSecretContextKey is the context key for InternalSecret security scheme
+type internalSecretContextKey string
+
+// ListSupportCasesParams defines parameters for ListSupportCases.
+type ListSupportCasesParams struct {
+	// Status Filter by case status.
+	Status *SupportCaseStatus `form:"status,omitempty" json:"status,omitempty"`
+
+	// Search Search cases by title.
+	Search *string `form:"search,omitempty" json:"search,omitempty"`
+
+	// PageSize Number of results per page (1-100, default 20).
+	PageSize *int `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// Page Page number (1-based, default 1).
+	Page *int `form:"page,omitempty" json:"page,omitempty"`
+}
 
 // GetOrganizationUsageParams defines parameters for GetOrganizationUsage.
 type GetOrganizationUsageParams struct {
@@ -3035,6 +3228,9 @@ type ListWebhookEndpointsParams struct {
 // CreateReplicaJSONRequestBody defines body for CreateReplica for application/json ContentType.
 type CreateReplicaJSONRequestBody = CreateReplicaRequest
 
+// HandleSlackSupportEventJSONRequestBody defines body for HandleSlackSupportEvent for application/json ContentType.
+type HandleSlackSupportEventJSONRequestBody = SlackEventPayload
+
 // McpTransportJSONRequestBody defines body for McpTransport for application/json ContentType.
 type McpTransportJSONRequestBody = McpRequest
 
@@ -3046,6 +3242,15 @@ type UpdateOnboardingProgressJSONRequestBody = UpdateOnboardingRequest
 
 // UpdateSpendLimitJSONRequestBody defines body for UpdateSpendLimit for application/json ContentType.
 type UpdateSpendLimitJSONRequestBody = UpdateSpendLimitRequest
+
+// CreateSupportCaseJSONRequestBody defines body for CreateSupportCase for application/json ContentType.
+type CreateSupportCaseJSONRequestBody = CreateSupportCaseRequest
+
+// UpdateSupportCaseJSONRequestBody defines body for UpdateSupportCase for application/json ContentType.
+type UpdateSupportCaseJSONRequestBody = UpdateSupportCaseRequest
+
+// CreateSupportMessageJSONRequestBody defines body for CreateSupportMessage for application/json ContentType.
+type CreateSupportMessageJSONRequestBody = CreateSupportMessageRequest
 
 // CreateProjectJSONRequestBody defines body for CreateProject for application/json ContentType.
 type CreateProjectJSONRequestBody = CreateProjectRequest
