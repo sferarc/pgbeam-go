@@ -1711,7 +1711,7 @@ type Database struct {
 
 // DatabaseBranch An ephemeral sandbox branch of a database used for write isolation.
 type DatabaseBranch struct {
-	// BranchName Provider branch name.
+	// BranchName Generated name for the branch.
 	BranchName string `json:"branch_name"`
 
 	// CreatedAt When the branch was created.
@@ -1732,29 +1732,14 @@ type DatabaseBranch struct {
 	// ExpiresAt When the branch expires, if set.
 	ExpiresAt *time.Time `json:"expires_at,omitempty"`
 
-	// Host Branch host.
-	Host *string `json:"host,omitempty"`
-
 	// Id Unique sandbox branch identifier (prefixed).
 	Id string `json:"id"`
-
-	// Name Branch database name.
-	Name *string `json:"name,omitempty"`
-
-	// Port Branch port.
-	Port *int32 `json:"port,omitempty"`
-
-	// Provider Branch provider (e.g. internal, neon).
-	Provider string `json:"provider"`
 
 	// SessionId Identifier grouping a connection's statements.
 	SessionId *string `json:"session_id,omitempty"`
 
 	// Status Provisioning state of the branch.
 	Status DatabaseBranchStatus `json:"status"`
-
-	// Username Branch username.
-	Username *string `json:"username,omitempty"`
 }
 
 // DatabaseBranchStatus Provisioning state of the branch.
