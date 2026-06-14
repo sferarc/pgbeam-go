@@ -814,6 +814,7 @@ func (e UpdateAnomalyAlertRequestStatus) Valid() bool {
 
 // Defines values for UpdateOnboardingRequestStep.
 const (
+	AgentCredentialCreated UpdateOnboardingRequestStep = "agent_credential_created"
 	ConnectionStringCopied UpdateOnboardingRequestStep = "connection_string_copied"
 	ConnectionTested       UpdateOnboardingRequestStep = "connection_tested"
 	DatabaseAdded          UpdateOnboardingRequestStep = "database_added"
@@ -824,6 +825,8 @@ const (
 // Valid indicates whether the value is a known member of the UpdateOnboardingRequestStep enum.
 func (e UpdateOnboardingRequestStep) Valid() bool {
 	switch e {
+	case AgentCredentialCreated:
+		return true
 	case ConnectionStringCopied:
 		return true
 	case ConnectionTested:
@@ -1228,7 +1231,7 @@ type AgentCredentialSecrets struct {
 	// McpToken Bearer token for the hosted MCP endpoint (shown once).
 	McpToken string `json:"mcp_token"`
 
-	// McpUrl Hosted MCP endpoint URL for this credential.
+	// McpUrl Hosted agent-database MCP endpoint. Paste into an MCP client (Claude Code, Cursor, …) with the mcp_token as a bearer token. The endpoint is token-scoped, so the same URL serves every credential.
 	McpUrl string `json:"mcp_url"`
 }
 
@@ -2083,6 +2086,9 @@ type MigrationLintResponse struct {
 
 // OnboardingProgress Progress state for the dashboard onboarding checklist.
 type OnboardingProgress struct {
+	// AgentCredentialCreated Whether an agent credential has been issued.
+	AgentCredentialCreated bool `json:"agent_credential_created"`
+
 	// Completed Whether all onboarding steps are complete.
 	Completed bool `json:"completed"`
 
