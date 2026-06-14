@@ -181,6 +181,10 @@ func (s *AgentsService) RevokeAgentCredential(ctx context.Context, projectID str
 	return doVoid(s.t, ctx, "DELETE", fmt.Sprintf("/v1/projects/%s/agents/%s", projectID, agentID), nil)
 }
 
+func (s *AgentsService) RotateAgentCredential(ctx context.Context, projectID string, agentID string) (*AgentCredentialSecrets, error) {
+	return doJSON[AgentCredentialSecrets](s.t, ctx, "POST", fmt.Sprintf("/v1/projects/%s/agents/%s/rotate", projectID, agentID), nil)
+}
+
 func (s *AgentsService) ListAuditLogs(ctx context.Context, projectID string, params *ListAuditLogsParams) (*ListAuditLogsResponse, error) {
 	return doQuery[ListAuditLogsResponse](s.t, ctx, fmt.Sprintf("/v1/projects/%s/audit-logs", projectID), params)
 }
