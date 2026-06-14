@@ -11,14 +11,19 @@ var _ = fmt.Sprintf
 
 // Client is the PgBeam API client. Access operations through service fields.
 type Client struct {
-	Projects  *ProjectsService
-	Databases *DatabasesService
-	Policies  *PoliciesService
-	Webhooks  *WebhooksService
-	Analytics *AnalyticsService
-	Platform  *PlatformService
-	Account   *AccountService
-	t         *transport
+	Projects   *ProjectsService
+	Databases  *DatabasesService
+	Policies   *PoliciesService
+	Agents     *AgentsService
+	Approvals  *ApprovalsService
+	Webhooks   *WebhooksService
+	Anomalies  *AnomaliesService
+	Branches   *BranchesService
+	Migrations *MigrationsService
+	Analytics  *AnalyticsService
+	Platform   *PlatformService
+	Account    *AccountService
+	t          *transport
 }
 
 // NewClient creates a new PgBeam API client.
@@ -28,7 +33,12 @@ func NewClient(opts *ClientOptions) *Client {
 	c.Projects = &ProjectsService{t: t}
 	c.Databases = &DatabasesService{t: t}
 	c.Policies = &PoliciesService{t: t}
+	c.Agents = &AgentsService{t: t}
+	c.Approvals = &ApprovalsService{t: t}
 	c.Webhooks = &WebhooksService{t: t}
+	c.Anomalies = &AnomaliesService{t: t}
+	c.Branches = &BranchesService{t: t}
+	c.Migrations = &MigrationsService{t: t}
 	c.Analytics = &AnalyticsService{t: t}
 	c.Platform = &PlatformService{t: t}
 	c.Account = &AccountService{t: t}
@@ -148,6 +158,48 @@ func (s *PoliciesService) DeletePolicyProfile(ctx context.Context, projectID str
 	return doVoid(s.t, ctx, "DELETE", fmt.Sprintf("/v1/projects/%s/policies/%s", projectID, policyID), nil)
 }
 
+// AgentsService provides agents operations.
+type AgentsService struct{ t *transport }
+
+func (s *AgentsService) ListAgentCredentials(ctx context.Context, projectID string, params *ListAgentCredentialsParams) (*ListAgentCredentialsResponse, error) {
+	return doQuery[ListAgentCredentialsResponse](s.t, ctx, fmt.Sprintf("/v1/projects/%s/agents", projectID), params)
+}
+
+func (s *AgentsService) CreateAgentCredential(ctx context.Context, projectID string, body CreateAgentCredentialRequest) (*AgentCredentialSecrets, error) {
+	return doJSON[AgentCredentialSecrets](s.t, ctx, "POST", fmt.Sprintf("/v1/projects/%s/agents", projectID), body)
+}
+
+func (s *AgentsService) GetAgentCredential(ctx context.Context, projectID string, agentID string) (*AgentCredential, error) {
+	return doJSON[AgentCredential](s.t, ctx, "GET", fmt.Sprintf("/v1/projects/%s/agents/%s", projectID, agentID), nil)
+}
+
+func (s *AgentsService) UpdateAgentCredentialStatus(ctx context.Context, projectID string, agentID string, body UpdateAgentCredentialStatusRequest) (*AgentCredential, error) {
+	return doJSON[AgentCredential](s.t, ctx, "PATCH", fmt.Sprintf("/v1/projects/%s/agents/%s", projectID, agentID), body)
+}
+
+func (s *AgentsService) RevokeAgentCredential(ctx context.Context, projectID string, agentID string) error {
+	return doVoid(s.t, ctx, "DELETE", fmt.Sprintf("/v1/projects/%s/agents/%s", projectID, agentID), nil)
+}
+
+func (s *AgentsService) ListAuditLogs(ctx context.Context, projectID string, params *ListAuditLogsParams) (*ListAuditLogsResponse, error) {
+	return doQuery[ListAuditLogsResponse](s.t, ctx, fmt.Sprintf("/v1/projects/%s/audit-logs", projectID), params)
+}
+
+// ApprovalsService provides approvals operations.
+type ApprovalsService struct{ t *transport }
+
+func (s *ApprovalsService) ListApprovalRequests(ctx context.Context, projectID string, params *ListApprovalRequestsParams) (*ListApprovalRequestsResponse, error) {
+	return doQuery[ListApprovalRequestsResponse](s.t, ctx, fmt.Sprintf("/v1/projects/%s/approvals", projectID), params)
+}
+
+func (s *ApprovalsService) ApproveApprovalRequest(ctx context.Context, projectID string, approvalID string, body ApprovalDecisionRequest) (*ApprovalRequest, error) {
+	return doJSON[ApprovalRequest](s.t, ctx, "POST", fmt.Sprintf("/v1/projects/%s/approvals/%s/approve", projectID, approvalID), body)
+}
+
+func (s *ApprovalsService) RejectApprovalRequest(ctx context.Context, projectID string, approvalID string, body ApprovalDecisionRequest) (*ApprovalRequest, error) {
+	return doJSON[ApprovalRequest](s.t, ctx, "POST", fmt.Sprintf("/v1/projects/%s/approvals/%s/reject", projectID, approvalID), body)
+}
+
 // WebhooksService provides webhooks operations.
 type WebhooksService struct{ t *transport }
 
@@ -173,6 +225,35 @@ func (s *WebhooksService) DeleteWebhookEndpoint(ctx context.Context, projectID s
 
 func (s *WebhooksService) TestWebhookEndpoint(ctx context.Context, projectID string, webhookID string) error {
 	return doVoid(s.t, ctx, "POST", fmt.Sprintf("/v1/projects/%s/webhooks/%s/test", projectID, webhookID), nil)
+}
+
+// AnomaliesService provides anomalies operations.
+type AnomaliesService struct{ t *transport }
+
+func (s *AnomaliesService) ListAnomalyAlerts(ctx context.Context, projectID string, params *ListAnomalyAlertsParams) (*ListAnomalyAlertsResponse, error) {
+	return doQuery[ListAnomalyAlertsResponse](s.t, ctx, fmt.Sprintf("/v1/projects/%s/anomalies", projectID), params)
+}
+
+func (s *AnomaliesService) UpdateAnomalyAlert(ctx context.Context, projectID string, anomalyID string, body UpdateAnomalyAlertRequest) (*AnomalyAlert, error) {
+	return doJSON[AnomalyAlert](s.t, ctx, "PATCH", fmt.Sprintf("/v1/projects/%s/anomalies/%s", projectID, anomalyID), body)
+}
+
+// BranchesService provides branches operations.
+type BranchesService struct{ t *transport }
+
+func (s *BranchesService) ListDatabaseBranches(ctx context.Context, projectID string, params *ListDatabaseBranchesParams) (*ListDatabaseBranchesResponse, error) {
+	return doQuery[ListDatabaseBranchesResponse](s.t, ctx, fmt.Sprintf("/v1/projects/%s/branches", projectID), params)
+}
+
+func (s *BranchesService) DiscardDatabaseBranch(ctx context.Context, projectID string, branchID string) error {
+	return doVoid(s.t, ctx, "DELETE", fmt.Sprintf("/v1/projects/%s/branches/%s", projectID, branchID), nil)
+}
+
+// MigrationsService provides migrations operations.
+type MigrationsService struct{ t *transport }
+
+func (s *MigrationsService) LintMigration(ctx context.Context, projectID string, body MigrationLintRequest) (*MigrationLintResponse, error) {
+	return doJSON[MigrationLintResponse](s.t, ctx, "POST", fmt.Sprintf("/v1/projects/%s/migrations:lint", projectID), body)
 }
 
 // AnalyticsService provides analytics operations.
