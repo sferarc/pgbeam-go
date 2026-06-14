@@ -13,6 +13,8 @@ var _ = fmt.Sprintf
 type Client struct {
 	Projects  *ProjectsService
 	Databases *DatabasesService
+	Policies  *PoliciesService
+	Webhooks  *WebhooksService
 	Analytics *AnalyticsService
 	Platform  *PlatformService
 	Account   *AccountService
@@ -25,6 +27,8 @@ func NewClient(opts *ClientOptions) *Client {
 	c := &Client{t: t}
 	c.Projects = &ProjectsService{t: t}
 	c.Databases = &DatabasesService{t: t}
+	c.Policies = &PoliciesService{t: t}
+	c.Webhooks = &WebhooksService{t: t}
 	c.Analytics = &AnalyticsService{t: t}
 	c.Platform = &PlatformService{t: t}
 	c.Account = &AccountService{t: t}
@@ -119,6 +123,56 @@ func (s *DatabasesService) DeleteDatabase(ctx context.Context, projectID string,
 
 func (s *DatabasesService) TestDatabaseConnection(ctx context.Context, projectID string, databaseID string) (*TestConnectionResult, error) {
 	return doJSON[TestConnectionResult](s.t, ctx, "POST", fmt.Sprintf("/v1/projects/%s/databases/%s/test-connection", projectID, databaseID), nil)
+}
+
+// PoliciesService provides policies operations.
+type PoliciesService struct{ t *transport }
+
+func (s *PoliciesService) ListPolicyProfiles(ctx context.Context, projectID string, params *ListPolicyProfilesParams) (*ListPolicyProfilesResponse, error) {
+	return doQuery[ListPolicyProfilesResponse](s.t, ctx, fmt.Sprintf("/v1/projects/%s/policies", projectID), params)
+}
+
+func (s *PoliciesService) CreatePolicyProfile(ctx context.Context, projectID string, body PolicyProfileInput) (*PolicyProfile, error) {
+	return doJSON[PolicyProfile](s.t, ctx, "POST", fmt.Sprintf("/v1/projects/%s/policies", projectID), body)
+}
+
+func (s *PoliciesService) GetPolicyProfile(ctx context.Context, projectID string, policyID string) (*PolicyProfile, error) {
+	return doJSON[PolicyProfile](s.t, ctx, "GET", fmt.Sprintf("/v1/projects/%s/policies/%s", projectID, policyID), nil)
+}
+
+func (s *PoliciesService) UpdatePolicyProfile(ctx context.Context, projectID string, policyID string, body PolicyProfileInput) (*PolicyProfile, error) {
+	return doJSON[PolicyProfile](s.t, ctx, "PUT", fmt.Sprintf("/v1/projects/%s/policies/%s", projectID, policyID), body)
+}
+
+func (s *PoliciesService) DeletePolicyProfile(ctx context.Context, projectID string, policyID string) error {
+	return doVoid(s.t, ctx, "DELETE", fmt.Sprintf("/v1/projects/%s/policies/%s", projectID, policyID), nil)
+}
+
+// WebhooksService provides webhooks operations.
+type WebhooksService struct{ t *transport }
+
+func (s *WebhooksService) ListWebhookEndpoints(ctx context.Context, projectID string, params *ListWebhookEndpointsParams) (*ListWebhookEndpointsResponse, error) {
+	return doQuery[ListWebhookEndpointsResponse](s.t, ctx, fmt.Sprintf("/v1/projects/%s/webhooks", projectID), params)
+}
+
+func (s *WebhooksService) CreateWebhookEndpoint(ctx context.Context, projectID string, body WebhookEndpointInput) (*WebhookEndpoint, error) {
+	return doJSON[WebhookEndpoint](s.t, ctx, "POST", fmt.Sprintf("/v1/projects/%s/webhooks", projectID), body)
+}
+
+func (s *WebhooksService) GetWebhookEndpoint(ctx context.Context, projectID string, webhookID string) (*WebhookEndpoint, error) {
+	return doJSON[WebhookEndpoint](s.t, ctx, "GET", fmt.Sprintf("/v1/projects/%s/webhooks/%s", projectID, webhookID), nil)
+}
+
+func (s *WebhooksService) UpdateWebhookEndpoint(ctx context.Context, projectID string, webhookID string, body WebhookEndpointInput) (*WebhookEndpoint, error) {
+	return doJSON[WebhookEndpoint](s.t, ctx, "PUT", fmt.Sprintf("/v1/projects/%s/webhooks/%s", projectID, webhookID), body)
+}
+
+func (s *WebhooksService) DeleteWebhookEndpoint(ctx context.Context, projectID string, webhookID string) error {
+	return doVoid(s.t, ctx, "DELETE", fmt.Sprintf("/v1/projects/%s/webhooks/%s", projectID, webhookID), nil)
+}
+
+func (s *WebhooksService) TestWebhookEndpoint(ctx context.Context, projectID string, webhookID string) error {
+	return doVoid(s.t, ctx, "POST", fmt.Sprintf("/v1/projects/%s/webhooks/%s/test", projectID, webhookID), nil)
 }
 
 // AnalyticsService provides analytics operations.

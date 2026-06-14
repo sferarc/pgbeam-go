@@ -257,3 +257,185 @@ func containsSubstr(s, sub string) bool {
 	}
 	return false
 }
+
+// ---------------------------------------------------------------------------
+// Service methods (httptest-backed): verify method, path, headers, body, and
+// response decoding through the generated service layer.
+// ---------------------------------------------------------------------------
+
+func newTestClient(srv *httptest.Server) *Client {
+	// Default retry config (MaxRetries > 0) so mutating requests carry an
+	// idempotency key; these handlers all succeed on the first attempt, so
+	// retries never actually fire.
+	return NewClient(&ClientOptions{
+		APIKey:  "pgb_test_key",
+		BaseURL: srv.URL,
+	})
+}
+
+func TestProjectsService_GetProject(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodGet {
+			t.Errorf("method = %s, want GET", r.Method)
+		}
+		if r.URL.Path != "/v1/projects/proj_abc" {
+			t.Errorf("path = %s, want /v1/projects/proj_abc", r.URL.Path)
+		}
+		if got := r.Header.Get("Authorization"); got != "Bearer pgb_test_key" {
+			t.Errorf("Authorization = %q, want Bearer pgb_test_key", got)
+		}
+		if got := r.Header.Get("Accept"); got != "application/json" {
+			t.Errorf("Accept = %q, want application/json", got)
+		}
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = w.Write([]byte(`{"id":"proj_abc","name":"My Project","created_at":"2026-01-01T00:00:00Z"}`))
+	}))
+	defer srv.Close()
+
+	proj, err := newTestClient(srv).Projects.GetProject(context.Background(), "proj_abc")
+	if err != nil {
+		t.Fatalf("GetProject: %v", err)
+	}
+	if proj.Id != "proj_abc" {
+		t.Errorf("Id = %q, want proj_abc", proj.Id)
+	}
+	if proj.Name != "My Project" {
+		t.Errorf("Name = %q, want My Project", proj.Name)
+	}
+}
+
+func TestProjectsService_CreateProject(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodPost {
+			t.Errorf("method = %s, want POST", r.Method)
+		}
+		if r.URL.Path != "/v1/projects" {
+			t.Errorf("path = %s, want /v1/projects", r.URL.Path)
+		}
+		if ct := r.Header.Get("Content-Type"); ct != "application/json" {
+			t.Errorf("Content-Type = %q, want application/json", ct)
+		}
+		// Mutating requests carry an idempotency key for safe retries.
+		if r.Header.Get("Idempotency-Key") == "" {
+			t.Error("missing Idempotency-Key on POST")
+		}
+		var body map[string]any
+		if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+			t.Fatalf("decode body: %v", err)
+		}
+		if body["name"] != "New Project" {
+			t.Errorf("body.name = %v, want New Project", body["name"])
+		}
+		if body["org_id"] != "org_1" {
+			t.Errorf("body.org_id = %v, want org_1", body["org_id"])
+		}
+		w.WriteHeader(http.StatusCreated)
+		_, _ = w.Write([]byte(`{"project":{"id":"proj_new","name":"New Project","created_at":"2026-01-01T00:00:00Z"}}`))
+	}))
+	defer srv.Close()
+
+	resp, err := newTestClient(srv).Projects.CreateProject(context.Background(), CreateProjectRequest{
+		Name:  "New Project",
+		OrgId: "org_1",
+	})
+	if err != nil {
+		t.Fatalf("CreateProject: %v", err)
+	}
+	if resp.Project.Id != "proj_new" {
+		t.Errorf("Project.Id = %q, want proj_new", resp.Project.Id)
+	}
+}
+
+func TestProjectsService_ListProjects_QueryParams(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		q := r.URL.Query()
+		if q.Get("org_id") != "org_1" {
+			t.Errorf("org_id = %q, want org_1", q.Get("org_id"))
+		}
+		if q.Get("page_size") != "50" {
+			t.Errorf("page_size = %q, want 50", q.Get("page_size"))
+		}
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = w.Write([]byte(`{"projects":[],"total":7}`))
+	}))
+	defer srv.Close()
+
+	ps := PageSize(50)
+	resp, err := newTestClient(srv).Projects.ListProjects(context.Background(), &ListProjectsParams{
+		OrgId:    "org_1",
+		PageSize: &ps,
+	})
+	if err != nil {
+		t.Fatalf("ListProjects: %v", err)
+	}
+	if resp.Total != 7 {
+		t.Errorf("Total = %d, want 7", resp.Total)
+	}
+}
+
+func TestDatabasesService_ListDatabases_Path(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/v1/projects/proj_abc/databases" {
+			t.Errorf("path = %s, want /v1/projects/proj_abc/databases", r.URL.Path)
+		}
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = w.Write([]byte(`{"databases":[]}`))
+	}))
+	defer srv.Close()
+
+	_, err := newTestClient(srv).Databases.ListDatabases(context.Background(), "proj_abc", nil)
+	if err != nil {
+		t.Fatalf("ListDatabases: %v", err)
+	}
+}
+
+func TestProjectsService_DeleteProject_NoContent(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodDelete {
+			t.Errorf("method = %s, want DELETE", r.Method)
+		}
+		w.WriteHeader(http.StatusNoContent)
+	}))
+	defer srv.Close()
+
+	if err := newTestClient(srv).Projects.DeleteProject(context.Background(), "proj_abc"); err != nil {
+		t.Fatalf("DeleteProject: %v", err)
+	}
+}
+
+func TestProjectsService_GetProject_NotFound(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusNotFound)
+		_, _ = w.Write([]byte(`{"error":{"message":"project not found"}}`))
+	}))
+	defer srv.Close()
+
+	_, err := newTestClient(srv).Projects.GetProject(context.Background(), "proj_missing")
+	if err == nil {
+		t.Fatal("expected error, got nil")
+	}
+	if !IsNotFound(err) {
+		t.Errorf("IsNotFound = false, want true (err: %v)", err)
+	}
+}
+
+func TestAPIError_Error_MessageExtraction(t *testing.T) {
+	tests := []struct {
+		name string
+		body string
+		want string
+	}{
+		{"nested error.message", `{"error":{"message":"boom"}}`, "pgbeam: 400 Bad Request (400): boom"},
+		{"flat message", `{"message":"flat boom"}`, "pgbeam: 400 Bad Request (400): flat boom"},
+		{"raw body", `not json`, "pgbeam: 400 Bad Request (400): not json"},
+		{"empty body", ``, "pgbeam: 400 Bad Request (400)"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			e := &APIError{StatusCode: 400, Status: "400 Bad Request", Body: tt.body}
+			if got := e.Error(); got != tt.want {
+				t.Errorf("Error() = %q, want %q", got, tt.want)
+			}
+		})
+	}
+}
