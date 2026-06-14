@@ -7,8 +7,8 @@
 //	    BaseURL: "https://api.pgbeam.com", // optional
 //	})
 //
-//	project, err := client.Projects.Get(ctx, "proj_abc123")
-//	databases, err := client.Databases.List(ctx, "proj_abc123", nil)
+//	project, err := client.Projects.GetProject(ctx, "prj_abc123")
+//	databases, err := client.Databases.ListDatabases(ctx, "prj_abc123", nil)
 package pgbeam
 
 import (
