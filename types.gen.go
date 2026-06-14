@@ -1177,6 +1177,9 @@ type AgentCredential struct {
 	// CreatedAt When the credential was created.
 	CreatedAt time.Time `json:"created_at"`
 
+	// ExpiresAt When the credential expires and becomes unusable. Null means it never expires. Enforcement is fail-closed in the proxy the instant this time passes, before any cleanup sweep runs.
+	ExpiresAt *time.Time `json:"expires_at,omitempty"`
+
 	// Id Unique agent credential identifier (prefixed).
 	Id string `json:"id"`
 
@@ -1351,7 +1354,7 @@ type AuditLogEntry struct {
 	// DecisionRule Machine-readable rule that produced a block, if any.
 	DecisionRule *string `json:"decision_rule,omitempty"`
 
-	// Event Event type (query, blocked, masked, budget_exhausted, truncated, auth_failed).
+	// Event Event type (query, blocked, masked, budget_exhausted, truncated, auth_failed, credential_expired).
 	Event string `json:"event"`
 
 	// Id Unique audit entry identifier.
@@ -1381,7 +1384,7 @@ type AuditLogEntry struct {
 	// SessionId Identifier grouping a connection's statements.
 	SessionId *string `json:"session_id,omitempty"`
 
-	// Source Statement origin (wire or mcp).
+	// Source Statement origin (wire, mcp, or control for control-plane lifecycle events).
 	Source *string `json:"source,omitempty"`
 
 	// Sql The statement text (truncated).
@@ -1492,6 +1495,9 @@ type CidrEntry struct {
 
 // CreateAgentCredentialRequest Request body for issuing a new agent credential.
 type CreateAgentCredentialRequest struct {
+	// ExpiresAt Optional expiry. When set, the credential becomes unusable at this time (must be in the future). Omit or set null for a credential that never expires.
+	ExpiresAt *time.Time `json:"expires_at,omitempty"`
+
 	// Name Human-readable label for the credential.
 	Name string `json:"name"`
 
