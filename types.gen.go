@@ -1231,7 +1231,7 @@ type AgentCredentialSecrets struct {
 	// McpToken Bearer token for the hosted MCP endpoint (shown once).
 	McpToken string `json:"mcp_token"`
 
-	// McpUrl Hosted agent-database MCP endpoint. Paste into an MCP client (Claude Code, Cursor, …) with the mcp_token as a bearer token. The endpoint is token-scoped, so the same URL serves every credential.
+	// McpUrl Hosted agent-database MCP endpoint for this project, served by the edge proxy on the same per-project host the agent connects to over the wire. Paste into an MCP client (Claude Code, Cursor, …) with the mcp_token as a bearer token.
 	McpUrl string `json:"mcp_url"`
 }
 
