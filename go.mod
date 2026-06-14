@@ -1,4 +1,4 @@
-module github.com/pgbeam/pgbeam-go
+module go.pgbeam.com/sdk
 
 go 1.24
 

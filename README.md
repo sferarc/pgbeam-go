@@ -6,7 +6,7 @@ distributed PostgreSQL proxy platform with connection pooling and query caching.
 ## Install
 
 ```bash
-go get github.com/pgbeam/pgbeam-go
+go get go.pgbeam.com/sdk
 ```
 
 ## Usage
@@ -18,7 +18,7 @@ import (
 	"context"
 	"fmt"
 
-	pgbeam "github.com/pgbeam/pgbeam-go"
+	pgbeam "go.pgbeam.com/sdk"
 )
 
 func main() {
