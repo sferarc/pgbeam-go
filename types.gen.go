@@ -144,6 +144,51 @@ func (e ApprovalRequestStatus) Valid() bool {
 	}
 }
 
+// Defines values for AuditDecision.
+const (
+	AuditDecisionAllow    AuditDecision = "allow"
+	AuditDecisionBlock    AuditDecision = "block"
+	AuditDecisionMask     AuditDecision = "mask"
+	AuditDecisionTruncate AuditDecision = "truncate"
+)
+
+// Valid indicates whether the value is a known member of the AuditDecision enum.
+func (e AuditDecision) Valid() bool {
+	switch e {
+	case AuditDecisionAllow:
+		return true
+	case AuditDecisionBlock:
+		return true
+	case AuditDecisionMask:
+		return true
+	case AuditDecisionTruncate:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for AuditSource.
+const (
+	Control AuditSource = "control"
+	Mcp     AuditSource = "mcp"
+	Wire    AuditSource = "wire"
+)
+
+// Valid indicates whether the value is a known member of the AuditSource enum.
+func (e AuditSource) Valid() bool {
+	switch e {
+	case Control:
+		return true
+	case Mcp:
+		return true
+	case Wire:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for CacheRuleEntryQueryType.
 const (
 	CacheRuleEntryQueryTypeOther CacheRuleEntryQueryType = "other"
@@ -674,19 +719,19 @@ func (e PolicyProfileInputApprovalMode) Valid() bool {
 
 // Defines values for PolicyProfileInputMigrationSafety.
 const (
-	PolicyProfileInputMigrationSafetyBlock PolicyProfileInputMigrationSafety = "block"
-	PolicyProfileInputMigrationSafetyOff   PolicyProfileInputMigrationSafety = "off"
-	PolicyProfileInputMigrationSafetyWarn  PolicyProfileInputMigrationSafety = "warn"
+	Block PolicyProfileInputMigrationSafety = "block"
+	Off   PolicyProfileInputMigrationSafety = "off"
+	Warn  PolicyProfileInputMigrationSafety = "warn"
 )
 
 // Valid indicates whether the value is a known member of the PolicyProfileInputMigrationSafety enum.
 func (e PolicyProfileInputMigrationSafety) Valid() bool {
 	switch e {
-	case PolicyProfileInputMigrationSafetyBlock:
+	case Block:
 		return true
-	case PolicyProfileInputMigrationSafetyOff:
+	case Off:
 		return true
-	case PolicyProfileInputMigrationSafetyWarn:
+	case Warn:
 		return true
 	default:
 		return false
@@ -1449,6 +1494,9 @@ type ApprovalRequest struct {
 // ApprovalRequestStatus Current state of the approval request.
 type ApprovalRequestStatus string
 
+// AuditDecision Coarse outcome filter that groups audit events. `allow` = query; `block` = blocked, budget_exhausted, auth_failed, credential_expired; `mask` = masked; `truncate` = truncated.
+type AuditDecision string
+
 // AuditLogEntry One agent statement recorded by the gateway.
 type AuditLogEntry struct {
 	// BytesOut Bytes sent to the agent.
@@ -1508,6 +1556,9 @@ type AuditLogEntry struct {
 	// Ts When the statement executed.
 	Ts time.Time `json:"ts"`
 }
+
+// AuditSource Statement origin (wire, mcp, or control).
+type AuditSource string
 
 // CacheConfig Query cache configuration.
 type CacheConfig struct {
@@ -3108,6 +3159,18 @@ type AnomalyId = string
 // ApprovalId defines model for ApprovalId.
 type ApprovalId = string
 
+// AuditCredentialId defines model for AuditCredentialId.
+type AuditCredentialId = string
+
+// AuditEnd defines model for AuditEnd.
+type AuditEnd = time.Time
+
+// AuditEvent defines model for AuditEvent.
+type AuditEvent = string
+
+// AuditStart defines model for AuditStart.
+type AuditStart = time.Time
+
 // BranchId defines model for BranchId.
 type BranchId = string
 
@@ -3252,16 +3315,49 @@ type ListApprovalRequestsParamsStatus string
 // ListAuditLogsParams defines parameters for ListAuditLogs.
 type ListAuditLogsParams struct {
 	// CredentialId Filter to a single agent credential.
-	CredentialId *string `form:"credential_id,omitempty" json:"credential_id,omitempty"`
+	CredentialId *AuditCredentialId `form:"credential_id,omitempty" json:"credential_id,omitempty"`
 
-	// Event Filter to a single event type (e.g. blocked).
-	Event *string `form:"event,omitempty" json:"event,omitempty"`
+	// Event Filter to a single event type (e.g. blocked, masked, query).
+	Event *AuditEvent `form:"event,omitempty" json:"event,omitempty"`
 
-	// Before Return entries strictly older than this timestamp (cursor).
+	// Decision Coarse outcome filter that groups events. `allow` = query; `block` = blocked, budget_exhausted, auth_failed, credential_expired; `mask` = masked; `truncate` = truncated.
+	Decision *AuditDecision `form:"decision,omitempty" json:"decision,omitempty"`
+
+	// Source Filter by statement origin (wire, mcp, or control).
+	Source *AuditSource `form:"source,omitempty" json:"source,omitempty"`
+
+	// Start Return entries at or after this timestamp (inclusive lower bound).
+	Start *AuditStart `form:"start,omitempty" json:"start,omitempty"`
+
+	// End Return entries strictly older than this timestamp (cursor / upper bound).
+	End *AuditEnd `form:"end,omitempty" json:"end,omitempty"`
+
+	// Before Return entries strictly older than this timestamp (keyset pagination cursor).
 	Before *time.Time `form:"before,omitempty" json:"before,omitempty"`
 
 	// PageSize Maximum number of items to return (1-100, default 20).
 	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+}
+
+// ExportAuditLogsParams defines parameters for ExportAuditLogs.
+type ExportAuditLogsParams struct {
+	// CredentialId Filter to a single agent credential.
+	CredentialId *AuditCredentialId `form:"credential_id,omitempty" json:"credential_id,omitempty"`
+
+	// Event Filter to a single event type (e.g. blocked, masked, query).
+	Event *AuditEvent `form:"event,omitempty" json:"event,omitempty"`
+
+	// Decision Coarse outcome filter that groups events. `allow` = query; `block` = blocked, budget_exhausted, auth_failed, credential_expired; `mask` = masked; `truncate` = truncated.
+	Decision *AuditDecision `form:"decision,omitempty" json:"decision,omitempty"`
+
+	// Source Filter by statement origin (wire, mcp, or control).
+	Source *AuditSource `form:"source,omitempty" json:"source,omitempty"`
+
+	// Start Return entries at or after this timestamp (inclusive lower bound).
+	Start *AuditStart `form:"start,omitempty" json:"start,omitempty"`
+
+	// End Return entries strictly older than this timestamp (cursor / upper bound).
+	End *AuditEnd `form:"end,omitempty" json:"end,omitempty"`
 }
 
 // ListDatabaseBranchesParams defines parameters for ListDatabaseBranches.

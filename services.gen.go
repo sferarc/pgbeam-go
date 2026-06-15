@@ -193,6 +193,10 @@ func (s *AgentsService) ListAuditLogs(ctx context.Context, projectID string, par
 	return doQuery[ListAuditLogsResponse](s.t, ctx, fmt.Sprintf("/v1/projects/%s/audit-logs", projectID), params)
 }
 
+func (s *AgentsService) ExportAuditLogs(ctx context.Context, projectID string, params *ExportAuditLogsParams) error {
+	return doVoid(s.t, ctx, "GET", fmt.Sprintf("/v1/projects/%s/audit-logs/export", projectID), nil)
+}
+
 // ApprovalsService provides approvals operations.
 type ApprovalsService struct{ t *transport }
 
