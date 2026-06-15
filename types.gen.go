@@ -2738,6 +2738,9 @@ type Project struct {
 	// ActiveConnections Current active connections (latest metrics snapshot). 0 when no metrics data.
 	ActiveConnections *int `json:"active_connections,omitempty"`
 
+	// AgentsDisabled Project-level kill-switch. When true, ALL agent-credential connections to this project are blocked at the proxy and live agent sessions are dropped within seconds. Passthrough/human connections are unaffected.
+	AgentsDisabled *bool `json:"agents_disabled,omitempty"`
+
 	// AllowedCidrs IP filtering rules as CIDR ranges with optional labels. When non-empty, only connections from matching IPs are accepted. Empty array means all IPs are allowed (default). Both IPv4 (e.g. 10.0.0.0/8) and IPv6 (e.g. 2001:db8::/32) are supported.
 	AllowedCidrs *[]CidrEntry `json:"allowed_cidrs,omitempty"`
 
@@ -3200,6 +3203,9 @@ type UpdateOnboardingRequestStep string
 
 // UpdateProjectRequest Request body for partially updating a project.
 type UpdateProjectRequest struct {
+	// AgentsDisabled Project-level kill-switch. Set true to block ALL agent-credential connections to this project (live agent sessions are dropped within seconds); set false to re-enable them. Passthrough/human connections are unaffected. Engaging the kill-switch emits a kill_switch webhook event.
+	AgentsDisabled *bool `json:"agents_disabled,omitempty"`
+
 	// AllowedCidrs IP filtering rules as CIDR ranges with optional labels. Empty array means allow all. Both IPv4 and IPv6 CIDR notation are supported.
 	AllowedCidrs *[]CidrEntry `json:"allowed_cidrs,omitempty"`
 
