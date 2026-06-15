@@ -315,6 +315,51 @@ func (e DatabaseRole) Valid() bool {
 	}
 }
 
+// Defines values for DryEvalMaskedColumnKind.
+const (
+	DryEvalMaskedColumnKindHash   DryEvalMaskedColumnKind = "hash"
+	DryEvalMaskedColumnKindNull   DryEvalMaskedColumnKind = "null"
+	DryEvalMaskedColumnKindRedact DryEvalMaskedColumnKind = "redact"
+)
+
+// Valid indicates whether the value is a known member of the DryEvalMaskedColumnKind enum.
+func (e DryEvalMaskedColumnKind) Valid() bool {
+	switch e {
+	case DryEvalMaskedColumnKindHash:
+		return true
+	case DryEvalMaskedColumnKindNull:
+		return true
+	case DryEvalMaskedColumnKindRedact:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for DryEvalResultVerdict.
+const (
+	DryEvalResultVerdictAllow     DryEvalResultVerdict = "allow"
+	DryEvalResultVerdictBlock     DryEvalResultVerdict = "block"
+	DryEvalResultVerdictMask      DryEvalResultVerdict = "mask"
+	DryEvalResultVerdictRowFilter DryEvalResultVerdict = "row-filter"
+)
+
+// Valid indicates whether the value is a known member of the DryEvalResultVerdict enum.
+func (e DryEvalResultVerdict) Valid() bool {
+	switch e {
+	case DryEvalResultVerdictAllow:
+		return true
+	case DryEvalResultVerdictBlock:
+		return true
+	case DryEvalResultVerdictMask:
+		return true
+	case DryEvalResultVerdictRowFilter:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for HealthResponseStatus.
 const (
 	Degraded HealthResponseStatus = "degraded"
@@ -521,19 +566,19 @@ func (e OrganizationPlanSubscriptionStatus) Valid() bool {
 
 // Defines values for PiiSuggestionMaskKind.
 const (
-	PiiSuggestionMaskKindHash   PiiSuggestionMaskKind = "hash"
-	PiiSuggestionMaskKindNull   PiiSuggestionMaskKind = "null"
-	PiiSuggestionMaskKindRedact PiiSuggestionMaskKind = "redact"
+	Hash   PiiSuggestionMaskKind = "hash"
+	Null   PiiSuggestionMaskKind = "null"
+	Redact PiiSuggestionMaskKind = "redact"
 )
 
 // Valid indicates whether the value is a known member of the PiiSuggestionMaskKind enum.
 func (e PiiSuggestionMaskKind) Valid() bool {
 	switch e {
-	case PiiSuggestionMaskKindHash:
+	case Hash:
 		return true
-	case PiiSuggestionMaskKindNull:
+	case Null:
 		return true
-	case PiiSuggestionMaskKindRedact:
+	case Redact:
 		return true
 	default:
 		return false
@@ -719,19 +764,19 @@ func (e PolicyProfileInputApprovalMode) Valid() bool {
 
 // Defines values for PolicyProfileInputMigrationSafety.
 const (
-	Block PolicyProfileInputMigrationSafety = "block"
-	Off   PolicyProfileInputMigrationSafety = "off"
-	Warn  PolicyProfileInputMigrationSafety = "warn"
+	PolicyProfileInputMigrationSafetyBlock PolicyProfileInputMigrationSafety = "block"
+	PolicyProfileInputMigrationSafetyOff   PolicyProfileInputMigrationSafety = "off"
+	PolicyProfileInputMigrationSafetyWarn  PolicyProfileInputMigrationSafety = "warn"
 )
 
 // Valid indicates whether the value is a known member of the PolicyProfileInputMigrationSafety enum.
 func (e PolicyProfileInputMigrationSafety) Valid() bool {
 	switch e {
-	case Block:
+	case PolicyProfileInputMigrationSafetyBlock:
 		return true
-	case Off:
+	case PolicyProfileInputMigrationSafetyOff:
 		return true
-	case Warn:
+	case PolicyProfileInputMigrationSafetyWarn:
 		return true
 	default:
 		return false
@@ -888,6 +933,30 @@ func (e SSLMode) Valid() bool {
 	case VerifyCa:
 		return true
 	case VerifyFull:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for SchemaCatalogRelationKind.
+const (
+	MaterializedView SchemaCatalogRelationKind = "materialized_view"
+	Other            SchemaCatalogRelationKind = "other"
+	Table            SchemaCatalogRelationKind = "table"
+	View             SchemaCatalogRelationKind = "view"
+)
+
+// Valid indicates whether the value is a known member of the SchemaCatalogRelationKind enum.
+func (e SchemaCatalogRelationKind) Valid() bool {
+	switch e {
+	case MaterializedView:
+		return true
+	case Other:
+		return true
+	case Table:
+		return true
+	case View:
 		return true
 	default:
 		return false
@@ -1950,6 +2019,60 @@ type DnsInstructions struct {
 	TxtValue *string `json:"txt_value,omitempty"`
 }
 
+// DryEvalInput A SQL statement to test plus the policy to test it against. Supply exactly one of policy_id (an existing saved policy) or policy (an unsaved draft, e.g. the in-progress editor form).
+type DryEvalInput struct {
+	// Policy Mutable fields of a policy profile (used for create and update).
+	Policy *PolicyProfileInput `json:"policy,omitempty"`
+
+	// PolicyId ID of an existing saved policy profile to evaluate against.
+	PolicyId *string `json:"policy_id,omitempty"`
+
+	// Sql The single SQL statement to evaluate.
+	Sql string `json:"sql"`
+}
+
+// DryEvalMaskedColumn One result column that would be masked, with the mask kind applied.
+type DryEvalMaskedColumn struct {
+	// Column The output column name (post-alias) the client would see masked.
+	Column string `json:"column"`
+
+	// Kind How the column is masked.
+	Kind DryEvalMaskedColumnKind `json:"kind"`
+}
+
+// DryEvalMaskedColumnKind How the column is masked.
+type DryEvalMaskedColumnKind string
+
+// DryEvalResult The decision the proxy would reach for the supplied statement under the supplied policy. verdict is the headline outcome; the remaining fields detail why.
+type DryEvalResult struct {
+	// Hint What the author could do instead (present on block verdicts).
+	Hint *string `json:"hint,omitempty"`
+
+	// MaskedColumns Result columns that would be masked. Present on mask/row-filter verdicts.
+	MaskedColumns *[]DryEvalMaskedColumn `json:"masked_columns,omitempty"`
+
+	// Notes Informational caveats about stateful enforcement a single-statement preview cannot model (per-region budgets, approvals, write-mode routing).
+	Notes *[]string `json:"notes,omitempty"`
+
+	// Reason Human-readable explanation of the verdict.
+	Reason string `json:"reason"`
+
+	// RewrittenSql The statement as it would be sent upstream after row-filter injection.
+	RewrittenSql *string `json:"rewritten_sql,omitempty"`
+
+	// RowFilterPredicate The row-filter predicate ANDed into the statement's WHERE clause.
+	RowFilterPredicate *string `json:"row_filter_predicate,omitempty"`
+
+	// Rule Machine-readable decision tag. For a block, the blocking rule (e.g. read_only, table_denied, table_not_allowed, statement_denied, row_filter_unsafe). Otherwise "ok".
+	Rule string `json:"rule"`
+
+	// Verdict allow — permitted unchanged; block — rejected; mask — permitted but listed result columns are masked; row-filter — permitted but a WHERE predicate is injected (and any listed columns are also masked).
+	Verdict DryEvalResultVerdict `json:"verdict"`
+}
+
+// DryEvalResultVerdict allow — permitted unchanged; block — rejected; mask — permitted but listed result columns are masked; row-filter — permitted but a WHERE predicate is injected (and any listed columns are also masked).
+type DryEvalResultVerdict string
+
 // Error Standard error response envelope for PgBeam API requests.
 type Error struct {
 	// Error Error metadata for the failed request.
@@ -2826,6 +2949,54 @@ type ScanPiiResult struct {
 	Truncated *bool `json:"truncated,omitempty"`
 }
 
+// SchemaCatalog A read-only snapshot of a database's user relations (tables and views) and their columns, used to power table/column autocomplete and view-aware warnings in the policy editor. System schemas (pg_catalog, information_schema, pg_toast) are excluded.
+type SchemaCatalog struct {
+	// Error Present when introspection failed to connect or read the schema.
+	Error *string `json:"error,omitempty"`
+
+	// Relations User relations, ordered by schema then name.
+	Relations []SchemaCatalogRelation `json:"relations"`
+
+	// ScannedColumns Number of columns in the catalog.
+	ScannedColumns int `json:"scanned_columns"`
+
+	// ScannedRelations Number of relations in the catalog.
+	ScannedRelations int `json:"scanned_relations"`
+
+	// Truncated True when the catalog stopped early at the column limit.
+	Truncated *bool `json:"truncated,omitempty"`
+}
+
+// SchemaCatalogColumn One column of a relation in the schema catalog.
+type SchemaCatalogColumn struct {
+	// DataType PostgreSQL data type (information_schema.data_type).
+	DataType string `json:"data_type"`
+
+	// IsBinary True for binary-typed columns (e.g. bytea). Masking a binary column always returns NULL — a redact/hash token would corrupt the wire type — so the editor warns when a masking rule targets one.
+	IsBinary bool `json:"is_binary"`
+
+	// Name Column name.
+	Name string `json:"name"`
+}
+
+// SchemaCatalogRelation One relation (base table or view) in the schema catalog.
+type SchemaCatalogRelation struct {
+	// Columns The relation's columns.
+	Columns []SchemaCatalogColumn `json:"columns"`
+
+	// Kind Relation kind. Allowlists, masking, and row-filters are enforced against the named relation itself, NOT through a view to its base tables — so a view over a row-filtered base table can leak. The editor warns when a policy entry targets a view.
+	Kind SchemaCatalogRelationKind `json:"kind"`
+
+	// Name Relation name.
+	Name string `json:"name"`
+
+	// Schema Schema the relation belongs to.
+	Schema string `json:"schema"`
+}
+
+// SchemaCatalogRelationKind Relation kind. Allowlists, masking, and row-filters are enforced against the named relation itself, NOT through a view to its base tables — so a view over a row-filtered base table can leak. The editor warns when a policy entry targets a view.
+type SchemaCatalogRelationKind string
+
 // SlackEventPayload Slack event forwarded from the dashboard webhook handler.
 type SlackEventPayload struct {
 	// ChannelId Slack channel ID where the message was posted.
@@ -3518,6 +3689,9 @@ type CreatePolicyProfileJSONRequestBody = PolicyProfileInput
 
 // UpdatePolicyProfileJSONRequestBody defines body for UpdatePolicyProfile for application/json ContentType.
 type UpdatePolicyProfileJSONRequestBody = PolicyProfileInput
+
+// DryEvalPolicyJSONRequestBody defines body for DryEvalPolicy for application/json ContentType.
+type DryEvalPolicyJSONRequestBody = DryEvalInput
 
 // CreateWebhookEndpointJSONRequestBody defines body for CreateWebhookEndpoint for application/json ContentType.
 type CreateWebhookEndpointJSONRequestBody = WebhookEndpointInput

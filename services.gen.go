@@ -139,6 +139,10 @@ func (s *DatabasesService) ScanDatabaseForPii(ctx context.Context, projectID str
 	return doJSON[ScanPiiResult](s.t, ctx, "POST", fmt.Sprintf("/v1/projects/%s/databases/%s/scan-pii", projectID, databaseID), nil)
 }
 
+func (s *DatabasesService) GetSchemaCatalog(ctx context.Context, projectID string, databaseID string) (*SchemaCatalog, error) {
+	return doJSON[SchemaCatalog](s.t, ctx, "GET", fmt.Sprintf("/v1/projects/%s/databases/%s/schema-catalog", projectID, databaseID), nil)
+}
+
 // PoliciesService provides policies operations.
 type PoliciesService struct{ t *transport }
 
@@ -160,6 +164,10 @@ func (s *PoliciesService) UpdatePolicyProfile(ctx context.Context, projectID str
 
 func (s *PoliciesService) DeletePolicyProfile(ctx context.Context, projectID string, policyID string) error {
 	return doVoid(s.t, ctx, "DELETE", fmt.Sprintf("/v1/projects/%s/policies/%s", projectID, policyID), nil)
+}
+
+func (s *PoliciesService) DryEvalPolicy(ctx context.Context, projectID string, body DryEvalInput) (*DryEvalResult, error) {
+	return doJSON[DryEvalResult](s.t, ctx, "POST", fmt.Sprintf("/v1/projects/%s/policy-evaluations", projectID), body)
 }
 
 // AgentsService provides agents operations.
