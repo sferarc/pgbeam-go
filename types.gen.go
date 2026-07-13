@@ -2480,6 +2480,12 @@ type OrganizationPlan struct {
 	// Plan Current plan tier.
 	Plan OrganizationPlanPlan `json:"plan"`
 
+	// SpendCapped Whether the organization has hit its spend limit and agent access is paused at the proxy. Lifts automatically when usage resets for the new billing period, or immediately when the spend limit is raised or removed.
+	SpendCapped *bool `json:"spend_capped,omitempty"`
+
+	// SpendCappedAt When the spend cap was applied. Null when not capped.
+	SpendCappedAt *time.Time `json:"spend_capped_at,omitempty"`
+
 	// SpendLimit Monthly spend limit in dollars. Null means no limit.
 	SpendLimit *float64 `json:"spend_limit,omitempty"`
 
