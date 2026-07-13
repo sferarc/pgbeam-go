@@ -1065,6 +1065,27 @@ func (e UpdateOnboardingRequestStep) Valid() bool {
 	}
 }
 
+// Defines values for VercelResourceStatusStatus.
+const (
+	VercelResourceStatusStatusDeleted   VercelResourceStatusStatus = "deleted"
+	VercelResourceStatusStatusReady     VercelResourceStatusStatus = "ready"
+	VercelResourceStatusStatusSuspended VercelResourceStatusStatus = "suspended"
+)
+
+// Valid indicates whether the value is a known member of the VercelResourceStatusStatus enum.
+func (e VercelResourceStatusStatus) Valid() bool {
+	switch e {
+	case VercelResourceStatusStatusDeleted:
+		return true
+	case VercelResourceStatusStatusReady:
+		return true
+	case VercelResourceStatusStatusSuspended:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for WebhookEndpointFormat.
 const (
 	WebhookEndpointFormatDatadog   WebhookEndpointFormat = "datadog"
@@ -1157,28 +1178,28 @@ func (e ListAnomalyAlertsParamsStatus) Valid() bool {
 
 // Defines values for ListApprovalRequestsParamsStatus.
 const (
-	ListApprovalRequestsParamsStatusApproved ListApprovalRequestsParamsStatus = "approved"
-	ListApprovalRequestsParamsStatusExecuted ListApprovalRequestsParamsStatus = "executed"
-	ListApprovalRequestsParamsStatusExpired  ListApprovalRequestsParamsStatus = "expired"
-	ListApprovalRequestsParamsStatusFailed   ListApprovalRequestsParamsStatus = "failed"
-	ListApprovalRequestsParamsStatusPending  ListApprovalRequestsParamsStatus = "pending"
-	ListApprovalRequestsParamsStatusRejected ListApprovalRequestsParamsStatus = "rejected"
+	Approved ListApprovalRequestsParamsStatus = "approved"
+	Executed ListApprovalRequestsParamsStatus = "executed"
+	Expired  ListApprovalRequestsParamsStatus = "expired"
+	Failed   ListApprovalRequestsParamsStatus = "failed"
+	Pending  ListApprovalRequestsParamsStatus = "pending"
+	Rejected ListApprovalRequestsParamsStatus = "rejected"
 )
 
 // Valid indicates whether the value is a known member of the ListApprovalRequestsParamsStatus enum.
 func (e ListApprovalRequestsParamsStatus) Valid() bool {
 	switch e {
-	case ListApprovalRequestsParamsStatusApproved:
+	case Approved:
 		return true
-	case ListApprovalRequestsParamsStatusExecuted:
+	case Executed:
 		return true
-	case ListApprovalRequestsParamsStatusExpired:
+	case Expired:
 		return true
-	case ListApprovalRequestsParamsStatusFailed:
+	case Failed:
 		return true
-	case ListApprovalRequestsParamsStatusPending:
+	case Pending:
 		return true
-	case ListApprovalRequestsParamsStatusRejected:
+	case Rejected:
 		return true
 	default:
 		return false
@@ -3242,6 +3263,54 @@ type UsageResponse struct {
 	// Usage Daily usage entries aggregated across the organization.
 	Usage []DailyUsage `json:"usage"`
 }
+
+// VercelInstallationStatus Vercel Marketplace installation status for an organization, including its resources.
+type VercelInstallationStatus struct {
+	// CreatedAt When the installation was created.
+	CreatedAt *time.Time `json:"created_at,omitempty"`
+
+	// InstallationId Vercel installation (integration configuration) identifier.
+	InstallationId string `json:"installation_id"`
+
+	// Plan Current plan tier for the organization.
+	Plan string `json:"plan"`
+
+	// Resources Resources (projects) provisioned under this installation.
+	Resources []VercelResourceStatus `json:"resources"`
+
+	// Status Installation status (active).
+	Status string `json:"status"`
+
+	// VercelAccountId Vercel account/team identifier that owns the installation.
+	VercelAccountId string `json:"vercel_account_id"`
+}
+
+// VercelResourceStatus A PgBeam project provisioned as a Vercel Marketplace resource, with current-period usage.
+type VercelResourceStatus struct {
+	// BillingPlanId Plan tier the resource is billed on.
+	BillingPlanId string `json:"billing_plan_id"`
+
+	// Name Human-readable resource/project name.
+	Name string `json:"name"`
+
+	// PeriodBytes Bytes transferred by this resource in the current billing period.
+	PeriodBytes int64 `json:"period_bytes"`
+
+	// PeriodQueries Queries this resource has served in the current billing period.
+	PeriodQueries int64 `json:"period_queries"`
+
+	// ProjectId PgBeam project identifier backing the resource.
+	ProjectId string `json:"project_id"`
+
+	// ResourceId Vercel resource identifier.
+	ResourceId string `json:"resource_id"`
+
+	// Status Current resource lifecycle status.
+	Status VercelResourceStatusStatus `json:"status"`
+}
+
+// VercelResourceStatusStatus Current resource lifecycle status.
+type VercelResourceStatusStatus string
 
 // VerifyCustomDomainResponse Result of checking DNS ownership for a custom domain.
 type VerifyCustomDomainResponse struct {

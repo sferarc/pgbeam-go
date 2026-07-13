@@ -287,6 +287,10 @@ func (s *AnalyticsService) GetOrganizationPlan(ctx context.Context, orgID string
 	return doJSON[OrganizationPlan](s.t, ctx, "GET", fmt.Sprintf("/v1/organizations/%s/plan", orgID), nil)
 }
 
+func (s *AnalyticsService) GetVercelInstallation(ctx context.Context, orgID string) (*VercelInstallationStatus, error) {
+	return doJSON[VercelInstallationStatus](s.t, ctx, "GET", fmt.Sprintf("/v1/organizations/%s/vercel-installation", orgID), nil)
+}
+
 func (s *AnalyticsService) UpdateSpendLimit(ctx context.Context, orgID string, body UpdateSpendLimitRequest) (*OrganizationPlan, error) {
 	return doJSON[OrganizationPlan](s.t, ctx, "PUT", fmt.Sprintf("/v1/organizations/%s/spend-limit", orgID), body)
 }
