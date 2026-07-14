@@ -2630,6 +2630,9 @@ type PolicyProfile struct {
 	// MaskingRules Column masking rules applied to query results.
 	MaskingRules []MaskingRule `json:"masking_rules"`
 
+	// MaxAffectedRows Hard cap on rows a single write (INSERT/UPDATE/DELETE) may affect. A write whose affected-row count would exceed this is executed inside a transaction, checked, and rolled back so nothing persists, then blocked. Enforced independently of human approval. 0 means unlimited.
+	MaxAffectedRows *int `json:"max_affected_rows,omitempty"`
+
 	// MaxRows Max rows returned per query. 0 means unlimited.
 	MaxRows *int `json:"max_rows,omitempty"`
 
@@ -2701,6 +2704,9 @@ type PolicyProfileInput struct {
 
 	// MaskingRules Column masking rules applied to query results.
 	MaskingRules *[]MaskingRule `json:"masking_rules,omitempty"`
+
+	// MaxAffectedRows Hard cap on rows a single write (INSERT/UPDATE/DELETE) may affect. A write whose affected-row count would exceed this is executed inside a transaction, checked, and rolled back so nothing persists, then blocked. Enforced independently of human approval. 0 means unlimited.
+	MaxAffectedRows *int `json:"max_affected_rows,omitempty"`
 
 	// MaxRows Max rows returned per query. 0 means unlimited.
 	MaxRows *int `json:"max_rows,omitempty"`
