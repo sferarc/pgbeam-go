@@ -273,6 +273,27 @@ func (e CreateProjectRequestCloud) Valid() bool {
 	}
 }
 
+// Defines values for DataResidency.
+const (
+	Any DataResidency = "any"
+	Eu  DataResidency = "eu"
+	Us  DataResidency = "us"
+)
+
+// Valid indicates whether the value is a known member of the DataResidency enum.
+func (e DataResidency) Valid() bool {
+	switch e {
+	case Any:
+		return true
+	case Eu:
+		return true
+	case Us:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for DatabaseBranchStatus.
 const (
 	DatabaseBranchStatusDiscarded DatabaseBranchStatus = "discarded"
@@ -1929,6 +1950,9 @@ type DailyUsage struct {
 	QueriesTotal int64 `json:"queries_total"`
 }
 
+// DataResidency Data-residency requirement for the project. "any" (default) lets queries be served from the nearest data-plane metro. "us" or "eu" require the serving metro to be in that jurisdiction; the proxy fails a connection closed when it is served from a metro outside the required jurisdiction, so regulated workloads never process outside their permitted region.
+type DataResidency string
+
 // Database Registered upstream PostgreSQL database for a project.
 type Database struct {
 	// AutoReadRouting When enabled and replicas are configured, SELECT queries automatically route to read replicas without requiring the @pgbeam:replica SQL annotation.
@@ -2831,6 +2855,9 @@ type Project struct {
 	// QueriesPerSecond Maximum queries per second for this project. 0 means unlimited.
 	QueriesPerSecond *int32 `json:"queries_per_second,omitempty"`
 
+	// Residency Data-residency requirement for the project. "any" (default) lets queries be served from the nearest data-plane metro. "us" or "eu" require the serving metro to be in that jurisdiction; the proxy fails a connection closed when it is served from a metro outside the required jurisdiction, so regulated workloads never process outside their permitted region.
+	Residency *DataResidency `json:"residency,omitempty"`
+
 	// Status Project lifecycle status.
 	Status ProjectStatus `json:"status"`
 
@@ -3268,6 +3295,9 @@ type UpdateProjectRequest struct {
 
 	// Name Updated project name.
 	Name *string `json:"name,omitempty"`
+
+	// Residency Data-residency requirement for the project. "any" (default) lets queries be served from the nearest data-plane metro. "us" or "eu" require the serving metro to be in that jurisdiction; the proxy fails a connection closed when it is served from a metro outside the required jurisdiction, so regulated workloads never process outside their permitted region.
+	Residency *DataResidency `json:"residency,omitempty"`
 
 	// Status Project lifecycle status.
 	Status *ProjectStatus `json:"status,omitempty"`
