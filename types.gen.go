@@ -2573,11 +2573,17 @@ type PlanInfo struct {
 
 // PlanLimits Effective usage limits enforced for an organization plan.
 type PlanLimits struct {
+	// AuditRetentionDays Agent audit-log retention window in days.
+	AuditRetentionDays int `json:"audit_retention_days"`
+
 	// BytesPerMonth Monthly data transfer quota in bytes. 0 means unlimited.
 	BytesPerMonth int64 `json:"bytes_per_month"`
 
 	// IncludedSeats Number of seats included in the plan.
 	IncludedSeats int `json:"included_seats"`
+
+	// MaxAgentCredentials Maximum agent credentials per organization. 0 means unlimited.
+	MaxAgentCredentials int `json:"max_agent_credentials"`
 
 	// MaxConnections Maximum concurrent connections per project.
 	MaxConnections int `json:"max_connections"`
@@ -2596,6 +2602,18 @@ type PlanLimits struct {
 
 	// QueriesPerSecond Maximum queries per second per project.
 	QueriesPerSecond int `json:"queries_per_second"`
+
+	// SandboxIdleSeconds Idle time before an instant (sandbox) branch scales to zero, in seconds.
+	SandboxIdleSeconds int `json:"sandbox_idle_seconds"`
+
+	// SandboxMaxBranches Maximum concurrently active instant (sandbox) branches. 0 means no limit.
+	SandboxMaxBranches int `json:"sandbox_max_branches"`
+
+	// SandboxMaxUpstreamBytes Maximum upstream source-database size a sandbox base sync accepts, in bytes. 0 means no limit.
+	SandboxMaxUpstreamBytes int64 `json:"sandbox_max_upstream_bytes"`
+
+	// SandboxTtlSeconds Lifetime of an instant (sandbox) branch before the TTL sweep discards it, in seconds.
+	SandboxTtlSeconds int `json:"sandbox_ttl_seconds"`
 }
 
 // PolicyProfile A named bundle of rules enforced on agent credentials in the data plane.

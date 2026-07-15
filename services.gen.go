@@ -23,6 +23,8 @@ type Client struct {
 	Analytics  *AnalyticsService
 	Platform   *PlatformService
 	Account    *AccountService
+	Internal   *InternalService
+	Support    *SupportService
 	t          *transport
 }
 
@@ -42,6 +44,8 @@ func NewClient(opts *ClientOptions) *Client {
 	c.Analytics = &AnalyticsService{t: t}
 	c.Platform = &PlatformService{t: t}
 	c.Account = &AccountService{t: t}
+	c.Internal = &InternalService{t: t}
+	c.Support = &SupportService{t: t}
 	return c
 }
 
@@ -335,4 +339,34 @@ func (s *AccountService) GetOnboardingProgress(ctx context.Context, orgID string
 
 func (s *AccountService) UpdateOnboardingProgress(ctx context.Context, orgID string, body UpdateOnboardingRequest) (*OnboardingProgress, error) {
 	return doJSON[OnboardingProgress](s.t, ctx, "PATCH", fmt.Sprintf("/v1/organizations/%s/onboarding", orgID), body)
+}
+
+// InternalService provides internal operations.
+type InternalService struct{ t *transport }
+
+func (s *InternalService) HandleSlackSupportEvent(ctx context.Context, body SlackEventPayload) error {
+	return doVoid(s.t, ctx, "POST", "/v1/internal/support/slack-event", body)
+}
+
+// SupportService provides support operations.
+type SupportService struct{ t *transport }
+
+func (s *SupportService) ListSupportCases(ctx context.Context, orgID string, params *ListSupportCasesParams) (*ListSupportCasesResponse, error) {
+	return doQuery[ListSupportCasesResponse](s.t, ctx, fmt.Sprintf("/v1/organizations/%s/support/cases", orgID), params)
+}
+
+func (s *SupportService) CreateSupportCase(ctx context.Context, orgID string, body CreateSupportCaseRequest) (*SupportCase, error) {
+	return doJSON[SupportCase](s.t, ctx, "POST", fmt.Sprintf("/v1/organizations/%s/support/cases", orgID), body)
+}
+
+func (s *SupportService) GetSupportCase(ctx context.Context, orgID string, caseID string) (*GetSupportCaseResponse, error) {
+	return doJSON[GetSupportCaseResponse](s.t, ctx, "GET", fmt.Sprintf("/v1/organizations/%s/support/cases/%s", orgID, caseID), nil)
+}
+
+func (s *SupportService) UpdateSupportCase(ctx context.Context, orgID string, caseID string, body UpdateSupportCaseRequest) (*SupportCase, error) {
+	return doJSON[SupportCase](s.t, ctx, "PATCH", fmt.Sprintf("/v1/organizations/%s/support/cases/%s", orgID, caseID), body)
+}
+
+func (s *SupportService) CreateSupportMessage(ctx context.Context, orgID string, caseID string, body CreateSupportMessageRequest) (*SupportMessage, error) {
+	return doJSON[SupportMessage](s.t, ctx, "POST", fmt.Sprintf("/v1/organizations/%s/support/cases/%s/messages", orgID, caseID), body)
 }
