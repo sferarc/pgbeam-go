@@ -1605,6 +1605,33 @@ type ApprovalRequest struct {
 // ApprovalRequestStatus Current state of the approval request.
 type ApprovalRequestStatus string
 
+// AuditChainVerification Result of recomputing the project's tamper-evident audit hash chain over a time range. The chain links each entry to its predecessor, so editing or deleting any row breaks it.
+type AuditChainVerification struct {
+	// ChainEndSeq Sequence number of the last chained entry checked. Null when none.
+	ChainEndSeq *int64 `json:"chain_end_seq,omitempty"`
+
+	// ChainStartSeq Sequence number of the first chained entry checked. Null when none.
+	ChainStartSeq *int64 `json:"chain_start_seq,omitempty"`
+
+	// FailureReason Machine-readable failure kind: hash_mismatch (entry content edited), broken_link (prev_hash does not match the predecessor), or missing_entry (a sequence number was deleted). Null when ok.
+	FailureReason *string `json:"failure_reason,omitempty"`
+
+	// FirstBrokenSeq Sequence number where verification first failed (a tampered or deleted entry). Null when ok.
+	FirstBrokenSeq *int64 `json:"first_broken_seq,omitempty"`
+
+	// Ok True when every chained entry in the range links correctly and no tampering or deletion was detected.
+	Ok bool `json:"ok"`
+
+	// UnchainedCount Pre-chain (legacy) entries in the range that predate the hash chain and were skipped rather than treated as tampering.
+	UnchainedCount int64 `json:"unchained_count"`
+
+	// VerifiedAt When verification ran.
+	VerifiedAt time.Time `json:"verified_at"`
+
+	// VerifiedCount Number of chained entries checked.
+	VerifiedCount int64 `json:"verified_count"`
+}
+
 // AuditDecision Coarse outcome filter that groups audit events. `allow` = query; `block` = blocked, budget_exhausted, auth_failed, credential_expired; `mask` = masked; `truncate` = truncated.
 type AuditDecision string
 
@@ -1625,6 +1652,9 @@ type AuditLogEntry struct {
 	// DecisionRule Machine-readable rule that produced a block, if any.
 	DecisionRule *string `json:"decision_rule,omitempty"`
 
+	// EntryHash Hex SHA-256 of this entry's canonical content chained onto prev_hash. Empty for pre-chain legacy entries.
+	EntryHash *string `json:"entry_hash,omitempty"`
+
 	// Event Event type (query, blocked, masked, budget_exhausted, truncated, auth_failed, credential_expired).
 	Event string `json:"event"`
 
@@ -1636,6 +1666,9 @@ type AuditLogEntry struct {
 
 	// NormalizedSql Statement with literals replaced by placeholders.
 	NormalizedSql *string `json:"normalized_sql,omitempty"`
+
+	// PrevHash Hex SHA-256 of the previous chained entry (a fixed genesis value for the first entry). Empty for pre-chain legacy entries.
+	PrevHash *string `json:"prev_hash,omitempty"`
 
 	// ProjectId Owning project ID.
 	ProjectId string `json:"project_id"`
@@ -1651,6 +1684,9 @@ type AuditLogEntry struct {
 
 	// RowsReturned Rows returned to the agent.
 	RowsReturned *int64 `json:"rows_returned,omitempty"`
+
+	// Seq Monotonic per-project position in the tamper-evident hash chain.
+	Seq *int64 `json:"seq,omitempty"`
 
 	// SessionId Identifier grouping a connection's statements.
 	SessionId *string `json:"session_id,omitempty"`
@@ -3716,6 +3752,15 @@ type ExportAuditLogsParams struct {
 	// Source Filter by statement origin (wire, mcp, or control).
 	Source *AuditSource `form:"source,omitempty" json:"source,omitempty"`
 
+	// Start Return entries at or after this timestamp (inclusive lower bound).
+	Start *AuditStart `form:"start,omitempty" json:"start,omitempty"`
+
+	// End Return entries strictly older than this timestamp (cursor / upper bound).
+	End *AuditEnd `form:"end,omitempty" json:"end,omitempty"`
+}
+
+// VerifyAuditChainParams defines parameters for VerifyAuditChain.
+type VerifyAuditChainParams struct {
 	// Start Return entries at or after this timestamp (inclusive lower bound).
 	Start *AuditStart `form:"start,omitempty" json:"start,omitempty"`
 

@@ -209,6 +209,10 @@ func (s *AgentsService) ExportAuditLogs(ctx context.Context, projectID string, p
 	return doVoid(s.t, ctx, "GET", fmt.Sprintf("/v1/projects/%s/audit-logs/export", projectID), nil)
 }
 
+func (s *AgentsService) VerifyAuditChain(ctx context.Context, projectID string, params *VerifyAuditChainParams) (*AuditChainVerification, error) {
+	return doQuery[AuditChainVerification](s.t, ctx, fmt.Sprintf("/v1/projects/%s/audit-logs/verify", projectID), params)
+}
+
 // ApprovalsService provides approvals operations.
 type ApprovalsService struct{ t *transport }
 
