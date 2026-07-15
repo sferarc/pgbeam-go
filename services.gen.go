@@ -326,6 +326,18 @@ func (s *PlatformService) ListRegions(ctx context.Context) (*ListRegionsResponse
 	return doJSON[ListRegionsResponse](s.t, ctx, "GET", "/v1/regions", nil)
 }
 
+func (s *PlatformService) ListSelfHostEnrollments(ctx context.Context, orgID string) (*ListSelfHostEnrollmentsResponse, error) {
+	return doJSON[ListSelfHostEnrollmentsResponse](s.t, ctx, "GET", fmt.Sprintf("/v1/organizations/%s/self-host-enrollments", orgID), nil)
+}
+
+func (s *PlatformService) CreateSelfHostEnrollment(ctx context.Context, orgID string, body CreateSelfHostEnrollmentRequest) (*SelfHostEnrollmentSecret, error) {
+	return doJSON[SelfHostEnrollmentSecret](s.t, ctx, "POST", fmt.Sprintf("/v1/organizations/%s/self-host-enrollments", orgID), body)
+}
+
+func (s *PlatformService) RevokeSelfHostEnrollment(ctx context.Context, orgID string, enrollmentID string) error {
+	return doVoid(s.t, ctx, "DELETE", fmt.Sprintf("/v1/organizations/%s/self-host-enrollments/%s", orgID, enrollmentID), nil)
+}
+
 // AccountService provides account operations.
 type AccountService struct{ t *transport }
 

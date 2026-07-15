@@ -1847,6 +1847,9 @@ type CreateProjectRequest struct {
 	// OrgId Better Auth organization ID.
 	OrgId string `json:"org_id"`
 
+	// SelfHosted Mark this project as running on a self-hosted (BYOC) data plane in the customer's own VPC/cluster. Requires the Scale or enterprise plan.
+	SelfHosted *bool `json:"self_hosted,omitempty"`
+
 	// Tags User-defined labels to attach to the project.
 	Tags *[]string `json:"tags,omitempty"`
 }
@@ -1873,6 +1876,15 @@ type CreateReplicaRequest struct {
 
 	// SslMode PostgreSQL SSL connection mode.
 	SslMode *SSLMode `json:"ssl_mode,omitempty"`
+}
+
+// CreateSelfHostEnrollmentRequest Request body for issuing a self-host enrollment token.
+type CreateSelfHostEnrollmentRequest struct {
+	// Description Optional human-readable note.
+	Description *string `json:"description,omitempty"`
+
+	// RegionLabel Operator-supplied label for where the proxy runs.
+	RegionLabel *string `json:"region_label,omitempty"`
 }
 
 // CreateSupportCaseRequest Request body for creating a support case.
@@ -2278,6 +2290,12 @@ type ListReplicasResponse struct {
 
 	// Replicas Read replicas attached to the database.
 	Replicas []Replica `json:"replicas"`
+}
+
+// ListSelfHostEnrollmentsResponse List of self-host enrollments for an organization.
+type ListSelfHostEnrollmentsResponse struct {
+	// Enrollments The organization's self-host enrollments, newest first.
+	Enrollments []SelfHostEnrollment `json:"enrollments"`
 }
 
 // ListSupportCasesResponse Paginated list of support cases.
@@ -2858,6 +2876,9 @@ type Project struct {
 	// Residency Data-residency requirement for the project. "any" (default) lets queries be served from the nearest data-plane metro. "us" or "eu" require the serving metro to be in that jurisdiction; the proxy fails a connection closed when it is served from a metro outside the required jurisdiction, so regulated workloads never process outside their permitted region.
 	Residency *DataResidency `json:"residency,omitempty"`
 
+	// SelfHosted When true, this project's data plane runs in the customer's own VPC/cluster (BYOC): the control plane does not provision hosted infra, and a self-hosted proxy dials home over the config/audit gRPC stream. Requires the Scale or enterprise plan.
+	SelfHosted *bool `json:"self_hosted,omitempty"`
+
 	// Status Project lifecycle status.
 	Status ProjectStatus `json:"status"`
 
@@ -3077,6 +3098,42 @@ type SchemaCatalogRelation struct {
 
 // SchemaCatalogRelationKind Relation kind. Allowlists, masking, and row-filters are enforced against the named relation itself, NOT through a view to its base tables — so a view over a row-filtered base table can leak. The editor warns when a policy entry targets a view.
 type SchemaCatalogRelationKind string
+
+// SelfHostEnrollment An enrollment that lets a self-hosted (BYOC) proxy authenticate to the control plane's config/audit gRPC stream on behalf of an organization. The token itself is never returned after creation, only its metadata.
+type SelfHostEnrollment struct {
+	// CreatedAt When the enrollment was created.
+	CreatedAt time.Time `json:"created_at"`
+
+	// CreatedBy User ID that created the enrollment.
+	CreatedBy *string `json:"created_by,omitempty"`
+
+	// Description Optional human-readable note.
+	Description *string `json:"description,omitempty"`
+
+	// Id Unique enrollment identifier.
+	Id string `json:"id"`
+
+	// LastSeenAt Last time a proxy authenticated with this enrollment.
+	LastSeenAt *time.Time `json:"last_seen_at,omitempty"`
+
+	// OrgId Organization that owns this enrollment.
+	OrgId string `json:"org_id"`
+
+	// RegionLabel Operator-supplied label for where the proxy runs (informational).
+	RegionLabel *string `json:"region_label,omitempty"`
+
+	// RevokedAt When the enrollment was revoked. Null means active.
+	RevokedAt *time.Time `json:"revoked_at,omitempty"`
+}
+
+// SelfHostEnrollmentSecret Response returned once when an enrollment is created. The token is shown a single time and cannot be retrieved again; set it as GRPC_AUTH_TOKEN on the self-hosted proxy.
+type SelfHostEnrollmentSecret struct {
+	// Enrollment An enrollment that lets a self-hosted (BYOC) proxy authenticate to the control plane's config/audit gRPC stream on behalf of an organization. The token itself is never returned after creation, only its metadata.
+	Enrollment SelfHostEnrollment `json:"enrollment"`
+
+	// Token The plaintext enrollment token (pbh_...). Shown once.
+	Token string `json:"token"`
+}
 
 // SlackEventPayload Slack event forwarded from the dashboard webhook handler.
 type SlackEventPayload struct {
@@ -3770,6 +3827,9 @@ type SubmitCancellationFeedbackJSONRequestBody = CancellationFeedbackRequest
 
 // UpdateOnboardingProgressJSONRequestBody defines body for UpdateOnboardingProgress for application/json ContentType.
 type UpdateOnboardingProgressJSONRequestBody = UpdateOnboardingRequest
+
+// CreateSelfHostEnrollmentJSONRequestBody defines body for CreateSelfHostEnrollment for application/json ContentType.
+type CreateSelfHostEnrollmentJSONRequestBody = CreateSelfHostEnrollmentRequest
 
 // UpdateSpendLimitJSONRequestBody defines body for UpdateSpendLimit for application/json ContentType.
 type UpdateSpendLimitJSONRequestBody = UpdateSpendLimitRequest
