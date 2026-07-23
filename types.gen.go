@@ -1592,6 +1592,9 @@ type ApprovalRequest struct {
 	// DecidedBy User who decided, if any.
 	DecidedBy *string `json:"decided_by,omitempty"`
 
+	// EstimatedRows Best-effort estimate of how many rows the statement would affect, attached by the data plane when the statement was held. Either the planner estimate from EXPLAIN or the exact count observed in a rolled-back trial execution. Null when no estimate could be made; treat it as an estimate, not a guarantee.
+	EstimatedRows *int64 `json:"estimated_rows,omitempty"`
+
 	// ExpiresAt When the request expires if undecided.
 	ExpiresAt time.Time `json:"expires_at"`
 
@@ -1627,6 +1630,9 @@ type ApprovalRequest struct {
 
 	// Status Current state of the approval request.
 	Status ApprovalRequestStatus `json:"status"`
+
+	// TargetTables Relations the statement touches, from the gateway's parse analysis.
+	TargetTables *[]string `json:"target_tables,omitempty"`
 }
 
 // ApprovalRequestStatus Current state of the approval request.
