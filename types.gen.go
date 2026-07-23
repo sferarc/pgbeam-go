@@ -172,6 +172,7 @@ func (e AuditDecision) Valid() bool {
 const (
 	Control AuditSource = "control"
 	Mcp     AuditSource = "mcp"
+	Rest    AuditSource = "rest"
 	Wire    AuditSource = "wire"
 )
 
@@ -181,6 +182,8 @@ func (e AuditSource) Valid() bool {
 	case Control:
 		return true
 	case Mcp:
+		return true
+	case Rest:
 		return true
 	case Wire:
 		return true
@@ -1715,7 +1718,7 @@ type AuditLogEntry struct {
 	// SessionId Identifier grouping a connection's statements.
 	SessionId *string `json:"session_id,omitempty"`
 
-	// Source Statement origin (wire, mcp, or control for control-plane lifecycle events).
+	// Source Statement origin (wire, mcp, rest, or control for control-plane lifecycle events).
 	Source *string `json:"source,omitempty"`
 
 	// Sql The statement text (truncated).
@@ -1728,7 +1731,7 @@ type AuditLogEntry struct {
 	Ts time.Time `json:"ts"`
 }
 
-// AuditSource Statement origin (wire, mcp, or control).
+// AuditSource Statement origin (wire, mcp, rest, or control).
 type AuditSource string
 
 // CacheConfig Query cache configuration.
@@ -3848,7 +3851,7 @@ type ListAuditLogsParams struct {
 	// Decision Coarse outcome filter that groups events. `allow` = query; `block` = blocked, budget_exhausted, auth_failed, credential_expired; `mask` = masked; `truncate` = truncated.
 	Decision *AuditDecision `form:"decision,omitempty" json:"decision,omitempty"`
 
-	// Source Filter by statement origin (wire, mcp, or control).
+	// Source Filter by statement origin (wire, mcp, rest, or control).
 	Source *AuditSource `form:"source,omitempty" json:"source,omitempty"`
 
 	// Start Return entries at or after this timestamp (inclusive lower bound).
@@ -3875,7 +3878,7 @@ type ExportAuditLogsParams struct {
 	// Decision Coarse outcome filter that groups events. `allow` = query; `block` = blocked, budget_exhausted, auth_failed, credential_expired; `mask` = masked; `truncate` = truncated.
 	Decision *AuditDecision `form:"decision,omitempty" json:"decision,omitempty"`
 
-	// Source Filter by statement origin (wire, mcp, or control).
+	// Source Filter by statement origin (wire, mcp, rest, or control).
 	Source *AuditSource `form:"source,omitempty" json:"source,omitempty"`
 
 	// Start Return entries at or after this timestamp (inclusive lower bound).
