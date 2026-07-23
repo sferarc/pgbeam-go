@@ -346,6 +346,10 @@ func (s *PlatformService) RevokeSelfHostEnrollment(ctx context.Context, orgID st
 	return doVoid(s.t, ctx, "DELETE", fmt.Sprintf("/v1/organizations/%s/self-host-enrollments/%s", orgID, enrollmentID), nil)
 }
 
+func (s *PlatformService) RotateSelfHostEnrollment(ctx context.Context, orgID string, enrollmentID string) (*SelfHostEnrollmentSecret, error) {
+	return doJSON[SelfHostEnrollmentSecret](s.t, ctx, "POST", fmt.Sprintf("/v1/organizations/%s/self-host-enrollments/%s/rotate", orgID, enrollmentID), nil)
+}
+
 // AccountService provides account operations.
 type AccountService struct{ t *transport }
 

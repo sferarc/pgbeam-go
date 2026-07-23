@@ -1952,6 +1952,9 @@ type CreateSelfHostEnrollmentRequest struct {
 	// Description Optional human-readable note.
 	Description *string `json:"description,omitempty"`
 
+	// ExpiresAt Optional expiry. When set, the enrollment token stops authenticating new proxy connections at this time (must be in the future). Omit or set null for a token that never expires.
+	ExpiresAt *time.Time `json:"expires_at,omitempty"`
+
 	// RegionLabel Operator-supplied label for where the proxy runs.
 	RegionLabel *string `json:"region_label,omitempty"`
 }
@@ -3281,6 +3284,9 @@ type SelfHostEnrollment struct {
 	// Description Optional human-readable note.
 	Description *string `json:"description,omitempty"`
 
+	// ExpiresAt When the enrollment token expires and stops authenticating new proxy connections. Null means it never expires. Enforcement is fail-closed at the gRPC auth gate the instant this time passes.
+	ExpiresAt *time.Time `json:"expires_at,omitempty"`
+
 	// Id Unique enrollment identifier.
 	Id string `json:"id"`
 
@@ -3297,7 +3303,7 @@ type SelfHostEnrollment struct {
 	RevokedAt *time.Time `json:"revoked_at,omitempty"`
 }
 
-// SelfHostEnrollmentSecret Response returned once when an enrollment is created. The token is shown a single time and cannot be retrieved again; set it as GRPC_AUTH_TOKEN on the self-hosted proxy.
+// SelfHostEnrollmentSecret Response returned once when an enrollment is created or its token is rotated. The token is shown a single time and cannot be retrieved again; set it as GRPC_AUTH_TOKEN on the self-hosted proxy.
 type SelfHostEnrollmentSecret struct {
 	// Enrollment An enrollment that lets a self-hosted (BYOC) proxy authenticate to the control plane's config/audit gRPC stream on behalf of an organization. The token itself is never returned after creation, only its metadata.
 	Enrollment SelfHostEnrollment `json:"enrollment"`
