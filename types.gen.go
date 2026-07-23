@@ -825,6 +825,30 @@ func (e PolicyProfileInputWriteMode) Valid() bool {
 	}
 }
 
+// Defines values for PolicyReplayItemChange.
+const (
+	NewlyAllowed PolicyReplayItemChange = "newly_allowed"
+	NewlyBlocked PolicyReplayItemChange = "newly_blocked"
+	StillAllowed PolicyReplayItemChange = "still_allowed"
+	StillBlocked PolicyReplayItemChange = "still_blocked"
+)
+
+// Valid indicates whether the value is a known member of the PolicyReplayItemChange enum.
+func (e PolicyReplayItemChange) Valid() bool {
+	switch e {
+	case NewlyAllowed:
+		return true
+	case NewlyBlocked:
+		return true
+	case StillAllowed:
+		return true
+	case StillBlocked:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for PoolMode.
 const (
 	Session     PoolMode = "session"
@@ -2844,6 +2868,108 @@ type PolicyProfileInputMigrationSafety string
 // PolicyProfileInputWriteMode How writes are handled. normal commits, rollback auto-rolls back, sandbox routes to an ephemeral branch.
 type PolicyProfileInputWriteMode string
 
+// PolicyReplayInput A window of recorded agent traffic to replay plus the candidate policy to replay it against. Supply exactly one of policy_id (an existing saved policy) or policy (an unsaved draft, e.g. the in-progress editor form).
+type PolicyReplayInput struct {
+	// CredentialId Restrict the replay to traffic recorded for one agent credential.
+	CredentialId *string `json:"credential_id,omitempty"`
+
+	// EndTs End of the traffic window (exclusive). Defaults to now.
+	EndTs *time.Time `json:"end_ts,omitempty"`
+
+	// Limit Maximum number of distinct queries to replay, newest first. Traffic is deduplicated by normalized query hash before evaluation.
+	Limit *int `json:"limit,omitempty"`
+
+	// Policy Mutable fields of a policy profile (used for create and update).
+	Policy *PolicyProfileInput `json:"policy,omitempty"`
+
+	// PolicyId ID of an existing saved policy profile to replay against.
+	PolicyId *string `json:"policy_id,omitempty"`
+
+	// StartTs Start of the traffic window (inclusive). Defaults to 7 days before end_ts.
+	StartTs *time.Time `json:"start_ts,omitempty"`
+}
+
+// PolicyReplayItem One distinct recorded query and the decision the candidate policy would reach for it.
+type PolicyReplayItem struct {
+	// Change How the candidate decision compares to the recorded outcome. newly_blocked and newly_allowed are the changes worth reviewing before rollout; still_allowed and still_blocked are unchanged.
+	Change PolicyReplayItemChange `json:"change"`
+
+	// FirstSeen Oldest occurrence in the window.
+	FirstSeen time.Time `json:"first_seen"`
+
+	// LastSeen Newest occurrence in the window.
+	LastSeen time.Time `json:"last_seen"`
+
+	// Occurrences How many recorded entries share this query shape in the window.
+	Occurrences int64 `json:"occurrences"`
+
+	// QueryHash Normalized query hash identifying this statement shape.
+	QueryHash string `json:"query_hash"`
+
+	// RecordedEvent The most recent recorded outcome for this query (query, masked, truncated, or blocked).
+	RecordedEvent string `json:"recorded_event"`
+
+	// RecordedRule The decision rule recorded with a blocked outcome.
+	RecordedRule *string `json:"recorded_rule,omitempty"`
+
+	// Result The decision the proxy would reach for the supplied statement under the supplied policy. verdict is the headline outcome; the remaining fields detail why.
+	Result DryEvalResult `json:"result"`
+
+	// Sql The recorded statement (normalized, literals replaced with $N placeholders), from its most recent occurrence.
+	Sql string `json:"sql"`
+
+	// StatementKind Statement kind (select, insert, update, delete, ddl, ...).
+	StatementKind *string `json:"statement_kind,omitempty"`
+}
+
+// PolicyReplayItemChange How the candidate decision compares to the recorded outcome. newly_blocked and newly_allowed are the changes worth reviewing before rollout; still_allowed and still_blocked are unchanged.
+type PolicyReplayItemChange string
+
+// PolicyReplayResult The outcome of replaying recorded agent traffic against a candidate policy: an aggregate summary plus per-query decisions, changes first.
+type PolicyReplayResult struct {
+	// Items Per-query replay decisions, ordered changes first (newly blocked, then newly allowed), then by occurrence count.
+	Items []PolicyReplayItem `json:"items"`
+
+	// Summary Aggregate outcome of a policy replay.
+	Summary PolicyReplaySummary `json:"summary"`
+}
+
+// PolicyReplaySummary Aggregate outcome of a policy replay.
+type PolicyReplaySummary struct {
+	// DistinctQueries Distinct normalized queries found in the window (capped at limit).
+	DistinctQueries int `json:"distinct_queries"`
+
+	// EntriesScanned Recorded audit entries covered by the replayed queries.
+	EntriesScanned int64 `json:"entries_scanned"`
+
+	// Evaluated Distinct queries actually evaluated against the candidate policy.
+	Evaluated int `json:"evaluated"`
+
+	// NewlyAllowed Queries that were blocked when recorded but the candidate policy would permit.
+	NewlyAllowed int `json:"newly_allowed"`
+
+	// NewlyBlocked Queries that executed under the recorded policy but the candidate policy would block.
+	NewlyBlocked int `json:"newly_blocked"`
+
+	// SkippedUnparseable Distinct queries skipped because the stored statement was truncated at record time and can no longer be parsed faithfully.
+	SkippedUnparseable int `json:"skipped_unparseable"`
+
+	// Truncated True when the window contained more distinct queries than limit; only the newest were replayed.
+	Truncated bool `json:"truncated"`
+
+	// WouldAllow Queries the candidate policy would allow unchanged.
+	WouldAllow int `json:"would_allow"`
+
+	// WouldBlock Queries the candidate policy would block.
+	WouldBlock int `json:"would_block"`
+
+	// WouldMask Queries the candidate policy would mask result columns on.
+	WouldMask int `json:"would_mask"`
+
+	// WouldRowFilter Queries the candidate policy would inject a row filter into.
+	WouldRowFilter int `json:"would_row_filter"`
+}
+
 // PoolConfig Connection pool configuration.
 type PoolConfig struct {
 	// MaxActive Maximum concurrent upstream connections per pool.
@@ -3932,6 +4058,9 @@ type UpdatePolicyProfileJSONRequestBody = PolicyProfileInput
 
 // DryEvalPolicyJSONRequestBody defines body for DryEvalPolicy for application/json ContentType.
 type DryEvalPolicyJSONRequestBody = DryEvalInput
+
+// ReplayPolicyJSONRequestBody defines body for ReplayPolicy for application/json ContentType.
+type ReplayPolicyJSONRequestBody = PolicyReplayInput
 
 // CreateWebhookEndpointJSONRequestBody defines body for CreateWebhookEndpoint for application/json ContentType.
 type CreateWebhookEndpointJSONRequestBody = WebhookEndpointInput

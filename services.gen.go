@@ -174,6 +174,10 @@ func (s *PoliciesService) DryEvalPolicy(ctx context.Context, projectID string, b
 	return doJSON[DryEvalResult](s.t, ctx, "POST", fmt.Sprintf("/v1/projects/%s/policy-evaluations", projectID), body)
 }
 
+func (s *PoliciesService) ReplayPolicy(ctx context.Context, projectID string, body PolicyReplayInput) (*PolicyReplayResult, error) {
+	return doJSON[PolicyReplayResult](s.t, ctx, "POST", fmt.Sprintf("/v1/projects/%s/policy-replays", projectID), body)
+}
+
 // AgentsService provides agents operations.
 type AgentsService struct{ t *transport }
 
