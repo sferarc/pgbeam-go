@@ -2322,6 +2322,12 @@ type ListDatabasesResponse struct {
 	NextPageToken *string `json:"next_page_token,omitempty"`
 }
 
+// ListOrganizationsResponse Organizations visible to the caller's credential.
+type ListOrganizationsResponse struct {
+	// Organizations Organizations the caller can access.
+	Organizations []OrganizationSummary `json:"organizations"`
+}
+
 // ListPlansResponse Response envelope for listing available billing plans.
 type ListPlansResponse struct {
 	// Plans Billing plans available for self-serve signups.
@@ -2618,6 +2624,21 @@ type OrganizationPlanPlan string
 
 // OrganizationPlanSubscriptionStatus Stripe subscription status.
 type OrganizationPlanSubscriptionStatus string
+
+// OrganizationSummary An organization visible to the caller's credential.
+type OrganizationSummary struct {
+	// Id Organization identifier.
+	Id string `json:"id"`
+
+	// Name Organization display name.
+	Name string `json:"name"`
+
+	// Role The caller's role within the organization. Omitted for organization-scoped API keys, which act as the organization itself rather than as a member.
+	Role *string `json:"role,omitempty"`
+
+	// Slug Organization slug used in URLs and routing.
+	Slug string `json:"slug"`
+}
 
 // PiiSuggestion A single likely-PII column detected by the scanner, with a recommended masking rule. Suggestions are advisory only — nothing is applied until the operator reviews and adds it to a policy profile.
 type PiiSuggestion struct {

@@ -365,6 +365,10 @@ func (s *AccountService) UpdateOnboardingProgress(ctx context.Context, orgID str
 	return doJSON[OnboardingProgress](s.t, ctx, "PATCH", fmt.Sprintf("/v1/organizations/%s/onboarding", orgID), body)
 }
 
+func (s *AccountService) ListOrganizations(ctx context.Context) (*ListOrganizationsResponse, error) {
+	return doJSON[ListOrganizationsResponse](s.t, ctx, "GET", "/v1/organizations", nil)
+}
+
 // InternalService provides internal operations.
 type InternalService struct{ t *transport }
 
