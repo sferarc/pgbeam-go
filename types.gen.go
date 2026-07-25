@@ -402,6 +402,42 @@ func (e HealthResponseStatus) Valid() bool {
 	}
 }
 
+// Defines values for HoneytokenAction.
+const (
+	HoneytokenActionAuditOnly HoneytokenAction = "audit_only"
+	HoneytokenActionKill      HoneytokenAction = "kill"
+)
+
+// Valid indicates whether the value is a known member of the HoneytokenAction enum.
+func (e HoneytokenAction) Valid() bool {
+	switch e {
+	case HoneytokenActionAuditOnly:
+		return true
+	case HoneytokenActionKill:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for HoneytokenInputAction.
+const (
+	HoneytokenInputActionAuditOnly HoneytokenInputAction = "audit_only"
+	HoneytokenInputActionKill      HoneytokenInputAction = "kill"
+)
+
+// Valid indicates whether the value is a known member of the HoneytokenInputAction enum.
+func (e HoneytokenInputAction) Valid() bool {
+	switch e {
+	case HoneytokenInputActionAuditOnly:
+		return true
+	case HoneytokenInputActionKill:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for MaskingRuleKind.
 const (
 	MaskingRuleKindHash   MaskingRuleKind = "hash"
@@ -2241,6 +2277,48 @@ type HealthResponse struct {
 // HealthResponseStatus Overall service health.
 type HealthResponseStatus string
 
+// Honeytoken A decoy (canary) relation. Any agent statement that references it is blocked (fail closed) and recorded as a canary_tripped audit event.
+type Honeytoken struct {
+	// Action Response when tripped. audit_only blocks the statement, records the event, and fires webhooks. kill additionally disables the tripping credential via the kill-switch.
+	Action HoneytokenAction `json:"action"`
+
+	// CreatedAt When the honeytoken was registered.
+	CreatedAt time.Time `json:"created_at"`
+
+	// Id Unique honeytoken identifier.
+	Id string `json:"id"`
+
+	// ProjectId Project the honeytoken belongs to.
+	ProjectId string `json:"project_id"`
+
+	// RelationName Relation (table or view) name of the decoy.
+	RelationName string `json:"relation_name"`
+
+	// SchemaName Optional schema. Null matches the unqualified/public form, mirroring the relation allowlist normalization.
+	SchemaName *string `json:"schema_name,omitempty"`
+
+	// UpdatedAt When the honeytoken was last updated.
+	UpdatedAt time.Time `json:"updated_at"`
+}
+
+// HoneytokenAction Response when tripped. audit_only blocks the statement, records the event, and fires webhooks. kill additionally disables the tripping credential via the kill-switch.
+type HoneytokenAction string
+
+// HoneytokenInput Request body for creating or updating a honeytoken.
+type HoneytokenInput struct {
+	// Action Response when the honeytoken is tripped.
+	Action HoneytokenInputAction `json:"action"`
+
+	// RelationName Relation (table or view) name of the decoy.
+	RelationName string `json:"relation_name"`
+
+	// SchemaName Optional schema. Null or empty matches the unqualified/public form.
+	SchemaName *string `json:"schema_name,omitempty"`
+}
+
+// HoneytokenInputAction Response when the honeytoken is tripped.
+type HoneytokenInputAction string
+
 // LatencySummary Aggregate latency metrics for the selected time range.
 type LatencySummary struct {
 	// AvgMs Average latency in milliseconds across all queries.
@@ -2319,6 +2397,15 @@ type ListDatabasesResponse struct {
 	Databases []Database `json:"databases"`
 
 	// NextPageToken Token for the next page. Empty if no more results.
+	NextPageToken *string `json:"next_page_token,omitempty"`
+}
+
+// ListHoneytokensResponse Cursor-paginated honeytokens for a project.
+type ListHoneytokensResponse struct {
+	// Honeytokens Honeytokens returned for the current page.
+	Honeytokens []Honeytoken `json:"honeytokens"`
+
+	// NextPageToken Opaque token for cursor-based pagination.
 	NextPageToken *string `json:"next_page_token,omitempty"`
 }
 
@@ -3780,6 +3867,9 @@ type DatabaseId = string
 // DomainId defines model for DomainId.
 type DomainId = string
 
+// HoneytokenId defines model for HoneytokenId.
+type HoneytokenId = string
+
 // OrgId defines model for OrgId.
 type OrgId = string
 
@@ -4011,6 +4101,15 @@ type ListCustomDomainsParams struct {
 	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
 }
 
+// ListHoneytokensParams defines parameters for ListHoneytokens.
+type ListHoneytokensParams struct {
+	// PageSize Maximum number of items to return (1-100, default 20).
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken Opaque token for cursor-based pagination.
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+}
+
 // GetProjectInsightsParams defines parameters for GetProjectInsights.
 type GetProjectInsightsParams struct {
 	// Range Time range to query. Defaults to 24h.
@@ -4124,6 +4223,12 @@ type UpdateCacheRuleJSONRequestBody = UpdateCacheRuleRequest
 
 // CreateCustomDomainJSONRequestBody defines body for CreateCustomDomain for application/json ContentType.
 type CreateCustomDomainJSONRequestBody = CreateCustomDomainRequest
+
+// CreateHoneytokenJSONRequestBody defines body for CreateHoneytoken for application/json ContentType.
+type CreateHoneytokenJSONRequestBody = HoneytokenInput
+
+// UpdateHoneytokenJSONRequestBody defines body for UpdateHoneytoken for application/json ContentType.
+type UpdateHoneytokenJSONRequestBody = HoneytokenInput
 
 // LintMigrationJSONRequestBody defines body for LintMigration for application/json ContentType.
 type LintMigrationJSONRequestBody = MigrationLintRequest

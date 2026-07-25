@@ -11,21 +11,22 @@ var _ = fmt.Sprintf
 
 // Client is the PgBeam API client. Access operations through service fields.
 type Client struct {
-	Projects   *ProjectsService
-	Databases  *DatabasesService
-	Policies   *PoliciesService
-	Agents     *AgentsService
-	Approvals  *ApprovalsService
-	Webhooks   *WebhooksService
-	Anomalies  *AnomaliesService
-	Branches   *BranchesService
-	Migrations *MigrationsService
-	Analytics  *AnalyticsService
-	Platform   *PlatformService
-	Account    *AccountService
-	Internal   *InternalService
-	Support    *SupportService
-	t          *transport
+	Projects    *ProjectsService
+	Databases   *DatabasesService
+	Policies    *PoliciesService
+	Agents      *AgentsService
+	Approvals   *ApprovalsService
+	Webhooks    *WebhooksService
+	Anomalies   *AnomaliesService
+	Branches    *BranchesService
+	Migrations  *MigrationsService
+	Analytics   *AnalyticsService
+	Platform    *PlatformService
+	Account     *AccountService
+	Honeytokens *HoneytokensService
+	Internal    *InternalService
+	Support     *SupportService
+	t           *transport
 }
 
 // NewClient creates a new PgBeam API client.
@@ -44,6 +45,7 @@ func NewClient(opts *ClientOptions) *Client {
 	c.Analytics = &AnalyticsService{t: t}
 	c.Platform = &PlatformService{t: t}
 	c.Account = &AccountService{t: t}
+	c.Honeytokens = &HoneytokensService{t: t}
 	c.Internal = &InternalService{t: t}
 	c.Support = &SupportService{t: t}
 	return c
@@ -371,6 +373,29 @@ func (s *AccountService) UpdateOnboardingProgress(ctx context.Context, orgID str
 
 func (s *AccountService) ListOrganizations(ctx context.Context) (*ListOrganizationsResponse, error) {
 	return doJSON[ListOrganizationsResponse](s.t, ctx, "GET", "/v1/organizations", nil)
+}
+
+// HoneytokensService provides honeytokens operations.
+type HoneytokensService struct{ t *transport }
+
+func (s *HoneytokensService) ListHoneytokens(ctx context.Context, projectID string, params *ListHoneytokensParams) (*ListHoneytokensResponse, error) {
+	return doQuery[ListHoneytokensResponse](s.t, ctx, fmt.Sprintf("/v1/projects/%s/honeytokens", projectID), params)
+}
+
+func (s *HoneytokensService) CreateHoneytoken(ctx context.Context, projectID string, body HoneytokenInput) (*Honeytoken, error) {
+	return doJSON[Honeytoken](s.t, ctx, "POST", fmt.Sprintf("/v1/projects/%s/honeytokens", projectID), body)
+}
+
+func (s *HoneytokensService) GetHoneytoken(ctx context.Context, projectID string, honeytokenID string) (*Honeytoken, error) {
+	return doJSON[Honeytoken](s.t, ctx, "GET", fmt.Sprintf("/v1/projects/%s/honeytokens/%s", projectID, honeytokenID), nil)
+}
+
+func (s *HoneytokensService) UpdateHoneytoken(ctx context.Context, projectID string, honeytokenID string, body HoneytokenInput) (*Honeytoken, error) {
+	return doJSON[Honeytoken](s.t, ctx, "PUT", fmt.Sprintf("/v1/projects/%s/honeytokens/%s", projectID, honeytokenID), body)
+}
+
+func (s *HoneytokensService) DeleteHoneytoken(ctx context.Context, projectID string, honeytokenID string) error {
+	return doVoid(s.t, ctx, "DELETE", fmt.Sprintf("/v1/projects/%s/honeytokens/%s", projectID, honeytokenID), nil)
 }
 
 // InternalService provides internal operations.
