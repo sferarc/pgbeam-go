@@ -2457,6 +2457,15 @@ type ListReplicasResponse struct {
 	Replicas []Replica `json:"replicas"`
 }
 
+// ListSchemaAnnotationsResponse Cursor-paginated schema annotations for a project.
+type ListSchemaAnnotationsResponse struct {
+	// Annotations Annotations returned for the current page.
+	Annotations []SchemaAnnotation `json:"annotations"`
+
+	// NextPageToken Opaque token for cursor-based pagination.
+	NextPageToken *string `json:"next_page_token,omitempty"`
+}
+
 // ListSelfHostEnrollmentsResponse List of self-host enrollments for an organization.
 type ListSelfHostEnrollmentsResponse struct {
 	// Enrollments The organization's self-host enrollments, newest first.
@@ -3372,6 +3381,48 @@ type ScanPiiResult struct {
 	Truncated *bool `json:"truncated,omitempty"`
 }
 
+// SchemaAnnotation A human-written description for a table or column, attached by a project operator and surfaced through the agent-facing MCP catalog. When present it takes precedence over the DB-native comment for the same relation or column.
+type SchemaAnnotation struct {
+	// ColumnName Optional column. Null means the annotation describes the table itself.
+	ColumnName *string `json:"column_name,omitempty"`
+
+	// CreatedAt When the annotation was created.
+	CreatedAt time.Time `json:"created_at"`
+
+	// Description The operator-written description text.
+	Description string `json:"description"`
+
+	// Id Unique annotation identifier.
+	Id string `json:"id"`
+
+	// ProjectId Project the annotation belongs to.
+	ProjectId string `json:"project_id"`
+
+	// SchemaName Optional schema. Null matches the unqualified form, mirroring the relation allowlist normalization.
+	SchemaName *string `json:"schema_name,omitempty"`
+
+	// TableName Relation (table or view) the annotation describes.
+	TableName string `json:"table_name"`
+
+	// UpdatedAt When the annotation was last updated.
+	UpdatedAt time.Time `json:"updated_at"`
+}
+
+// SchemaAnnotationInput Request body for creating or replacing a schema annotation. Keyed by (schema_name, table_name, column_name); an existing annotation with the same key is replaced.
+type SchemaAnnotationInput struct {
+	// ColumnName Optional column. Null describes the table itself.
+	ColumnName *string `json:"column_name,omitempty"`
+
+	// Description The operator-written description text.
+	Description string `json:"description"`
+
+	// SchemaName Optional schema. Null or empty matches the unqualified form.
+	SchemaName *string `json:"schema_name,omitempty"`
+
+	// TableName Relation (table or view) the annotation describes.
+	TableName string `json:"table_name"`
+}
+
 // SchemaCatalog A read-only snapshot of a database's user relations (tables and views) and their columns, used to power table/column autocomplete and view-aware warnings in the policy editor. System schemas (pg_catalog, information_schema, pg_toast) are excluded.
 type SchemaCatalog struct {
 	// Error Present when introspection failed to connect or read the schema.
@@ -4140,6 +4191,27 @@ type ListPolicyProfilesParams struct {
 	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
 }
 
+// DeleteSchemaAnnotationParams defines parameters for DeleteSchemaAnnotation.
+type DeleteSchemaAnnotationParams struct {
+	// TableName Relation (table or view) the annotation describes.
+	TableName string `form:"table_name" json:"table_name"`
+
+	// SchemaName Optional schema. Omit to match the unqualified form.
+	SchemaName *string `form:"schema_name,omitempty" json:"schema_name,omitempty"`
+
+	// ColumnName Optional column. Omit to delete a table-level annotation.
+	ColumnName *string `form:"column_name,omitempty" json:"column_name,omitempty"`
+}
+
+// ListSchemaAnnotationsParams defines parameters for ListSchemaAnnotations.
+type ListSchemaAnnotationsParams struct {
+	// PageSize Maximum number of items to return (1-100, default 20).
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken Opaque token for cursor-based pagination.
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+}
+
 // GetProjectUsageParams defines parameters for GetProjectUsage.
 type GetProjectUsageParams struct {
 	// StartDate Start date (inclusive, YYYY-MM-DD).
@@ -4244,6 +4316,9 @@ type DryEvalPolicyJSONRequestBody = DryEvalInput
 
 // ReplayPolicyJSONRequestBody defines body for ReplayPolicy for application/json ContentType.
 type ReplayPolicyJSONRequestBody = PolicyReplayInput
+
+// PutSchemaAnnotationJSONRequestBody defines body for PutSchemaAnnotation for application/json ContentType.
+type PutSchemaAnnotationJSONRequestBody = SchemaAnnotationInput
 
 // CreateWebhookEndpointJSONRequestBody defines body for CreateWebhookEndpoint for application/json ContentType.
 type CreateWebhookEndpointJSONRequestBody = WebhookEndpointInput

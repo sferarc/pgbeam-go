@@ -11,22 +11,23 @@ var _ = fmt.Sprintf
 
 // Client is the PgBeam API client. Access operations through service fields.
 type Client struct {
-	Projects    *ProjectsService
-	Databases   *DatabasesService
-	Policies    *PoliciesService
-	Agents      *AgentsService
-	Approvals   *ApprovalsService
-	Webhooks    *WebhooksService
-	Anomalies   *AnomaliesService
-	Branches    *BranchesService
-	Migrations  *MigrationsService
-	Analytics   *AnalyticsService
-	Platform    *PlatformService
-	Account     *AccountService
-	Honeytokens *HoneytokensService
-	Internal    *InternalService
-	Support     *SupportService
-	t           *transport
+	Projects          *ProjectsService
+	Databases         *DatabasesService
+	Policies          *PoliciesService
+	Agents            *AgentsService
+	Approvals         *ApprovalsService
+	Webhooks          *WebhooksService
+	Anomalies         *AnomaliesService
+	Branches          *BranchesService
+	Migrations        *MigrationsService
+	Analytics         *AnalyticsService
+	Platform          *PlatformService
+	Account           *AccountService
+	Honeytokens       *HoneytokensService
+	Internal          *InternalService
+	Schemaannotations *SchemaannotationsService
+	Support           *SupportService
+	t                 *transport
 }
 
 // NewClient creates a new PgBeam API client.
@@ -47,6 +48,7 @@ func NewClient(opts *ClientOptions) *Client {
 	c.Account = &AccountService{t: t}
 	c.Honeytokens = &HoneytokensService{t: t}
 	c.Internal = &InternalService{t: t}
+	c.Schemaannotations = &SchemaannotationsService{t: t}
 	c.Support = &SupportService{t: t}
 	return c
 }
@@ -403,6 +405,21 @@ type InternalService struct{ t *transport }
 
 func (s *InternalService) HandleSlackSupportEvent(ctx context.Context, body SlackEventPayload) error {
 	return doVoid(s.t, ctx, "POST", "/v1/internal/support/slack-event", body)
+}
+
+// SchemaannotationsService provides schemaannotations operations.
+type SchemaannotationsService struct{ t *transport }
+
+func (s *SchemaannotationsService) ListSchemaAnnotations(ctx context.Context, projectID string, params *ListSchemaAnnotationsParams) (*ListSchemaAnnotationsResponse, error) {
+	return doQuery[ListSchemaAnnotationsResponse](s.t, ctx, fmt.Sprintf("/v1/projects/%s/schema-annotations", projectID), params)
+}
+
+func (s *SchemaannotationsService) PutSchemaAnnotation(ctx context.Context, projectID string, body SchemaAnnotationInput) (*SchemaAnnotation, error) {
+	return doJSON[SchemaAnnotation](s.t, ctx, "PUT", fmt.Sprintf("/v1/projects/%s/schema-annotations", projectID), body)
+}
+
+func (s *SchemaannotationsService) DeleteSchemaAnnotation(ctx context.Context, projectID string, params *DeleteSchemaAnnotationParams) error {
+	return doVoid(s.t, ctx, "DELETE", fmt.Sprintf("/v1/projects/%s/schema-annotations", projectID), nil)
 }
 
 // SupportService provides support operations.
