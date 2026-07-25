@@ -2901,6 +2901,45 @@ type PolicyProfileInputMigrationSafety string
 // PolicyProfileInputWriteMode How writes are handled. normal commits, rollback auto-rolls back, sandbox routes to an ephemeral branch.
 type PolicyProfileInputWriteMode string
 
+// PolicyRecommendation A least-privilege policy derived from an agent credential's recorded audit history, together with the replay diff that proves the candidate would not newly block any statement the credential legitimately ran. Advisory only: this endpoint never creates, updates, or otherwise mutates a policy or a credential. A good recommendation has replay.summary.newly_blocked == 0.
+type PolicyRecommendation struct {
+	// Candidate Mutable fields of a policy profile (used for create and update).
+	Candidate *PolicyProfileInput `json:"candidate,omitempty"`
+
+	// Message Present when sufficient_history is false; a clear explanation of why no recommendation could be produced (e.g. no executed traffic in the window).
+	Message *string `json:"message,omitempty"`
+
+	// Notes Human-readable rationale for each tightening decision (e.g. why the candidate was downgraded to read-only, or how max_rows was chosen).
+	Notes *[]string `json:"notes,omitempty"`
+
+	// ObservedEntries Recorded audit entries covered by the analyzed window.
+	ObservedEntries int64 `json:"observed_entries"`
+
+	// ObservedQueries Distinct executed query shapes the candidate was derived from (blocked attempts are excluded from derivation).
+	ObservedQueries int `json:"observed_queries"`
+
+	// Replay The outcome of replaying recorded agent traffic against a candidate policy: an aggregate summary plus per-query decisions, changes first.
+	Replay *PolicyReplayResult `json:"replay,omitempty"`
+
+	// SufficientHistory True when there was enough parseable, executed traffic to derive a candidate. When false, candidate and replay are omitted and message explains why no recommendation could be made.
+	SufficientHistory bool `json:"sufficient_history"`
+
+	// WindowEnd End of the analyzed traffic window (exclusive).
+	WindowEnd time.Time `json:"window_end"`
+
+	// WindowStart Start of the analyzed traffic window (inclusive).
+	WindowStart time.Time `json:"window_start"`
+}
+
+// PolicyRecommendationInput Optional parameters for a least-privilege policy recommendation. Every field is optional; an empty body analyzes the last 30 days of the credential's audit history.
+type PolicyRecommendationInput struct {
+	// Limit Maximum number of distinct query shapes to analyze and replay, newest first. Traffic is deduplicated by normalized query hash.
+	Limit *int `json:"limit,omitempty"`
+
+	// LookbackDays How many days of recorded audit history to analyze.
+	LookbackDays *int `json:"lookback_days,omitempty"`
+}
+
 // PolicyReplayInput A window of recorded agent traffic to replay plus the candidate policy to replay it against. Supply exactly one of policy_id (an existing saved policy) or policy (an unsaved draft, e.g. the in-progress editor form).
 type PolicyReplayInput struct {
 	// CredentialId Restrict the replay to traffic recorded for one agent credential.
@@ -4061,6 +4100,9 @@ type CreateAgentCredentialJSONRequestBody = CreateAgentCredentialRequest
 
 // UpdateAgentCredentialStatusJSONRequestBody defines body for UpdateAgentCredentialStatus for application/json ContentType.
 type UpdateAgentCredentialStatusJSONRequestBody = UpdateAgentCredentialStatusRequest
+
+// RecommendAgentPolicyJSONRequestBody defines body for RecommendAgentPolicy for application/json ContentType.
+type RecommendAgentPolicyJSONRequestBody = PolicyRecommendationInput
 
 // UpdateAnomalyAlertJSONRequestBody defines body for UpdateAnomalyAlert for application/json ContentType.
 type UpdateAnomalyAlertJSONRequestBody = UpdateAnomalyAlertRequest

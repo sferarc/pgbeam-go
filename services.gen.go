@@ -150,6 +150,10 @@ func (s *DatabasesService) GetSchemaCatalog(ctx context.Context, projectID strin
 // PoliciesService provides policies operations.
 type PoliciesService struct{ t *transport }
 
+func (s *PoliciesService) RecommendAgentPolicy(ctx context.Context, projectID string, agentID string, body PolicyRecommendationInput) (*PolicyRecommendation, error) {
+	return doJSON[PolicyRecommendation](s.t, ctx, "POST", fmt.Sprintf("/v1/projects/%s/agents/%s/policy-recommendation", projectID, agentID), body)
+}
+
 func (s *PoliciesService) ListPolicyProfiles(ctx context.Context, projectID string, params *ListPolicyProfilesParams) (*ListPolicyProfilesResponse, error) {
 	return doQuery[ListPolicyProfilesResponse](s.t, ctx, fmt.Sprintf("/v1/projects/%s/policies", projectID), params)
 }
