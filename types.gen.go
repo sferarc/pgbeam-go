@@ -72,6 +72,27 @@ func (e AgentCredentialStatus) Valid() bool {
 	}
 }
 
+// Defines values for AgentRole.
+const (
+	Enricher   AgentRole = "enricher"
+	Outreach   AgentRole = "outreach"
+	Researcher AgentRole = "researcher"
+)
+
+// Valid indicates whether the value is a known member of the AgentRole enum.
+func (e AgentRole) Valid() bool {
+	switch e {
+	case Enricher:
+		return true
+	case Outreach:
+		return true
+	case Researcher:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for AnomalyAlertSeverity.
 const (
 	AnomalyAlertSeverityCritical AnomalyAlertSeverity = "critical"
@@ -138,6 +159,30 @@ func (e ApprovalRequestStatus) Valid() bool {
 	case ApprovalRequestStatusPending:
 		return true
 	case ApprovalRequestStatusRejected:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ArtifactStatus.
+const (
+	ArtifactStatusApproved  ArtifactStatus = "approved"
+	ArtifactStatusDiscarded ArtifactStatus = "discarded"
+	ArtifactStatusDraft     ArtifactStatus = "draft"
+	ArtifactStatusSent      ArtifactStatus = "sent"
+)
+
+// Valid indicates whether the value is a known member of the ArtifactStatus enum.
+func (e ArtifactStatus) Valid() bool {
+	switch e {
+	case ArtifactStatusApproved:
+		return true
+	case ArtifactStatusDiscarded:
+		return true
+	case ArtifactStatusDraft:
+		return true
+	case ArtifactStatusSent:
 		return true
 	default:
 		return false
@@ -333,6 +378,36 @@ func (e DatabaseRole) Valid() bool {
 	case DatabaseRolePrimary:
 		return true
 	case DatabaseRoleReplica:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for DealStage.
+const (
+	Lead        DealStage = "lead"
+	Lost        DealStage = "lost"
+	Negotiation DealStage = "negotiation"
+	Proposal    DealStage = "proposal"
+	Qualified   DealStage = "qualified"
+	Won         DealStage = "won"
+)
+
+// Valid indicates whether the value is a known member of the DealStage enum.
+func (e DealStage) Valid() bool {
+	switch e {
+	case Lead:
+		return true
+	case Lost:
+		return true
+	case Negotiation:
+		return true
+	case Proposal:
+		return true
+	case Qualified:
+		return true
+	case Won:
 		return true
 	default:
 		return false
@@ -993,6 +1068,87 @@ func (e RegionStatus) Valid() bool {
 	}
 }
 
+// Defines values for ResearchTaskKind.
+const (
+	Custom        ResearchTaskKind = "custom"
+	DraftOutreach ResearchTaskKind = "draft_outreach"
+	EnrichCompany ResearchTaskKind = "enrich_company"
+	EnrichContact ResearchTaskKind = "enrich_contact"
+	ResearchDeal  ResearchTaskKind = "research_deal"
+	SendOutreach  ResearchTaskKind = "send_outreach"
+)
+
+// Valid indicates whether the value is a known member of the ResearchTaskKind enum.
+func (e ResearchTaskKind) Valid() bool {
+	switch e {
+	case Custom:
+		return true
+	case DraftOutreach:
+		return true
+	case EnrichCompany:
+		return true
+	case EnrichContact:
+		return true
+	case ResearchDeal:
+		return true
+	case SendOutreach:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ResearchTaskStatus.
+const (
+	ResearchTaskStatusAwaitingApproval ResearchTaskStatus = "awaiting_approval"
+	ResearchTaskStatusCanceled         ResearchTaskStatus = "canceled"
+	ResearchTaskStatusDone             ResearchTaskStatus = "done"
+	ResearchTaskStatusFailed           ResearchTaskStatus = "failed"
+	ResearchTaskStatusLeased           ResearchTaskStatus = "leased"
+	ResearchTaskStatusPending          ResearchTaskStatus = "pending"
+)
+
+// Valid indicates whether the value is a known member of the ResearchTaskStatus enum.
+func (e ResearchTaskStatus) Valid() bool {
+	switch e {
+	case ResearchTaskStatusAwaitingApproval:
+		return true
+	case ResearchTaskStatusCanceled:
+		return true
+	case ResearchTaskStatusDone:
+		return true
+	case ResearchTaskStatusFailed:
+		return true
+	case ResearchTaskStatusLeased:
+		return true
+	case ResearchTaskStatusPending:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ResearchTaskSubjectType.
+const (
+	ResearchTaskSubjectTypeCompany ResearchTaskSubjectType = "company"
+	ResearchTaskSubjectTypeContact ResearchTaskSubjectType = "contact"
+	ResearchTaskSubjectTypeDeal    ResearchTaskSubjectType = "deal"
+)
+
+// Valid indicates whether the value is a known member of the ResearchTaskSubjectType enum.
+func (e ResearchTaskSubjectType) Valid() bool {
+	switch e {
+	case ResearchTaskSubjectTypeCompany:
+		return true
+	case ResearchTaskSubjectTypeContact:
+		return true
+	case ResearchTaskSubjectTypeDeal:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for SSLMode.
 const (
 	Allow      SSLMode = "allow"
@@ -1500,6 +1656,30 @@ type AccountExport struct {
 	} `json:"user"`
 }
 
+// Activity A single entry in an entity's activity timeline.
+type Activity struct {
+	// Actor Who performed the action ("agent" or a user identifier).
+	Actor string `json:"actor"`
+
+	// At When the action happened.
+	At time.Time `json:"at"`
+
+	// Id Unique activity identifier.
+	Id string `json:"id"`
+
+	// OrgId Organization the activity belongs to.
+	OrgId string `json:"org_id"`
+
+	// SubjectId ID of the company/contact/deal this activity is about.
+	SubjectId string `json:"subject_id"`
+
+	// SubjectType The kind of entity a research task targets.
+	SubjectType ResearchTaskSubjectType `json:"subject_type"`
+
+	// Verb What happened (created, enriched, drafted, approved, sent).
+	Verb string `json:"verb"`
+}
+
 // AgentCredential A PgBeam-issued, scoped Postgres login plus hosted MCP token for an AI agent.
 type AgentCredential struct {
 	// AuthMethod Postgres auth method the proxy presents for this credential.
@@ -1562,6 +1742,9 @@ type AgentCredentialSecrets struct {
 	// McpUrl Hosted agent-database MCP endpoint for this project, served by the edge proxy on the same per-project host the agent connects to over the wire. Paste into an MCP client (Claude Code, Cursor, …) with the mcp_token as a bearer token.
 	McpUrl string `json:"mcp_url"`
 }
+
+// AgentRole Specialist agent role that owns a task. The researcher is the lead, the enricher fills in graph edges, and outreach writes and sends.
+type AgentRole string
 
 // AnomalyAlert A surfaced anomalous-behavior alert for review.
 type AnomalyAlert struct {
@@ -1673,6 +1856,45 @@ type ApprovalRequest struct {
 
 // ApprovalRequestStatus Current state of the approval request.
 type ApprovalRequestStatus string
+
+// Artifact Long-form agent output (a drafted email, an account brief) for human review.
+type Artifact struct {
+	// Body Long-form content.
+	Body string `json:"body"`
+
+	// CreatedAt When the artifact was created.
+	CreatedAt time.Time `json:"created_at"`
+
+	// Id Unique artifact identifier.
+	Id string `json:"id"`
+
+	// Kind Kind of artifact (e.g. outreach_email, account_brief).
+	Kind string `json:"kind"`
+
+	// OrgId Organization the artifact belongs to.
+	OrgId string `json:"org_id"`
+
+	// Status Lifecycle state of an artifact.
+	Status ArtifactStatus `json:"status"`
+
+	// SubjectId ID of the company/contact/deal this artifact is about.
+	SubjectId string `json:"subject_id"`
+
+	// SubjectType The kind of entity a research task targets.
+	SubjectType ResearchTaskSubjectType `json:"subject_type"`
+
+	// TaskId Research task that produced this artifact, if any.
+	TaskId *string `json:"task_id,omitempty"`
+
+	// Title Short title.
+	Title string `json:"title"`
+
+	// UpdatedAt When the artifact was last updated.
+	UpdatedAt time.Time `json:"updated_at"`
+}
+
+// ArtifactStatus Lifecycle state of an artifact.
+type ArtifactStatus string
 
 // AuditChainVerification Result of recomputing the project's tamper-evident audit hash chain over a time range. The chain links each entry to its predecessor, so editing or deleting any row breaks it.
 type AuditChainVerification struct {
@@ -1872,6 +2094,120 @@ type CidrEntry struct {
 	Label *string `json:"label,omitempty"`
 }
 
+// Company A company (customer, prospect, or partner) tracked in the CRM.
+type Company struct {
+	// CreatedAt When the company was created.
+	CreatedAt time.Time `json:"created_at"`
+
+	// Description Free-form description or research notes.
+	Description string `json:"description"`
+
+	// Domain Primary web domain, normalized to lowercase.
+	Domain *string `json:"domain,omitempty"`
+
+	// Id Unique company identifier.
+	Id string `json:"id"`
+
+	// Industry Industry or sector the company operates in.
+	Industry *string `json:"industry,omitempty"`
+
+	// Location Primary location (city, region, or country).
+	Location *string `json:"location,omitempty"`
+
+	// LogoUrl URL of the company logo.
+	LogoUrl *string `json:"logo_url,omitempty"`
+
+	// Name Company name.
+	Name string `json:"name"`
+
+	// OrgId Organization the company belongs to.
+	OrgId string `json:"org_id"`
+
+	// UpdatedAt When the company was last updated.
+	UpdatedAt time.Time `json:"updated_at"`
+}
+
+// CompanyInput Request body for creating or updating a company.
+type CompanyInput struct {
+	// Description Free-form description or research notes.
+	Description *string `json:"description,omitempty"`
+
+	// Domain Primary web domain.
+	Domain *string `json:"domain,omitempty"`
+
+	// Industry Industry or sector.
+	Industry *string `json:"industry,omitempty"`
+
+	// Location Primary location.
+	Location *string `json:"location,omitempty"`
+
+	// LogoUrl URL of the company logo.
+	LogoUrl *string `json:"logo_url,omitempty"`
+
+	// Name Company name.
+	Name string `json:"name"`
+}
+
+// Contact A person tracked in the CRM, optionally attached to a company.
+type Contact struct {
+	// CompanyId Company this contact belongs to, if any.
+	CompanyId *string `json:"company_id,omitempty"`
+
+	// CreatedAt When the contact was created.
+	CreatedAt time.Time `json:"created_at"`
+
+	// Email Contact email address.
+	Email *string `json:"email,omitempty"`
+
+	// Id Unique contact identifier.
+	Id string `json:"id"`
+
+	// LinkedinUrl LinkedIn profile URL.
+	LinkedinUrl *string `json:"linkedin_url,omitempty"`
+
+	// Name Contact full name.
+	Name string `json:"name"`
+
+	// Notes Free-form notes about the contact.
+	Notes string `json:"notes"`
+
+	// OrgId Organization the contact belongs to.
+	OrgId string `json:"org_id"`
+
+	// Phone Phone number.
+	Phone *string `json:"phone,omitempty"`
+
+	// Title Job title or role.
+	Title *string `json:"title,omitempty"`
+
+	// UpdatedAt When the contact was last updated.
+	UpdatedAt time.Time `json:"updated_at"`
+}
+
+// ContactInput Request body for creating or updating a contact.
+type ContactInput struct {
+	// CompanyId Company to attach this contact to, if any.
+	CompanyId *string `json:"company_id,omitempty"`
+
+	// Email Contact email address.
+	Email *string `json:"email,omitempty"`
+
+	// LinkedinUrl LinkedIn profile URL.
+	LinkedinUrl *string `json:"linkedin_url,omitempty"`
+
+	// Name Contact full name.
+	Name string `json:"name"`
+
+	// Notes Free-form notes about the contact.
+	Notes *string `json:"notes,omitempty"`
+
+	// Phone Phone number.
+	Phone *string `json:"phone,omitempty"`
+
+	// Title Job title or role.
+	Title *string `json:"title,omitempty"`
+}
+
 // CreateAgentCredentialRequest Request body for issuing a new agent credential.
 type CreateAgentCredentialRequest struct {
 	// ExpiresAt Optional expiry. When set, the credential becomes unusable at this time (must be in the future). Omit or set null for a credential that never expires.
@@ -2014,6 +2350,42 @@ type CreateSupportCaseRequest struct {
 type CreateSupportMessageRequest struct {
 	// Body Message content.
 	Body string `json:"body"`
+}
+
+// CrmContext Shared per-org CRM context the research agent reads to ground its work.
+type CrmContext struct {
+	// Icp Ideal customer profile.
+	Icp string `json:"icp"`
+
+	// Notes Any other durable facts the agent should know.
+	Notes string `json:"notes"`
+
+	// OrgId Organization this context belongs to.
+	OrgId string `json:"org_id"`
+
+	// Positioning How the org positions itself (one-liner or short paragraph).
+	Positioning string `json:"positioning"`
+
+	// Tone Preferred voice and tone for drafted content.
+	Tone string `json:"tone"`
+
+	// UpdatedAt When the context was last updated.
+	UpdatedAt time.Time `json:"updated_at"`
+}
+
+// CrmContextInput Request body for updating the org CRM context.
+type CrmContextInput struct {
+	// Icp Ideal customer profile.
+	Icp *string `json:"icp,omitempty"`
+
+	// Notes Any other durable facts.
+	Notes *string `json:"notes,omitempty"`
+
+	// Positioning How the org positions itself.
+	Positioning *string `json:"positioning,omitempty"`
+
+	// Tone Preferred voice and tone.
+	Tone *string `json:"tone,omitempty"`
 }
 
 // CustomDomain Custom database hostname attached to a project.
@@ -2162,6 +2534,75 @@ type DatabaseBranchStatus string
 
 // DatabaseRole Database role. Primary receives writes, replicas receive reads.
 type DatabaseRole string
+
+// Deal A revenue opportunity moving through the sales pipeline.
+type Deal struct {
+	// AmountCents Deal value in the smallest currency unit (e.g. cents).
+	AmountCents int64 `json:"amount_cents"`
+
+	// CloseDate Expected or actual close date.
+	CloseDate *openapi_types.Date `json:"close_date,omitempty"`
+
+	// CompanyId Company the deal is with, if any.
+	CompanyId *string `json:"company_id,omitempty"`
+
+	// CreatedAt When the deal was created.
+	CreatedAt time.Time `json:"created_at"`
+
+	// Currency ISO 4217 currency code.
+	Currency string `json:"currency"`
+
+	// Id Unique deal identifier.
+	Id string `json:"id"`
+
+	// OrgId Organization the deal belongs to.
+	OrgId string `json:"org_id"`
+
+	// Owner Deal owner (free-form, e.g. a user name or email).
+	Owner string `json:"owner"`
+
+	// PrimaryContactId Primary contact on the deal, if any.
+	PrimaryContactId *string `json:"primary_contact_id,omitempty"`
+
+	// Stage Pipeline stage of a deal.
+	Stage DealStage `json:"stage"`
+
+	// Title Deal title.
+	Title string `json:"title"`
+
+	// UpdatedAt When the deal was last updated.
+	UpdatedAt time.Time `json:"updated_at"`
+}
+
+// DealInput Request body for creating or updating a deal.
+type DealInput struct {
+	// AmountCents Deal value in the smallest currency unit (e.g. cents).
+	AmountCents *int64 `json:"amount_cents,omitempty"`
+
+	// CloseDate Expected or actual close date.
+	CloseDate *openapi_types.Date `json:"close_date,omitempty"`
+
+	// CompanyId Company the deal is with, if any.
+	CompanyId *string `json:"company_id,omitempty"`
+
+	// Currency ISO 4217 currency code.
+	Currency *string `json:"currency,omitempty"`
+
+	// Owner Deal owner (free-form, e.g. a user name or email).
+	Owner *string `json:"owner,omitempty"`
+
+	// PrimaryContactId Primary contact on the deal, if any.
+	PrimaryContactId *string `json:"primary_contact_id,omitempty"`
+
+	// Stage Pipeline stage of a deal.
+	Stage *DealStage `json:"stage,omitempty"`
+
+	// Title Deal title.
+	Title string `json:"title"`
+}
+
+// DealStage Pipeline stage of a deal.
+type DealStage string
 
 // DnsInstructions DNS records the user needs to create for domain verification.
 type DnsInstructions struct {
@@ -2328,6 +2769,12 @@ type LatencySummary struct {
 	P99Ms float64 `json:"p99_ms"`
 }
 
+// ListActivitiesResponse Most-recent-first activities for an organization.
+type ListActivitiesResponse struct {
+	// Activities Activities, newest first.
+	Activities []Activity `json:"activities"`
+}
+
 // ListAgentCredentialsResponse Cursor-paginated list of agent credentials for a project.
 type ListAgentCredentialsResponse struct {
 	// Agents Agent credentials on the current page.
@@ -2355,6 +2802,15 @@ type ListApprovalRequestsResponse struct {
 	NextPageToken *string `json:"next_page_token,omitempty"`
 }
 
+// ListArtifactsResponse Cursor-paginated artifacts for an organization.
+type ListArtifactsResponse struct {
+	// Artifacts Artifacts returned for the current page.
+	Artifacts []Artifact `json:"artifacts"`
+
+	// NextPageToken Opaque token for cursor-based pagination.
+	NextPageToken *string `json:"next_page_token,omitempty"`
+}
+
 // ListAuditLogsResponse Time-ordered page of audit entries (newest first).
 type ListAuditLogsResponse struct {
 	// Entries Audit entries on the current page.
@@ -2368,6 +2824,24 @@ type ListAuditLogsResponse struct {
 type ListCacheRulesResponse struct {
 	// Entries Query shapes returned for the current page.
 	Entries []CacheRuleEntry `json:"entries"`
+
+	// NextPageToken Opaque token for cursor-based pagination.
+	NextPageToken *string `json:"next_page_token,omitempty"`
+}
+
+// ListCompaniesResponse Cursor-paginated companies for an organization.
+type ListCompaniesResponse struct {
+	// Companies Companies returned for the current page.
+	Companies []Company `json:"companies"`
+
+	// NextPageToken Opaque token for cursor-based pagination.
+	NextPageToken *string `json:"next_page_token,omitempty"`
+}
+
+// ListContactsResponse Cursor-paginated contacts for an organization.
+type ListContactsResponse struct {
+	// Contacts Contacts returned for the current page.
+	Contacts []Contact `json:"contacts"`
 
 	// NextPageToken Opaque token for cursor-based pagination.
 	NextPageToken *string `json:"next_page_token,omitempty"`
@@ -2397,6 +2871,15 @@ type ListDatabasesResponse struct {
 	Databases []Database `json:"databases"`
 
 	// NextPageToken Token for the next page. Empty if no more results.
+	NextPageToken *string `json:"next_page_token,omitempty"`
+}
+
+// ListDealsResponse Cursor-paginated deals for an organization.
+type ListDealsResponse struct {
+	// Deals Deals returned for the current page.
+	Deals []Deal `json:"deals"`
+
+	// NextPageToken Opaque token for cursor-based pagination.
 	NextPageToken *string `json:"next_page_token,omitempty"`
 }
 
@@ -2455,6 +2938,15 @@ type ListReplicasResponse struct {
 
 	// Replicas Read replicas attached to the database.
 	Replicas []Replica `json:"replicas"`
+}
+
+// ListResearchTasksResponse Cursor-paginated research tasks for an organization.
+type ListResearchTasksResponse struct {
+	// NextPageToken Opaque token for cursor-based pagination.
+	NextPageToken *string `json:"next_page_token,omitempty"`
+
+	// Tasks Research tasks returned for the current page.
+	Tasks []ResearchTask `json:"tasks"`
 }
 
 // ListSchemaAnnotationsResponse Cursor-paginated schema annotations for a project.
@@ -2774,6 +3266,24 @@ type PiiSuggestionMaskKind string
 
 // PiiSuggestionPiiType The kind of personally identifiable information detected.
 type PiiSuggestionPiiType string
+
+// PipelineStageSummary Aggregate deal count and value for a single pipeline stage.
+type PipelineStageSummary struct {
+	// DealCount Number of deals in this stage.
+	DealCount int64 `json:"deal_count"`
+
+	// Stage Pipeline stage of a deal.
+	Stage DealStage `json:"stage"`
+
+	// TotalAmountCents Total value of deals in this stage, in minor currency units.
+	TotalAmountCents int64 `json:"total_amount_cents"`
+}
+
+// PipelineSummaryResponse Deal count and total value per pipeline stage.
+type PipelineSummaryResponse struct {
+	// Stages One entry per stage that has at least one deal.
+	Stages []PipelineStageSummary `json:"stages"`
+}
 
 // PlanInfo Publicly visible plan metadata and limits.
 type PlanInfo struct {
@@ -3351,6 +3861,81 @@ type Replica struct {
 	UpdatedAt time.Time `json:"updated_at"`
 }
 
+// ResearchTask A unit of work for the autonomous research agent. Workers lease pending tasks from the queue, do the work (enrichment), and write the result back.
+type ResearchTask struct {
+	// ApprovedAt When the task was approved, if it required approval.
+	ApprovedAt *time.Time `json:"approved_at,omitempty"`
+
+	// Attempts Number of attempts made so far.
+	Attempts int `json:"attempts"`
+
+	// CreatedAt When the task was enqueued.
+	CreatedAt time.Time `json:"created_at"`
+
+	// Error Last error message, if the task has failed attempts.
+	Error *string `json:"error,omitempty"`
+
+	// Id Unique research task identifier.
+	Id string `json:"id"`
+
+	// Kind What the research agent should do for this task.
+	Kind ResearchTaskKind `json:"kind"`
+
+	// MaxAttempts Maximum attempts before the task is terminal.
+	MaxAttempts int `json:"max_attempts"`
+
+	// OrgId Organization the task belongs to.
+	OrgId string `json:"org_id"`
+
+	// Priority Higher runs first.
+	Priority int `json:"priority"`
+
+	// RequiresApproval Whether this task is held for human approval before it runs.
+	RequiresApproval bool `json:"requires_approval"`
+
+	// Role Specialist agent role that owns a task. The researcher is the lead, the enricher fills in graph edges, and outreach writes and sends.
+	Role AgentRole `json:"role"`
+
+	// Status Lifecycle state of a research task. awaiting_approval means the task is an irreversible action held for a human approval before it runs.
+	Status ResearchTaskStatus `json:"status"`
+
+	// SubjectId ID of the company/contact/deal this task targets.
+	SubjectId string `json:"subject_id"`
+
+	// SubjectType The kind of entity a research task targets.
+	SubjectType ResearchTaskSubjectType `json:"subject_type"`
+
+	// UpdatedAt When the task was last updated.
+	UpdatedAt time.Time `json:"updated_at"`
+}
+
+// ResearchTaskInput Request body for enqueuing a research task.
+type ResearchTaskInput struct {
+	// Kind What the research agent should do for this task.
+	Kind ResearchTaskKind `json:"kind"`
+
+	// Priority Higher runs first.
+	Priority *int `json:"priority,omitempty"`
+
+	// Role Specialist agent role that owns a task. The researcher is the lead, the enricher fills in graph edges, and outreach writes and sends.
+	Role *AgentRole `json:"role,omitempty"`
+
+	// SubjectId ID of the company/contact/deal this task targets.
+	SubjectId string `json:"subject_id"`
+
+	// SubjectType The kind of entity a research task targets.
+	SubjectType ResearchTaskSubjectType `json:"subject_type"`
+}
+
+// ResearchTaskKind What the research agent should do for this task.
+type ResearchTaskKind string
+
+// ResearchTaskStatus Lifecycle state of a research task. awaiting_approval means the task is an irreversible action held for a human approval before it runs.
+type ResearchTaskStatus string
+
+// ResearchTaskSubjectType The kind of entity a research task targets.
+type ResearchTaskSubjectType string
+
 // RowFilter A per-relation row filter. The predicate is a raw SQL boolean expression ANDed into the WHERE clause for the matching relation.
 type RowFilter struct {
 	// Predicate Raw SQL boolean expression ANDed into WHERE for this relation.
@@ -3912,6 +4497,21 @@ type AuditStart = time.Time
 // BranchId defines model for BranchId.
 type BranchId = string
 
+// CrmArtifactId defines model for CrmArtifactId.
+type CrmArtifactId = string
+
+// CrmCompanyId defines model for CrmCompanyId.
+type CrmCompanyId = string
+
+// CrmContactId defines model for CrmContactId.
+type CrmContactId = string
+
+// CrmDealId defines model for CrmDealId.
+type CrmDealId = string
+
+// CrmTaskId defines model for CrmTaskId.
+type CrmTaskId = string
+
 // DatabaseId defines model for DatabaseId.
 type DatabaseId = string
 
@@ -3971,6 +4571,57 @@ type bearerAuthContextKey string
 
 // internalSecretContextKey is the context key for InternalSecret security scheme
 type internalSecretContextKey string
+
+// ListCrmActivitiesParams defines parameters for ListCrmActivities.
+type ListCrmActivitiesParams struct {
+	// PageSize Maximum number of items to return (1-100, default 20).
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+}
+
+// ListCrmArtifactsParams defines parameters for ListCrmArtifacts.
+type ListCrmArtifactsParams struct {
+	// PageSize Maximum number of items to return (1-100, default 20).
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken Opaque token for cursor-based pagination.
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+}
+
+// ListCrmCompaniesParams defines parameters for ListCrmCompanies.
+type ListCrmCompaniesParams struct {
+	// PageSize Maximum number of items to return (1-100, default 20).
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken Opaque token for cursor-based pagination.
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+}
+
+// ListCrmContactsParams defines parameters for ListCrmContacts.
+type ListCrmContactsParams struct {
+	// PageSize Maximum number of items to return (1-100, default 20).
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken Opaque token for cursor-based pagination.
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+}
+
+// ListCrmDealsParams defines parameters for ListCrmDeals.
+type ListCrmDealsParams struct {
+	// PageSize Maximum number of items to return (1-100, default 20).
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken Opaque token for cursor-based pagination.
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+}
+
+// ListCrmResearchTasksParams defines parameters for ListCrmResearchTasks.
+type ListCrmResearchTasksParams struct {
+	// PageSize Maximum number of items to return (1-100, default 20).
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken Opaque token for cursor-based pagination.
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+}
 
 // ListSupportCasesParams defines parameters for ListSupportCases.
 type ListSupportCasesParams struct {
@@ -4241,6 +4892,30 @@ type McpTransportJSONRequestBody = McpRequest
 
 // SubmitCancellationFeedbackJSONRequestBody defines body for SubmitCancellationFeedback for application/json ContentType.
 type SubmitCancellationFeedbackJSONRequestBody = CancellationFeedbackRequest
+
+// CreateCrmCompanyJSONRequestBody defines body for CreateCrmCompany for application/json ContentType.
+type CreateCrmCompanyJSONRequestBody = CompanyInput
+
+// UpdateCrmCompanyJSONRequestBody defines body for UpdateCrmCompany for application/json ContentType.
+type UpdateCrmCompanyJSONRequestBody = CompanyInput
+
+// CreateCrmContactJSONRequestBody defines body for CreateCrmContact for application/json ContentType.
+type CreateCrmContactJSONRequestBody = ContactInput
+
+// UpdateCrmContactJSONRequestBody defines body for UpdateCrmContact for application/json ContentType.
+type UpdateCrmContactJSONRequestBody = ContactInput
+
+// UpdateCrmContextJSONRequestBody defines body for UpdateCrmContext for application/json ContentType.
+type UpdateCrmContextJSONRequestBody = CrmContextInput
+
+// CreateCrmDealJSONRequestBody defines body for CreateCrmDeal for application/json ContentType.
+type CreateCrmDealJSONRequestBody = DealInput
+
+// UpdateCrmDealJSONRequestBody defines body for UpdateCrmDeal for application/json ContentType.
+type UpdateCrmDealJSONRequestBody = DealInput
+
+// CreateCrmResearchTaskJSONRequestBody defines body for CreateCrmResearchTask for application/json ContentType.
+type CreateCrmResearchTaskJSONRequestBody = ResearchTaskInput
 
 // UpdateOnboardingProgressJSONRequestBody defines body for UpdateOnboardingProgress for application/json ContentType.
 type UpdateOnboardingProgressJSONRequestBody = UpdateOnboardingRequest

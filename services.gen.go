@@ -23,6 +23,7 @@ type Client struct {
 	Analytics         *AnalyticsService
 	Platform          *PlatformService
 	Account           *AccountService
+	Crm               *CrmService
 	Honeytokens       *HoneytokensService
 	Internal          *InternalService
 	Schemaannotations *SchemaannotationsService
@@ -46,6 +47,7 @@ func NewClient(opts *ClientOptions) *Client {
 	c.Analytics = &AnalyticsService{t: t}
 	c.Platform = &PlatformService{t: t}
 	c.Account = &AccountService{t: t}
+	c.Crm = &CrmService{t: t}
 	c.Honeytokens = &HoneytokensService{t: t}
 	c.Internal = &InternalService{t: t}
 	c.Schemaannotations = &SchemaannotationsService{t: t}
@@ -375,6 +377,113 @@ func (s *AccountService) UpdateOnboardingProgress(ctx context.Context, orgID str
 
 func (s *AccountService) ListOrganizations(ctx context.Context) (*ListOrganizationsResponse, error) {
 	return doJSON[ListOrganizationsResponse](s.t, ctx, "GET", "/v1/organizations", nil)
+}
+
+// CrmService provides crm operations.
+type CrmService struct{ t *transport }
+
+func (s *CrmService) ListCrmCompanies(ctx context.Context, orgID string, params *ListCrmCompaniesParams) (*ListCompaniesResponse, error) {
+	return doQuery[ListCompaniesResponse](s.t, ctx, fmt.Sprintf("/v1/organizations/%s/crm/companies", orgID), params)
+}
+
+func (s *CrmService) CreateCrmCompany(ctx context.Context, orgID string, body CompanyInput) (*Company, error) {
+	return doJSON[Company](s.t, ctx, "POST", fmt.Sprintf("/v1/organizations/%s/crm/companies", orgID), body)
+}
+
+func (s *CrmService) GetCrmCompany(ctx context.Context, orgID string, companyID string) (*Company, error) {
+	return doJSON[Company](s.t, ctx, "GET", fmt.Sprintf("/v1/organizations/%s/crm/companies/%s", orgID, companyID), nil)
+}
+
+func (s *CrmService) UpdateCrmCompany(ctx context.Context, orgID string, companyID string, body CompanyInput) (*Company, error) {
+	return doJSON[Company](s.t, ctx, "PUT", fmt.Sprintf("/v1/organizations/%s/crm/companies/%s", orgID, companyID), body)
+}
+
+func (s *CrmService) DeleteCrmCompany(ctx context.Context, orgID string, companyID string) error {
+	return doVoid(s.t, ctx, "DELETE", fmt.Sprintf("/v1/organizations/%s/crm/companies/%s", orgID, companyID), nil)
+}
+
+func (s *CrmService) ListCrmContacts(ctx context.Context, orgID string, params *ListCrmContactsParams) (*ListContactsResponse, error) {
+	return doQuery[ListContactsResponse](s.t, ctx, fmt.Sprintf("/v1/organizations/%s/crm/contacts", orgID), params)
+}
+
+func (s *CrmService) CreateCrmContact(ctx context.Context, orgID string, body ContactInput) (*Contact, error) {
+	return doJSON[Contact](s.t, ctx, "POST", fmt.Sprintf("/v1/organizations/%s/crm/contacts", orgID), body)
+}
+
+func (s *CrmService) GetCrmContact(ctx context.Context, orgID string, contactID string) (*Contact, error) {
+	return doJSON[Contact](s.t, ctx, "GET", fmt.Sprintf("/v1/organizations/%s/crm/contacts/%s", orgID, contactID), nil)
+}
+
+func (s *CrmService) UpdateCrmContact(ctx context.Context, orgID string, contactID string, body ContactInput) (*Contact, error) {
+	return doJSON[Contact](s.t, ctx, "PUT", fmt.Sprintf("/v1/organizations/%s/crm/contacts/%s", orgID, contactID), body)
+}
+
+func (s *CrmService) DeleteCrmContact(ctx context.Context, orgID string, contactID string) error {
+	return doVoid(s.t, ctx, "DELETE", fmt.Sprintf("/v1/organizations/%s/crm/contacts/%s", orgID, contactID), nil)
+}
+
+func (s *CrmService) ListCrmDeals(ctx context.Context, orgID string, params *ListCrmDealsParams) (*ListDealsResponse, error) {
+	return doQuery[ListDealsResponse](s.t, ctx, fmt.Sprintf("/v1/organizations/%s/crm/deals", orgID), params)
+}
+
+func (s *CrmService) CreateCrmDeal(ctx context.Context, orgID string, body DealInput) (*Deal, error) {
+	return doJSON[Deal](s.t, ctx, "POST", fmt.Sprintf("/v1/organizations/%s/crm/deals", orgID), body)
+}
+
+func (s *CrmService) GetCrmPipeline(ctx context.Context, orgID string) (*PipelineSummaryResponse, error) {
+	return doJSON[PipelineSummaryResponse](s.t, ctx, "GET", fmt.Sprintf("/v1/organizations/%s/crm/pipeline", orgID), nil)
+}
+
+func (s *CrmService) GetCrmDeal(ctx context.Context, orgID string, dealID string) (*Deal, error) {
+	return doJSON[Deal](s.t, ctx, "GET", fmt.Sprintf("/v1/organizations/%s/crm/deals/%s", orgID, dealID), nil)
+}
+
+func (s *CrmService) UpdateCrmDeal(ctx context.Context, orgID string, dealID string, body DealInput) (*Deal, error) {
+	return doJSON[Deal](s.t, ctx, "PUT", fmt.Sprintf("/v1/organizations/%s/crm/deals/%s", orgID, dealID), body)
+}
+
+func (s *CrmService) DeleteCrmDeal(ctx context.Context, orgID string, dealID string) error {
+	return doVoid(s.t, ctx, "DELETE", fmt.Sprintf("/v1/organizations/%s/crm/deals/%s", orgID, dealID), nil)
+}
+
+func (s *CrmService) ListCrmResearchTasks(ctx context.Context, orgID string, params *ListCrmResearchTasksParams) (*ListResearchTasksResponse, error) {
+	return doQuery[ListResearchTasksResponse](s.t, ctx, fmt.Sprintf("/v1/organizations/%s/crm/research-tasks", orgID), params)
+}
+
+func (s *CrmService) CreateCrmResearchTask(ctx context.Context, orgID string, body ResearchTaskInput) (*ResearchTask, error) {
+	return doJSON[ResearchTask](s.t, ctx, "POST", fmt.Sprintf("/v1/organizations/%s/crm/research-tasks", orgID), body)
+}
+
+func (s *CrmService) GetCrmResearchTask(ctx context.Context, orgID string, taskID string) (*ResearchTask, error) {
+	return doJSON[ResearchTask](s.t, ctx, "GET", fmt.Sprintf("/v1/organizations/%s/crm/research-tasks/%s", orgID, taskID), nil)
+}
+
+func (s *CrmService) CancelCrmResearchTask(ctx context.Context, orgID string, taskID string) (*ResearchTask, error) {
+	return doJSON[ResearchTask](s.t, ctx, "POST", fmt.Sprintf("/v1/organizations/%s/crm/research-tasks/%s/cancel", orgID, taskID), nil)
+}
+
+func (s *CrmService) GetCrmContext(ctx context.Context, orgID string) (*CrmContext, error) {
+	return doJSON[CrmContext](s.t, ctx, "GET", fmt.Sprintf("/v1/organizations/%s/crm/context", orgID), nil)
+}
+
+func (s *CrmService) UpdateCrmContext(ctx context.Context, orgID string, body CrmContextInput) (*CrmContext, error) {
+	return doJSON[CrmContext](s.t, ctx, "PUT", fmt.Sprintf("/v1/organizations/%s/crm/context", orgID), body)
+}
+
+func (s *CrmService) ApproveCrmResearchTask(ctx context.Context, orgID string, taskID string) (*ResearchTask, error) {
+	return doJSON[ResearchTask](s.t, ctx, "POST", fmt.Sprintf("/v1/organizations/%s/crm/research-tasks/%s/approve", orgID, taskID), nil)
+}
+
+func (s *CrmService) ListCrmArtifacts(ctx context.Context, orgID string, params *ListCrmArtifactsParams) (*ListArtifactsResponse, error) {
+	return doQuery[ListArtifactsResponse](s.t, ctx, fmt.Sprintf("/v1/organizations/%s/crm/artifacts", orgID), params)
+}
+
+func (s *CrmService) GetCrmArtifact(ctx context.Context, orgID string, artifactID string) (*Artifact, error) {
+	return doJSON[Artifact](s.t, ctx, "GET", fmt.Sprintf("/v1/organizations/%s/crm/artifacts/%s", orgID, artifactID), nil)
+}
+
+func (s *CrmService) ListCrmActivities(ctx context.Context, orgID string, params *ListCrmActivitiesParams) (*ListActivitiesResponse, error) {
+	return doQuery[ListActivitiesResponse](s.t, ctx, fmt.Sprintf("/v1/organizations/%s/crm/activities", orgID), params)
 }
 
 // HoneytokensService provides honeytokens operations.
