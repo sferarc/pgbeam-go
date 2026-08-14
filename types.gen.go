@@ -1983,7 +1983,7 @@ type CreateDatabaseRequest struct {
 	Username string `json:"username"`
 }
 
-// CreateProjectRequest Request body for creating a project and its primary database.
+// CreateProjectRequest Request body for creating a project and its primary database, which are created atomically.
 type CreateProjectRequest struct {
 	// Cloud Cloud provider for the project.
 	Cloud *CreateProjectRequestCloud `json:"cloud,omitempty"`
