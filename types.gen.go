@@ -3081,10 +3081,10 @@ type PolicyProfile struct {
 	// StatementTimeoutMs Upstream statement timeout for agent sessions. 0 uses the project default.
 	StatementTimeoutMs *int `json:"statement_timeout_ms,omitempty"`
 
-	// TableAllowlist If non-empty, only these relations are reachable. Schema-qualified or bare names.
+	// TableAllowlist If non-empty, only these relations are reachable. Entries are schema-qualified (billing.orders) or bare (orders); a bare entry grants the public schema only, so the same table name in another schema must be listed in full.
 	TableAllowlist []string `json:"table_allowlist"`
 
-	// TableDenylist Relations explicitly blocked (takes precedence over the allowlist).
+	// TableDenylist Relations explicitly blocked (takes precedence over the allowlist). A bare entry blocks that relation in every schema.
 	TableDenylist []string `json:"table_denylist"`
 
 	// UpdatedAt When the policy profile was last updated.
@@ -3153,10 +3153,10 @@ type PolicyProfileInput struct {
 	// StatementTimeoutMs Upstream statement timeout for agent sessions. 0 uses the project default.
 	StatementTimeoutMs *int `json:"statement_timeout_ms,omitempty"`
 
-	// TableAllowlist If non-empty, only these relations are reachable.
+	// TableAllowlist If non-empty, only these relations are reachable. A bare entry grants the public schema only; list another schema in full, as in billing.orders.
 	TableAllowlist *[]string `json:"table_allowlist,omitempty"`
 
-	// TableDenylist Relations explicitly blocked.
+	// TableDenylist Relations explicitly blocked. A bare entry blocks that relation in every schema.
 	TableDenylist *[]string `json:"table_denylist,omitempty"`
 
 	// WriteMode How writes are handled. normal commits, rollback auto-rolls back, sandbox routes to an ephemeral branch.
