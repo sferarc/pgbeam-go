@@ -882,6 +882,24 @@ func (e PolicyReplayItemChange) Valid() bool {
 	}
 }
 
+// Defines values for PolicyReplaySummaryTrafficScope.
+const (
+	PolicyReplaySummaryTrafficScopeBoundCredentials PolicyReplaySummaryTrafficScope = "bound_credentials"
+	PolicyReplaySummaryTrafficScopeProject          PolicyReplaySummaryTrafficScope = "project"
+)
+
+// Valid indicates whether the value is a known member of the PolicyReplaySummaryTrafficScope enum.
+func (e PolicyReplaySummaryTrafficScope) Valid() bool {
+	switch e {
+	case PolicyReplaySummaryTrafficScopeBoundCredentials:
+		return true
+	case PolicyReplaySummaryTrafficScopeProject:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for PoolMode.
 const (
 	Session     PoolMode = "session"
@@ -1696,11 +1714,14 @@ type AuditChainVerification struct {
 	// ChainStartSeq Sequence number of the first chained entry checked. Null when none.
 	ChainStartSeq *int64 `json:"chain_start_seq,omitempty"`
 
-	// FailureReason Machine-readable failure kind: hash_mismatch (entry content edited), broken_link (prev_hash does not match the predecessor), or missing_entry (a sequence number was deleted). Null when ok.
+	// FailureReason Machine-readable failure kind: hash_mismatch (entry content edited), broken_link (prev_hash does not match the predecessor), missing_entry (a sequence number was deleted), unknown_key (the entry was signed with a key this deployment does not hold, so it can be neither confirmed nor called tampered), or key_downgrade (the chain ends in unsigned entries that follow a signed one with nothing signed after them, which is what truncating a signed chain and continuing it without the key looks like). Null when ok.
 	FailureReason *string `json:"failure_reason,omitempty"`
 
 	// FirstBrokenSeq Sequence number where verification first failed (a tampered or deleted entry). Null when ok.
 	FirstBrokenSeq *int64 `json:"first_broken_seq,omitempty"`
+
+	// KeyedCount How many of the checked entries were signed with an HMAC key rather than hashed unkeyed. An unkeyed entry is still tamper-evident against anyone who cannot write to the database, but a writer can recompute it; a keyed one they cannot. Lower than verified_count over a range that predates the deployment's signing key.
+	KeyedCount int64 `json:"keyed_count"`
 
 	// Ok True when every chained entry in the range links correctly and no tampering or deletion was detected.
 	Ok bool `json:"ok"`
@@ -3216,6 +3237,11 @@ type PolicyRecommendationInput struct {
 
 // PolicyReplayInput A window of recorded agent traffic to replay plus the candidate policy to replay it against. Supply exactly one of policy_id (an existing saved policy) or policy (an unsaved draft, e.g. the in-progress editor form).
 type PolicyReplayInput struct {
+	// BoundPolicyId Restrict the replay to traffic recorded for the agent credentials currently bound to this policy profile. Use it to preview a change to a live policy against the traffic that policy actually governs: without it the replay covers every credential in the project, including credentials bound to other profiles, whose behaviour saving this candidate cannot change. Mutually exclusive with credential_id.
+	//
+	// Example: pol_01h455vb4pex5vsknk084sn02q
+	BoundPolicyId *string `json:"bound_policy_id,omitempty"`
+
 	// CredentialId Restrict the replay to traffic recorded for one agent credential.
 	//
 	// Example: cred_01h455vb4pex5vsknk084sn02q
@@ -3286,6 +3312,9 @@ type PolicyReplayResult struct {
 
 // PolicyReplaySummary Aggregate outcome of a policy replay.
 type PolicyReplaySummary struct {
+	// BoundCredentials How many agent credentials are bound to bound_policy_id. Set only when traffic_scope is bound_credentials. Zero means the policy governs no credential today, so an empty replay is a statement about bindings and not evidence that the change is safe.
+	BoundCredentials *int `json:"bound_credentials,omitempty"`
+
 	// DistinctQueries Distinct normalized queries found in the window (capped at limit).
 	DistinctQueries int `json:"distinct_queries"`
 
@@ -3304,6 +3333,9 @@ type PolicyReplaySummary struct {
 	// SkippedUnparseable Distinct queries skipped because the stored statement was truncated at record time and can no longer be parsed faithfully.
 	SkippedUnparseable int `json:"skipped_unparseable"`
 
+	// TrafficScope Which recorded traffic the replay covered. "project" is every credential in the project, so some replayed queries may belong to credentials this candidate policy does not govern. "bound_credentials" is only the credentials bound to bound_policy_id, which is what actually changes when that policy is saved.
+	TrafficScope PolicyReplaySummaryTrafficScope `json:"traffic_scope"`
+
 	// Truncated True when the window contained more distinct queries than limit; only the newest were replayed.
 	Truncated bool `json:"truncated"`
 
@@ -3319,6 +3351,9 @@ type PolicyReplaySummary struct {
 	// WouldRowFilter Queries the candidate policy would inject a row filter into.
 	WouldRowFilter int `json:"would_row_filter"`
 }
+
+// PolicyReplaySummaryTrafficScope Which recorded traffic the replay covered. "project" is every credential in the project, so some replayed queries may belong to credentials this candidate policy does not govern. "bound_credentials" is only the credentials bound to bound_policy_id, which is what actually changes when that policy is saved.
+type PolicyReplaySummaryTrafficScope string
 
 // PoolConfig Connection pool configuration.
 type PoolConfig struct {
