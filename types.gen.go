@@ -1810,6 +1810,77 @@ type AuditLogEntry struct {
 	Ts time.Time `json:"ts"`
 }
 
+// AuditSessionSummary Deterministic summary of one agent session's recorded statements: what it touched, how much it moved, and how often the policy engine stepped in. Computed from the project's audit log with no model in the loop, so the same entries always summarize the same way. Carries schema metadata (table names) and counts only, never row values.
+type AuditSessionSummary struct {
+	// Allowed Statements that ran unmodified (event `query`).
+	Allowed int64 `json:"allowed"`
+
+	// Blocked Statements refused (events `blocked`, `budget_exhausted`, `auth_failed`, `credential_expired`), the same grouping the audit list's `block` decision filter uses.
+	Blocked int64 `json:"blocked"`
+
+	// BytesOut Bytes sent to the agent across the session.
+	BytesOut int64 `json:"bytes_out"`
+
+	// CredentialIds Agent credentials that issued statements in this session, sorted. A session normally has exactly one. More than one means the session ID was reused, because it is unique per connection within a proxy instance and not over time: narrow the window with start/end to separate them.
+	CredentialIds []string `json:"credential_ids"`
+
+	// DurationMs Milliseconds between the first and last scanned entry.
+	DurationMs float32 `json:"duration_ms"`
+
+	// EndedAt Timestamp of the session's last scanned entry.
+	EndedAt time.Time `json:"ended_at"`
+
+	// EntriesScanned Audit entries read for this session, including non-statement lifecycle events.
+	EntriesScanned int64 `json:"entries_scanned"`
+
+	// LatencyMsTotal Summed statement latency in milliseconds.
+	LatencyMsTotal float32 `json:"latency_ms_total"`
+
+	// Masked Statements whose results had a column masked (event `masked`). One statement records one event, and truncation outranks masking, so a statement that was both masked and truncated counts under truncated only.
+	Masked int64 `json:"masked"`
+
+	// Other Scanned entries carrying no statement decision, e.g. control-plane lifecycle events recorded against the session.
+	Other int64 `json:"other"`
+
+	// ProjectId Owning project ID.
+	ProjectId string `json:"project_id"`
+
+	// RowsReturned Rows returned to the agent across the session.
+	RowsReturned int64 `json:"rows_returned"`
+
+	// ScanTruncated True when the session has more entries than one summary reads. The counts and tables then cover the oldest entries in the window only; narrow it with start/end.
+	ScanTruncated bool `json:"scan_truncated"`
+
+	// SessionId Identifier grouping the connection's statements.
+	//
+	// Example: 0000a41f
+	SessionId string `json:"session_id"`
+
+	// Sources Statement origins seen in the session (wire, mcp, rest, control), sorted.
+	Sources []string `json:"sources"`
+
+	// StartedAt Timestamp of the session's first scanned entry.
+	StartedAt time.Time `json:"started_at"`
+
+	// Statements Entries carrying a statement decision, the sum of allowed, blocked, masked and truncated.
+	Statements int64 `json:"statements"`
+
+	// TablesBlocked Tables and views referenced by statements the policy engine refused, sorted. These were attempted, not read, which is why they are kept out of tables_read and tables_written.
+	TablesBlocked []string `json:"tables_blocked"`
+
+	// TablesRead Tables and views referenced by statements that executed as reads, sorted and schema-qualified when the statement qualified them.
+	TablesRead []string `json:"tables_read"`
+
+	// TablesWritten Tables and views referenced by statements that executed as writes, sorted. A write that reads from another table (`UPDATE ... FROM`, a data-modifying CTE) lists that table here too: the audit record keeps the statement, not its write target, so the two cannot be told apart after the fact.
+	TablesWritten []string `json:"tables_written"`
+
+	// Truncated Statements whose results hit a row cap (event `truncated`).
+	Truncated int64 `json:"truncated"`
+
+	// UnparsedStatements Statements whose recorded SQL could not be parsed, because the audit writer truncated it or because it never parsed. Their tables are missing from the three table lists, so a non-zero count means those lists are incomplete.
+	UnparsedStatements int64 `json:"unparsed_statements"`
+}
+
 // AuditSource Statement origin (wire, mcp, rest, or control).
 type AuditSource string
 
@@ -4276,6 +4347,9 @@ type AuditEnd = time.Time
 // AuditEvent defines model for AuditEvent.
 type AuditEvent = string
 
+// AuditSessionId defines model for AuditSessionId.
+type AuditSessionId = string
+
 // AuditStart defines model for AuditStart.
 type AuditStart = time.Time
 
@@ -4455,6 +4529,15 @@ type ExportAuditLogsParams struct {
 	// Source Filter by statement origin (wire, mcp, rest, or control).
 	Source *AuditSource `form:"source,omitempty" json:"source,omitempty"`
 
+	// Start Return entries at or after this timestamp (inclusive lower bound).
+	Start *AuditStart `form:"start,omitempty" json:"start,omitempty"`
+
+	// End Return entries strictly older than this timestamp (cursor / upper bound).
+	End *AuditEnd `form:"end,omitempty" json:"end,omitempty"`
+}
+
+// GetAuditSessionSummaryParams defines parameters for GetAuditSessionSummary.
+type GetAuditSessionSummaryParams struct {
 	// Start Return entries at or after this timestamp (inclusive lower bound).
 	Start *AuditStart `form:"start,omitempty" json:"start,omitempty"`
 
