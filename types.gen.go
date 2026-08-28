@@ -1736,7 +1736,7 @@ type AuditChainVerification struct {
 	VerifiedCount int64 `json:"verified_count"`
 }
 
-// AuditDecision Coarse outcome filter that groups audit events. `allow` = query; `block` = blocked, budget_exhausted, auth_failed, credential_expired; `mask` = masked; `truncate` = truncated.
+// AuditDecision Coarse outcome filter that groups audit events. `allow` = query; `block` = blocked, budget_exhausted, auth_failed, credential_expired, canary_tripped, rejected, approval_expired; `mask` = masked; `truncate` = truncated. The progress events approval_requested, approved and migration_flagged group under no decision: each belongs to a statement that goes on to record its own outcome, so grouping them would count that statement twice.
 type AuditDecision string
 
 // AuditLogEntry One agent statement recorded by the gateway.
@@ -1759,7 +1759,7 @@ type AuditLogEntry struct {
 	// EntryHash Hex SHA-256 of this entry's canonical content chained onto prev_hash. Empty for pre-chain legacy entries.
 	EntryHash *string `json:"entry_hash,omitempty"`
 
-	// Event Event type (query, blocked, masked, budget_exhausted, truncated, auth_failed, credential_expired).
+	// Event Event type (query, blocked, masked, truncated, budget_exhausted, canary_tripped, rejected, approval_expired, auth_failed, credential_expired, approval_requested, approved, migration_flagged).
 	Event string `json:"event"`
 
 	// Id Unique audit entry identifier.
