@@ -1591,6 +1591,150 @@ type AgentCredentialSecrets struct {
 	McpUrl string `json:"mcp_url"`
 }
 
+// AgentUsageDropMarkers Evidence that the trail lost entries in this window. Nothing about the surviving rows looks wrong when this happens, so it is reported explicitly.
+type AgentUsageDropMarkers struct {
+	// EntriesDropped Entries the markers account for. A floor: it counts only markers whose count could be read.
+	EntriesDropped int64 `json:"entries_dropped"`
+
+	// Markers Number of gap markers read, capped at 1000.
+	Markers int `json:"markers"`
+
+	// MarkersUnparsed Markers whose count could not be read, so their entries are missing from entries_dropped. Reported rather than assumed zero.
+	MarkersUnparsed int `json:"markers_unparsed"`
+
+	// Reasons Distinct marker reasons, sorted, so an operator can tell the two buffers apart.
+	Reasons []string `json:"reasons"`
+
+	// Truncated True when the window held more gap markers than the cap, so entries_dropped accounts for only the ones read and the real gap is larger. Reported rather than left to look like an exact count.
+	Truncated bool `json:"truncated"`
+}
+
+// AgentUsageLine One usage line. The four decision counts partition every statement-shaped entry; entries carrying no statement decision (approval progress rows, gap markers) are in entries but in none of the four, which is why entries is reported separately rather than derived.
+type AgentUsageLine struct {
+	// Allowed Statements that ran and returned unmodified rows.
+	Allowed int64 `json:"allowed"`
+
+	// Blocked Statements the gateway refused, including budget, honeytoken and approval refusals.
+	Blocked int64 `json:"blocked"`
+
+	// BytesOut Bytes returned to the client, the quantity the bytes meter bills on.
+	BytesOut int64 `json:"bytes_out"`
+
+	// CacheBypass Not eligible for cache, so no lookup was attempted.
+	CacheBypass int64 `json:"cache_bypass"`
+
+	// CacheHit Served from cache.
+	CacheHit int64 `json:"cache_hit"`
+
+	// CacheMiss Went upstream after a cache lookup found nothing.
+	CacheMiss int64 `json:"cache_miss"`
+
+	// CacheNone No cache outcome recorded, which is what a refused statement looks like: it never reached the cache. Present so the five cache counts sum to entries and no statement is silently outside the breakdown.
+	CacheNone int64 `json:"cache_none"`
+
+	// CacheStale Served from cache while a refresh ran behind it.
+	CacheStale int64 `json:"cache_stale"`
+
+	// CredentialId The agent credential, or null on the unattributed and totals lines.
+	CredentialId *string `json:"credential_id,omitempty"`
+
+	// Entries Audit entries of every kind, including ones carrying no decision. Not a statement count: a statement held for approval writes a progress row before its outcome, and a gap marker is not a statement at all.
+	Entries int64 `json:"entries"`
+
+	// FirstSeen First entry for this line. Null when the line covers no entries.
+	FirstSeen *time.Time `json:"first_seen,omitempty"`
+
+	// LastSeen Last entry for this line. Null when the line covers no entries.
+	LastSeen *time.Time `json:"last_seen,omitempty"`
+
+	// LatencyMeasured Entries that ran and carried a finite latency, so they fed the percentiles and the total. Only the three executing decisions count: allowed, masked and truncated.
+	LatencyMeasured int64 `json:"latency_measured"`
+
+	// LatencyMsTotal Sum of finite latencies, in milliseconds.
+	LatencyMsTotal float64 `json:"latency_ms_total"`
+
+	// LatencyP50Ms Median finite latency. Zero when nothing was measured.
+	LatencyP50Ms float64 `json:"latency_p50_ms"`
+
+	// LatencyP95Ms 95th percentile finite latency. Zero when nothing was measured.
+	LatencyP95Ms float64 `json:"latency_p95_ms"`
+
+	// LatencyP99Ms 99th percentile finite latency. Zero when nothing was measured.
+	LatencyP99Ms float64 `json:"latency_p99_ms"`
+
+	// LatencyUnmeasured Entries excluded from the percentiles and the total, counted rather than dropped. Two kinds. Entries that never executed carry a literal zero latency because there was nothing to time: every refusal, the approval progress rows, and the gap markers. Including those would drag an agent's percentiles toward zero in proportion to how often it was refused, so the heavily blocked agent would report the fastest queries. Entries whose recorded latency was NaN or an infinity are excluded too, because in PostgreSQL NaN sorts above every other value and so corrupts the upper percentiles first and the sum unconditionally.
+	LatencyUnmeasured int64 `json:"latency_unmeasured"`
+
+	// Masked Statements that ran with a column mask applied.
+	Masked int64 `json:"masked"`
+
+	// RowsReturned Rows returned to the client.
+	RowsReturned int64 `json:"rows_returned"`
+
+	// Truncated Statements that ran and had their result capped.
+	Truncated int64 `json:"truncated"`
+}
+
+// AgentUsageMarginalRates The organization's plan limits and marginal overage rates, resolved for both of the zero meanings a limit carries. Supplied as context for a caller that wants to price usage itself; this endpoint deliberately prices nothing.
+type AgentUsageMarginalRates struct {
+	// BytesOverageBillable True only when a bytes limit exists and overage past it was purchased.
+	BytesOverageBillable bool `json:"bytes_overage_billable"`
+
+	// BytesPerMonth Monthly transfer limit in bytes. Zero means no limit at all.
+	BytesPerMonth int64 `json:"bytes_per_month"`
+
+	// OveragePer1kQueries Rate per 1000 queries past the limit. Zero means the plan is a hard cap with no overage purchased, which is a different thing from no limit.
+	OveragePer1kQueries float64 `json:"overage_per_1k_queries"`
+
+	// OveragePerGb Rate per GB past the limit. Zero means a hard cap with no overage.
+	OveragePerGb float64 `json:"overage_per_gb"`
+
+	// Plan Plan name the rates come from.
+	Plan string `json:"plan"`
+
+	// QueriesPerDay Daily query limit. Zero means no limit at all, not a limit of zero.
+	QueriesPerDay int64 `json:"queries_per_day"`
+
+	// QueryOverageBillable True only when a query limit exists and overage past it was purchased. Both gates resolved, so a caller cannot reproduce the bug where an organization with unlimited queries had its whole usage metered.
+	QueryOverageBillable bool `json:"query_overage_billable"`
+}
+
+// AgentUsageReport Per-agent usage for one project over a window, derived from the audit trail. Reports usage, not money: see the endpoint description for why no dollar figure is attributed to an agent.
+type AgentUsageReport struct {
+	// Agents One line per agent credential that appears in the window, busiest first. A credential with no traffic is absent rather than zero.
+	Agents []AgentUsageLine `json:"agents"`
+
+	// Complete False when the trail lost entries in this window, which means the totals below are a floor rather than a measurement. Derived from drop_markers, never assumed.
+	Complete bool `json:"complete"`
+
+	// DropMarkers Evidence that the trail lost entries in this window. Nothing about the surviving rows looks wrong when this happens, so it is reported explicitly.
+	DropMarkers AgentUsageDropMarkers `json:"drop_markers"`
+
+	// MarginalRates The organization's plan limits and marginal overage rates, resolved for both of the zero meanings a limit carries. Supplied as context for a caller that wants to price usage itself; this endpoint deliberately prices nothing.
+	MarginalRates AgentUsageMarginalRates `json:"marginal_rates"`
+
+	// ProjectId Project the usage belongs to.
+	ProjectId string `json:"project_id"`
+
+	// RequestedEnd End of the window that was actually queried, defaulting to now. The window is half-open, so an entry exactly at this instant is excluded. A window longer than 92 days is refused rather than truncated.
+	RequestedEnd time.Time `json:"requested_end"`
+
+	// RequestedStart Start of the window that was actually queried. Echoed because both parameters are optional: omitting start defaults it to 30 days before the end, and a caller that did not ask for a window still needs to know which one it got before reading the totals as the whole picture.
+	RequestedStart time.Time `json:"requested_start"`
+
+	// Totals The whole window. Equal to the sum of agents plus unattributed.
+	Totals AgentUsageLine `json:"totals"`
+
+	// Unattributed Usage recorded against no credential: refused connections that never resolved one, control-plane sweep entries, and gap markers. Reported as its own line and never smeared across agents or dropped, so that the sum of agents plus unattributed equals totals exactly.
+	Unattributed AgentUsageLine `json:"unattributed"`
+
+	// WindowEnd Last entry timestamp actually covered, not the requested end.
+	WindowEnd time.Time `json:"window_end"`
+
+	// WindowStart First entry timestamp actually covered, not the requested start. Equal to window_end when the window held no entries.
+	WindowStart time.Time `json:"window_start"`
+}
+
 // AnomalyAlert A surfaced anomalous-behavior alert for review.
 type AnomalyAlert struct {
 	// AcknowledgedAt When the alert was acknowledged, if any.
@@ -4663,6 +4807,15 @@ type GetProjectUsageParams struct {
 
 	// EndDate End date (inclusive, YYYY-MM-DD).
 	EndDate openapi_types.Date `form:"end_date" json:"end_date"`
+}
+
+// GetAgentUsageBreakdownParams defines parameters for GetAgentUsageBreakdown.
+type GetAgentUsageBreakdownParams struct {
+	// Start Return entries at or after this timestamp (inclusive lower bound).
+	Start *AuditStart `form:"start,omitempty" json:"start,omitempty"`
+
+	// End Return entries strictly older than this timestamp (cursor / upper bound).
+	End *AuditEnd `form:"end,omitempty" json:"end,omitempty"`
 }
 
 // ListWebhookEndpointsParams defines parameters for ListWebhookEndpoints.

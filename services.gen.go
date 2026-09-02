@@ -229,6 +229,10 @@ func (s *AgentsService) VerifyAuditChain(ctx context.Context, projectID string, 
 	return doQuery[AuditChainVerification](s.t, ctx, fmt.Sprintf("/v1/projects/%s/audit-logs/verify", projectID), params)
 }
 
+func (s *AgentsService) GetAgentUsageBreakdown(ctx context.Context, projectID string, params *GetAgentUsageBreakdownParams) (*AgentUsageReport, error) {
+	return doQuery[AgentUsageReport](s.t, ctx, fmt.Sprintf("/v1/projects/%s/usage/agents", projectID), params)
+}
+
 // ApprovalsService provides approvals operations.
 type ApprovalsService struct{ t *transport }
 
