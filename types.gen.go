@@ -1852,13 +1852,22 @@ type ApprovalRequestStatus string
 
 // AuditChainVerification Result of recomputing the project's tamper-evident audit hash chain over a time range. The chain links each entry to its predecessor, so editing or deleting any row breaks it.
 type AuditChainVerification struct {
+	// AnchorStatus What the external anchor concluded, or null when there was nothing to consult (no anchor key configured, or no checkpoint signed for this project yet). A checkpoint commits to one seq range of the chain, and checkpoints chain, each starting where the last ended. verified: the newest signed range, and every older one still fully retained and contiguous with it, was re-derived from the stored entries and matched. checkpoint_range_expired: the newest checkpoint covers entries retention has since deleted, wholly or in part, so its assertion cannot be checked against the live chain; ok stays true, because deleting rows the retention window said to delete is not evidence of tampering. Otherwise it repeats the anchor failure reported in failure_reason.
+	AnchorStatus *string `json:"anchor_status,omitempty"`
+
+	// AnchorVerifiedFromSeq First sequence number covered by a signed checkpoint that was re-derived and matched during this verification. Together with anchor_verified_through_seq this is how far back the anchor's coverage actually reaches, which after retention is less than the whole chain. Null when no signed range could be checked.
+	AnchorVerifiedFromSeq *int64 `json:"anchor_verified_from_seq,omitempty"`
+
+	// AnchorVerifiedThroughSeq Last sequence number covered by a signed checkpoint that was re-derived and matched during this verification. Null when none could be.
+	AnchorVerifiedThroughSeq *int64 `json:"anchor_verified_through_seq,omitempty"`
+
 	// ChainEndSeq Sequence number of the last chained entry checked. Null when none.
 	ChainEndSeq *int64 `json:"chain_end_seq,omitempty"`
 
 	// ChainStartSeq Sequence number of the first chained entry checked. Null when none.
 	ChainStartSeq *int64 `json:"chain_start_seq,omitempty"`
 
-	// FailureReason Machine-readable failure kind. Decided by the chain walk: hash_mismatch (entry content edited), broken_link (prev_hash does not match the predecessor), missing_entry (a sequence number was deleted), unknown_key (the entry was signed with a key this deployment does not hold, so it can be neither confirmed nor called tampered), key_downgrade (the chain ends in unsigned entries that follow a signed one with nothing signed after them, which is what truncating a signed chain and continuing it without the key looks like). Decided by the external anchor: truncated (the chain is shorter than a signed checkpoint says it was, which is entries deleted from the tip with nothing written after them), root_mismatch (the chain is long enough but its first checkpointed entries no longer produce the signed Merkle root, so the interior was rewritten), checkpoint_unverifiable (a stored checkpoint does not open under this deployment's anchor key, reported rather than skipped because an unverifiable claim is not an absent one). Null when ok.
+	// FailureReason Machine-readable failure kind. Decided by the chain walk: hash_mismatch (entry content edited), broken_link (prev_hash does not match the predecessor), missing_entry (a sequence number was deleted), unknown_key (the entry was signed with a key this deployment does not hold, so it can be neither confirmed nor called tampered), key_downgrade (the chain ends in unsigned entries that follow a signed one with nothing signed after them, which is what truncating a signed chain and continuing it without the key looks like). Decided by the external anchor: truncated (the chain no longer reaches the end of a signed checkpoint range, which is entries deleted from the tip with nothing written after them; retention cannot cause it, because it deletes oldest first), root_mismatch (every entry of a signed range is still stored but they no longer produce the signed Merkle root, so the interior was rewritten), checkpoint_unverifiable (a stored checkpoint does not open under this deployment's anchor key, or opens into a range that does not mean anything; reported rather than skipped because an unverifiable claim is not an absent one). Null when ok. Retention having removed the entries a checkpoint covers is not a failure and is reported on anchor_status.
 	FailureReason *string `json:"failure_reason,omitempty"`
 
 	// FirstBrokenSeq Sequence number where verification first failed (a tampered or deleted entry). Null when ok.
