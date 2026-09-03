@@ -1895,7 +1895,7 @@ type AuditChainVerification struct {
 	VerifiedCount int64 `json:"verified_count"`
 }
 
-// AuditDecision Coarse outcome filter that groups audit events. `allow` = query; `block` = blocked, budget_exhausted, auth_failed, credential_expired, canary_tripped, rejected, approval_expired; `mask` = masked; `truncate` = truncated. The progress events approval_requested, approved and migration_flagged group under no decision: each belongs to a statement that goes on to record its own outcome, so grouping them would count that statement twice.
+// AuditDecision Coarse outcome filter that groups audit events. `allow` = query, auto_approved; `block` = blocked, budget_exhausted, auth_failed, credential_expired, canary_tripped, rejected, approval_expired; `mask` = masked; `truncate` = truncated. The progress events approval_requested, approved and migration_flagged group under no decision: each belongs to a statement that goes on to record its own outcome, so grouping them would count that statement twice. auto_approved is not one of those: it is the only row an auto-approved write produces, so it groups under `allow` like any other completed statement.
 type AuditDecision string
 
 // AuditLogEntry One agent statement recorded by the gateway.
@@ -1918,7 +1918,7 @@ type AuditLogEntry struct {
 	// EntryHash Hex SHA-256 of this entry's canonical content chained onto prev_hash. Empty for pre-chain legacy entries.
 	EntryHash *string `json:"entry_hash,omitempty"`
 
-	// Event Event type (query, blocked, masked, truncated, budget_exhausted, canary_tripped, rejected, approval_expired, auth_failed, credential_expired, approval_requested, approved, migration_flagged).
+	// Event Event type (query, auto_approved, blocked, masked, truncated, budget_exhausted, canary_tripped, rejected, approval_expired, auth_failed, credential_expired, approval_requested, approved, migration_flagged, entries_dropped). `approved` is a statement a reviewer released from an approval hold, which then runs and records its own outcome; `auto_approved` is a write a policy waved through without a human, and is the only row that write produces.
 	Event string `json:"event"`
 
 	// Id Unique audit entry identifier.
@@ -4655,7 +4655,7 @@ type ListAuditLogsParams struct {
 	// Event Filter to a single event type (e.g. blocked, masked, query).
 	Event *AuditEvent `form:"event,omitempty" json:"event,omitempty"`
 
-	// Decision Coarse outcome filter that groups events. `allow` = query; `block` = blocked, budget_exhausted, auth_failed, credential_expired; `mask` = masked; `truncate` = truncated.
+	// Decision Coarse outcome filter that groups events. `allow` = query, auto_approved; `block` = blocked, budget_exhausted, auth_failed, credential_expired, canary_tripped, rejected, approval_expired; `mask` = masked; `truncate` = truncated.
 	Decision *AuditDecision `form:"decision,omitempty" json:"decision,omitempty"`
 
 	// Source Filter by statement origin (wire, mcp, rest, or control).
@@ -4682,7 +4682,7 @@ type ExportAuditLogsParams struct {
 	// Event Filter to a single event type (e.g. blocked, masked, query).
 	Event *AuditEvent `form:"event,omitempty" json:"event,omitempty"`
 
-	// Decision Coarse outcome filter that groups events. `allow` = query; `block` = blocked, budget_exhausted, auth_failed, credential_expired; `mask` = masked; `truncate` = truncated.
+	// Decision Coarse outcome filter that groups events. `allow` = query, auto_approved; `block` = blocked, budget_exhausted, auth_failed, credential_expired, canary_tripped, rejected, approval_expired; `mask` = masked; `truncate` = truncated.
 	Decision *AuditDecision `form:"decision,omitempty" json:"decision,omitempty"`
 
 	// Source Filter by statement origin (wire, mcp, rest, or control).
