@@ -66,6 +66,23 @@ The client covers the full PgBeam API:
 Full reference, quickstart, and per-method examples at
 [pgbeam.com/docs/go-sdk](https://pgbeam.com/docs/go-sdk).
 
+## Contributing
+
+Issues and pull requests are welcome here. An issue is the right place to start
+for a bug, a wrong doc, or a missing capability; say what you ran, what
+happened, what you expected, and which version you were on.
+
+To build and test it locally:
+
+```bash
+go build ./...
+go test ./...
+```
+
+Do not open a public issue for a suspected security vulnerability. Email
+security@pgbeam.com, or report it privately from this repository's Security
+tab.
+
 ## License
 
 Apache 2.0 — see [LICENSE](LICENSE).
