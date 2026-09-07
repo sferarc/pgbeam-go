@@ -23,6 +23,7 @@ type Client struct {
 	Analytics         *AnalyticsService
 	Platform          *PlatformService
 	Account           *AccountService
+	Demo              *DemoService
 	Honeytokens       *HoneytokensService
 	Internal          *InternalService
 	Schemaannotations *SchemaannotationsService
@@ -46,6 +47,7 @@ func NewClient(opts *ClientOptions) *Client {
 	c.Analytics = &AnalyticsService{t: t}
 	c.Platform = &PlatformService{t: t}
 	c.Account = &AccountService{t: t}
+	c.Demo = &DemoService{t: t}
 	c.Honeytokens = &HoneytokensService{t: t}
 	c.Internal = &InternalService{t: t}
 	c.Schemaannotations = &SchemaannotationsService{t: t}
@@ -407,6 +409,21 @@ func (s *AccountService) UpdateOnboardingProgress(ctx context.Context, orgID str
 
 func (s *AccountService) ListOrganizations(ctx context.Context) (*ListOrganizationsResponse, error) {
 	return doJSON[ListOrganizationsResponse](s.t, ctx, "GET", "/v1/organizations", nil)
+}
+
+// DemoService provides demo operations.
+type DemoService struct{ t *transport }
+
+func (s *DemoService) GetDemo(ctx context.Context) (*DemoInfo, error) {
+	return doJSON[DemoInfo](s.t, ctx, "GET", "/v1/demo", nil)
+}
+
+func (s *DemoService) CreateDemoCredential(ctx context.Context, body CreateDemoCredentialRequest) (*DemoCredential, error) {
+	return doJSON[DemoCredential](s.t, ctx, "POST", "/v1/demo/credentials", body)
+}
+
+func (s *DemoService) ReleaseDemoCredential(ctx context.Context, sessionID string, body ReleaseDemoCredentialRequest) (*DemoReleaseResult, error) {
+	return doJSON[DemoReleaseResult](s.t, ctx, "POST", fmt.Sprintf("/v1/demo/credentials/%s/release", sessionID), body)
 }
 
 // HoneytokensService provides honeytokens operations.

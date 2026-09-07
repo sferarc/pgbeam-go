@@ -282,6 +282,24 @@ func (e CreateAgentCredentialRequestPrincipalType) Valid() bool {
 	}
 }
 
+// Defines values for CreateDemoCredentialRequestTier.
+const (
+	CreateDemoCredentialRequestTierExtended CreateDemoCredentialRequestTier = "extended"
+	CreateDemoCredentialRequestTierFree     CreateDemoCredentialRequestTier = "free"
+)
+
+// Valid indicates whether the value is a known member of the CreateDemoCredentialRequestTier enum.
+func (e CreateDemoCredentialRequestTier) Valid() bool {
+	switch e {
+	case CreateDemoCredentialRequestTierExtended:
+		return true
+	case CreateDemoCredentialRequestTierFree:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for CreateProjectRequestCloud.
 const (
 	CreateProjectRequestCloudAws   CreateProjectRequestCloud = "aws"
@@ -360,6 +378,69 @@ func (e DatabaseRole) Valid() bool {
 	case DatabaseRolePrimary:
 		return true
 	case DatabaseRoleReplica:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for DemoColumnTreatment.
+const (
+	Hashed   DemoColumnTreatment = "hashed"
+	Nulled   DemoColumnTreatment = "nulled"
+	Redacted DemoColumnTreatment = "redacted"
+	Visible  DemoColumnTreatment = "visible"
+)
+
+// Valid indicates whether the value is a known member of the DemoColumnTreatment enum.
+func (e DemoColumnTreatment) Valid() bool {
+	switch e {
+	case Hashed:
+		return true
+	case Nulled:
+		return true
+	case Redacted:
+		return true
+	case Visible:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for DemoTierName.
+const (
+	DemoTierNameExtended DemoTierName = "extended"
+	DemoTierNameFree     DemoTierName = "free"
+)
+
+// Valid indicates whether the value is a known member of the DemoTierName enum.
+func (e DemoTierName) Valid() bool {
+	switch e {
+	case DemoTierNameExtended:
+		return true
+	case DemoTierNameFree:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for DemoWalkthroughStepExpect.
+const (
+	DemoWalkthroughStepExpectAllow   DemoWalkthroughStepExpect = "allow"
+	DemoWalkthroughStepExpectBlocked DemoWalkthroughStepExpect = "blocked"
+	DemoWalkthroughStepExpectMasked  DemoWalkthroughStepExpect = "masked"
+)
+
+// Valid indicates whether the value is a known member of the DemoWalkthroughStepExpect enum.
+func (e DemoWalkthroughStepExpect) Valid() bool {
+	switch e {
+	case DemoWalkthroughStepExpectAllow:
+		return true
+	case DemoWalkthroughStepExpectBlocked:
+		return true
+	case DemoWalkthroughStepExpectMasked:
 		return true
 	default:
 		return false
@@ -2398,6 +2479,23 @@ type CreateDatabaseRequest struct {
 	Username string `json:"username"`
 }
 
+// CreateDemoCredentialRequest Optional shaping of the demo credential. An empty body issues a free-tier credential, which is the intended path for an agent evaluating the product.
+type CreateDemoCredentialRequest struct {
+	// Label A name for the caller, recorded on the session and on every audit row the credential produces. Free text; no identity is inferred from it.
+	//
+	// Example: eval-agent
+	Label *string `json:"label,omitempty"`
+
+	// PaymentProof Settlement material for a paid tier, as issued by the payment challenge returned from a previous 402. Ignored on the free tier.
+	PaymentProof *string `json:"payment_proof,omitempty"`
+
+	// Tier Which tier to issue. A paid tier is refused with 402 until payment is settled, and with 503 when the deployment has no payment method wired.
+	Tier *CreateDemoCredentialRequestTier `json:"tier,omitempty"`
+}
+
+// CreateDemoCredentialRequestTier Which tier to issue. A paid tier is refused with 402 until payment is settled, and with 503 when the deployment has no payment method wired.
+type CreateDemoCredentialRequestTier string
+
 // CreateOrgInvitationRequest Invites someone to join the organization. Omitting `role` invites them as a `member`.
 type CreateOrgInvitationRequest struct {
 	// Email Address to invite.
@@ -2685,6 +2783,261 @@ type DatabaseBranchStatus string
 
 // DatabaseRole Database role. Primary receives writes, replicas receive reads.
 type DatabaseRole string
+
+// DemoColumn One column of a demo table, and how the demo policy treats it.
+type DemoColumn struct {
+	// Name Column name.
+	Name string `json:"name"`
+
+	// Treatment What a demo credential sees. visible is the raw value; redacted returns a fixed token; hashed returns a SHA-256 hex digest; nulled returns NULL.
+	Treatment DemoColumnTreatment `json:"treatment"`
+
+	// Type PostgreSQL type.
+	Type string `json:"type"`
+}
+
+// DemoColumnTreatment What a demo credential sees. visible is the raw value; redacted returns a fixed token; hashed returns a SHA-256 hex digest; nulled returns NULL.
+type DemoColumnTreatment string
+
+// DemoCredential A working, scoped, read-only demo credential against PgBeam's own database, plus everything needed to use it and to reproduce its policy on a real project. The connection string and MCP token are shown once and are not retrievable again.
+type DemoCredential struct {
+	// ConnectionString Guarded PostgreSQL connection string. TLS is mandatory and SNI selects the project, so the host must not be replaced with an IP address.
+	ConnectionString string `json:"connection_string"`
+
+	// Dataset The fictional dataset a demo credential reads. It is owned by PgBeam, shared by every concurrent demo, and read-only, so no session can change what another session sees.
+	Dataset DemoDataset `json:"dataset"`
+
+	// ExpiresAt When the credential stops working. Past this instant the proxy refuses new connections and terminates live sessions.
+	ExpiresAt time.Time `json:"expires_at"`
+
+	// McpToken Bearer token for the MCP endpoint. Shown once.
+	McpToken string `json:"mcp_token"`
+
+	// McpUrl Hosted MCP endpoint for the same guarded database.
+	McpUrl string `json:"mcp_url"`
+
+	// PolicyTemplate Mutable fields of a policy profile (used for create and update).
+	PolicyTemplate PolicyProfileInput `json:"policy_template"`
+
+	// QueryBudget Statements this credential may run before it is refused.
+	QueryBudget int `json:"query_budget"`
+
+	// SessionId Identifier for this demo session. Quote it when releasing the credential, and it is carried on the signup link.
+	//
+	// Example: dmo_01h455vb4pex5vsknk084sn02q
+	SessionId string `json:"session_id"`
+
+	// Tier Tier that was issued.
+	Tier string `json:"tier"`
+
+	// TtlSeconds Seconds from issue to expiry.
+	TtlSeconds int `json:"ttl_seconds"`
+
+	// Upgrade What to do with the demo once it has proved the point. The policy that governed the demo is handed back as a document that can be posted verbatim to the real policy endpoint, so the evaluation carries into the account.
+	Upgrade DemoUpgrade `json:"upgrade"`
+
+	// Walkthrough Statements to run, in order, to observe each guardrail.
+	Walkthrough []DemoWalkthroughStep `json:"walkthrough"`
+}
+
+// DemoDataset The fictional dataset a demo credential reads. It is owned by PgBeam, shared by every concurrent demo, and read-only, so no session can change what another session sees.
+type DemoDataset struct {
+	// Schema PostgreSQL schema holding the demo tables.
+	//
+	// Example: demo
+	Schema string `json:"schema"`
+
+	// Tables Tables in the dataset.
+	Tables []DemoTable `json:"tables"`
+}
+
+// DemoInfo Everything an unauthenticated caller needs to decide whether to ask for a demo credential: whether the demo is up, how much capacity is left, what the tiers cost, what the dataset holds, and the walkthrough to run.
+type DemoInfo struct {
+	// Available Whether a credential can be issued right now. False when the deployment has no demo database configured or the global ceiling is full.
+	Available bool `json:"available"`
+
+	// Dataset The fictional dataset a demo credential reads. It is owned by PgBeam, shared by every concurrent demo, and read-only, so no session can change what another session sees.
+	Dataset DemoDataset `json:"dataset"`
+
+	// LiveSessions Demo credentials currently issued and unexpired.
+	LiveSessions int `json:"live_sessions"`
+
+	// MaxLiveSessions Hard ceiling on concurrent live demo credentials across the whole deployment. Vending stops at this number.
+	MaxLiveSessions int `json:"max_live_sessions"`
+
+	// MaxSessionsPerHourPerClient Credentials one client address may be issued per rolling hour. Counted against a keyed hash of the address, never the address itself.
+	MaxSessionsPerHourPerClient int `json:"max_sessions_per_hour_per_client"`
+
+	// RetryAfterSeconds Seconds until the oldest live session expires and capacity frees up. Present only when the ceiling is full.
+	RetryAfterSeconds *int `json:"retry_after_seconds,omitempty"`
+
+	// Tiers Grades of demo credential this deployment offers.
+	Tiers []DemoTier `json:"tiers"`
+
+	// UnavailableReason Why no credential can be issued. Present only when available is false.
+	//
+	// Example: not_configured
+	UnavailableReason *string `json:"unavailable_reason,omitempty"`
+
+	// Upgrade What to do with the demo once it has proved the point. The policy that governed the demo is handed back as a document that can be posted verbatim to the real policy endpoint, so the evaluation carries into the account.
+	Upgrade DemoUpgrade `json:"upgrade"`
+
+	// Walkthrough Statements to run, in order, to observe each guardrail.
+	Walkthrough []DemoWalkthroughStep `json:"walkthrough"`
+}
+
+// DemoPaymentChallenge The 402 body for a paid demo tier: what is being sold, and how to pay for it. Settle it and replay the request with payment_proof set.
+type DemoPaymentChallenge struct {
+	// Accepts Payment methods that will settle this challenge.
+	Accepts []DemoPaymentMethod `json:"accepts"`
+
+	// Reason Why payment is required, in one sentence.
+	Reason string `json:"reason"`
+
+	// Resource Payment catalog resource id being charged for.
+	//
+	// Example: pgbeam.demo.credential.extended
+	Resource string `json:"resource"`
+
+	// Tier The demo tier this challenge would issue.
+	Tier string `json:"tier"`
+}
+
+// DemoPaymentMethod One payment method the 402 challenge will accept for a paid tier.
+type DemoPaymentMethod struct {
+	// Amount Amount owed, as a decimal string in the asset's smallest unit, so no precision is lost in JSON.
+	//
+	// Example: 1000000
+	Amount string `json:"amount"`
+
+	// Asset Asset contract or symbol the amount is denominated in.
+	Asset *string `json:"asset,omitempty"`
+
+	// Currency Human-facing currency code for the amount.
+	//
+	// Example: USDC
+	Currency string `json:"currency"`
+
+	// MaxTimeoutSeconds How long the challenge stays settleable.
+	MaxTimeoutSeconds *int `json:"max_timeout_seconds,omitempty"`
+
+	// Network Settlement network the payment must land on.
+	//
+	// Example: base
+	Network string `json:"network"`
+
+	// PayTo Address or account the payment must be made to.
+	PayTo string `json:"pay_to"`
+
+	// Scheme Payment scheme identifier.
+	//
+	// Example: exact
+	Scheme string `json:"scheme"`
+}
+
+// DemoReleaseResult Outcome of releasing a demo credential.
+type DemoReleaseResult struct {
+	// LiveSessions Demo credentials still live after this release.
+	LiveSessions int `json:"live_sessions"`
+
+	// Released True when this call released the session. False when it had already expired or been released, which is not an error.
+	Released bool `json:"released"`
+
+	// SessionId The session that was released.
+	SessionId string `json:"session_id"`
+}
+
+// DemoTable One table in the demo dataset, and whether the demo policy reaches it.
+type DemoTable struct {
+	// Columns Columns of the table, with the treatment the demo policy applies.
+	Columns []DemoColumn `json:"columns"`
+
+	// Description What the table holds and which guardrail it demonstrates.
+	Description string `json:"description"`
+
+	// Name Schema-qualified relation name.
+	//
+	// Example: demo.customers
+	Name string `json:"name"`
+
+	// Reachable False for a table that exists in the database but is deliberately left off the credential's allowlist, so every statement naming it is blocked.
+	Reachable bool `json:"reachable"`
+}
+
+// DemoTier One purchasable (or free) grade of demo credential. The free tier is always listed; a paid tier is listed with purchasable=false until a payment method is wired into the deployment.
+type DemoTier struct {
+	// MaxRows Rows a single statement may return before the result is truncated.
+	MaxRows int `json:"max_rows"`
+
+	// Name Tier identifier, used as the tier field of a vend request.
+	Name DemoTierName `json:"name"`
+
+	// PriceUsdCents Price of one credential of this tier, in US cents. 0 for the free tier.
+	PriceUsdCents int `json:"price_usd_cents"`
+
+	// Purchasable Whether this tier can be bought right now. False means the deployment has no payment method wired, so a request for the tier is refused with 503 rather than a 402 challenge nobody can settle.
+	Purchasable bool `json:"purchasable"`
+
+	// QueryBudget Statements the credential may run before the data plane refuses it. The unit charged is the statement, not the protocol message.
+	QueryBudget int `json:"query_budget"`
+
+	// Resource Payment catalog resource id for this tier, quoted back in the 402 challenge. Absent on the free tier.
+	//
+	// Example: pgbeam.demo.credential.extended
+	Resource *string `json:"resource,omitempty"`
+
+	// TtlSeconds How long a credential of this tier stays usable after it is issued.
+	TtlSeconds int `json:"ttl_seconds"`
+}
+
+// DemoTierName Tier identifier, used as the tier field of a vend request.
+type DemoTierName string
+
+// DemoUpgrade What to do with the demo once it has proved the point. The policy that governed the demo is handed back as a document that can be posted verbatim to the real policy endpoint, so the evaluation carries into the account.
+type DemoUpgrade struct {
+	// Description How to carry the demo policy into a real project, in one sentence.
+	Description string `json:"description"`
+
+	// DocsUrl Documentation for this endpoint and the walkthrough.
+	DocsUrl string `json:"docs_url"`
+
+	// PolicyEndpoint The authenticated endpoint that accepts policy_template as its request body once the caller has a project.
+	//
+	// Example: POST /v1/projects/{project_id}/policies
+	PolicyEndpoint string `json:"policy_endpoint"`
+
+	// SignupUrl Dashboard signup, carrying the demo session id so the resulting organization can be attributed to this evaluation.
+	SignupUrl string `json:"signup_url"`
+}
+
+// DemoWalkthroughStep One statement an agent can run to observe a specific enforcement decision, with the outcome it must produce. Running all of them, in order, is the machine-checkable proof that the policy engine is live.
+type DemoWalkthroughStep struct {
+	// Expect The outcome the statement must produce. allow returns rows unchanged; masked returns rows with the listed columns replaced; blocked returns a PostgreSQL error rather than rows.
+	Expect DemoWalkthroughStepExpect `json:"expect"`
+
+	// ExpectColumns Output columns that come back masked, for a masked step. Present only when expect is masked.
+	ExpectColumns *[]DemoColumn `json:"expect_columns,omitempty"`
+
+	// ExpectRule The decision rule named in the error, for a blocked step. Present only when expect is blocked.
+	//
+	// Example: table_not_allowed
+	ExpectRule *string `json:"expect_rule,omitempty"`
+
+	// Sql The exact statement to run. Relations are schema-qualified on purpose.
+	Sql string `json:"sql"`
+
+	// Step Position in the walkthrough, starting at 1.
+	Step int `json:"step"`
+
+	// Title Short name for what this step demonstrates.
+	Title string `json:"title"`
+
+	// Why The policy rule that produces this outcome, in one sentence.
+	Why string `json:"why"`
+}
+
+// DemoWalkthroughStepExpect The outcome the statement must produce. allow returns rows unchanged; masked returns rows with the listed columns replaced; blocked returns a PostgreSQL error rather than rows.
+type DemoWalkthroughStepExpect string
 
 // DnsInstructions DNS records the user needs to create for domain verification.
 type DnsInstructions struct {
@@ -4094,6 +4447,12 @@ type RegionProvider string
 // RegionStatus Region operational status.
 type RegionStatus string
 
+// ReleaseDemoCredentialRequest Release of a demo credential by its holder. The MCP token proves the caller is the one that was issued the session.
+type ReleaseDemoCredentialRequest struct {
+	// McpToken The mcp_token returned when the credential was issued.
+	McpToken string `json:"mcp_token"`
+}
+
 // Replica Read replica registered for a primary database.
 type Replica struct {
 	// CreatedAt When the replica was created.
@@ -4897,6 +5256,9 @@ type NotFound = Error
 // PreconditionFailed Standard error response envelope for PgBeam API requests.
 type PreconditionFailed = Error
 
+// ServiceUnavailable Standard error response envelope for PgBeam API requests.
+type ServiceUnavailable = Error
+
 // TooManyRequests Standard error response envelope for PgBeam API requests.
 type TooManyRequests = Error
 
@@ -5680,6 +6042,12 @@ type ListRegionsParams struct {
 
 // CreateReplicaJSONRequestBody defines body for CreateReplica for application/json ContentType.
 type CreateReplicaJSONRequestBody = CreateReplicaRequest
+
+// CreateDemoCredentialJSONRequestBody defines body for CreateDemoCredential for application/json ContentType.
+type CreateDemoCredentialJSONRequestBody = CreateDemoCredentialRequest
+
+// ReleaseDemoCredentialJSONRequestBody defines body for ReleaseDemoCredential for application/json ContentType.
+type ReleaseDemoCredentialJSONRequestBody = ReleaseDemoCredentialRequest
 
 // HandleSlackSupportEventJSONRequestBody defines body for HandleSlackSupportEvent for application/json ContentType.
 type HandleSlackSupportEventJSONRequestBody = SlackEventPayload
