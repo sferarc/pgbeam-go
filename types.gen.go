@@ -1323,6 +1323,48 @@ func (e WebhookEndpointInputFormat) Valid() bool {
 	}
 }
 
+// Defines values for WebhookEventType.
+const (
+	WebhookEventTypeAnomalyAlert      WebhookEventType = "anomaly_alert"
+	WebhookEventTypeApprovalRequested WebhookEventType = "approval_requested"
+	WebhookEventTypeAuditCheckpoint   WebhookEventType = "audit_checkpoint"
+	WebhookEventTypeBudgetExhausted   WebhookEventType = "budget_exhausted"
+	WebhookEventTypeCanaryTripped     WebhookEventType = "canary_tripped"
+	WebhookEventTypeKillSwitch        WebhookEventType = "kill_switch"
+	WebhookEventTypeMasked            WebhookEventType = "masked"
+	WebhookEventTypeMigrationFlagged  WebhookEventType = "migration_flagged"
+	WebhookEventTypeQueryBlocked      WebhookEventType = "query_blocked"
+	WebhookEventTypeWebhookTest       WebhookEventType = "webhook.test"
+)
+
+// Valid indicates whether the value is a known member of the WebhookEventType enum.
+func (e WebhookEventType) Valid() bool {
+	switch e {
+	case WebhookEventTypeAnomalyAlert:
+		return true
+	case WebhookEventTypeApprovalRequested:
+		return true
+	case WebhookEventTypeAuditCheckpoint:
+		return true
+	case WebhookEventTypeBudgetExhausted:
+		return true
+	case WebhookEventTypeCanaryTripped:
+		return true
+	case WebhookEventTypeKillSwitch:
+		return true
+	case WebhookEventTypeMasked:
+		return true
+	case WebhookEventTypeMigrationFlagged:
+		return true
+	case WebhookEventTypeQueryBlocked:
+		return true
+	case WebhookEventTypeWebhookTest:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for ListOrgInvitationsParamsStatus.
 const (
 	ListOrgInvitationsParamsStatusAccepted ListOrgInvitationsParamsStatus = "accepted"
@@ -3022,6 +3064,8 @@ type ListSupportCasesResponse struct {
 // ListWebhookEndpointsResponse Cursor-paginated list of webhook endpoints for a project.
 type ListWebhookEndpointsResponse struct {
 	// NextPageToken Token for the next page. Empty if no more results.
+	//
+	// Example: eyJpZCI6InByal8wMWo5eDh5N3o2In0
 	NextPageToken *string `json:"next_page_token,omitempty"`
 
 	// Webhooks Webhook endpoints on the current page.
@@ -4651,18 +4695,28 @@ type VerifyCustomDomainResponse struct {
 // WebhookEndpoint A delivery target for project audit/event notifications.
 type WebhookEndpoint struct {
 	// CreatedAt When the endpoint was created.
+	//
+	// Example: 2026-01-15T09:30:00Z
 	CreatedAt time.Time `json:"created_at"`
 
 	// Description Human-readable label for the endpoint.
+	//
+	// Example: Read-only access for the reporting agent
 	Description *string `json:"description,omitempty"`
 
 	// Enabled Whether deliveries are active for this endpoint.
+	//
+	// Example: true
 	Enabled bool `json:"enabled"`
 
 	// EventTypes Event types to deliver. Empty means all events.
-	EventTypes *[]string `json:"event_types,omitempty"`
+	//
+	// Example: ["query_blocked","canary_tripped"]
+	EventTypes *[]WebhookEventType `json:"event_types,omitempty"`
 
 	// Format Payload format for delivered events.
+	//
+	// Example: json
 	Format WebhookEndpointFormat `json:"format"`
 
 	// Id Unique webhook endpoint identifier (prefixed).
@@ -4671,9 +4725,13 @@ type WebhookEndpoint struct {
 	Id string `json:"id"`
 
 	// ProjectId Owning project ID.
+	//
+	// Example: prj_01j9x8y7z6w5v4u3t2s1r0q9p8
 	ProjectId string `json:"project_id"`
 
 	// UpdatedAt When the endpoint was last updated.
+	//
+	// Example: 2026-01-15T09:30:00Z
 	UpdatedAt time.Time `json:"updated_at"`
 
 	// Url HTTPS endpoint that receives event deliveries.
@@ -4683,23 +4741,35 @@ type WebhookEndpoint struct {
 }
 
 // WebhookEndpointFormat Payload format for delivered events.
+//
+// Example: json
 type WebhookEndpointFormat string
 
 // WebhookEndpointInput Mutable fields of a webhook endpoint (used for create and update).
 type WebhookEndpointInput struct {
 	// Description Human-readable label for the endpoint.
+	//
+	// Example: Read-only access for the reporting agent
 	Description *string `json:"description,omitempty"`
 
 	// Enabled Whether deliveries are active for this endpoint.
+	//
+	// Example: true
 	Enabled *bool `json:"enabled,omitempty"`
 
 	// EventTypes Event types to deliver. Empty means all events.
-	EventTypes *[]string `json:"event_types,omitempty"`
+	//
+	// Example: ["query_blocked","canary_tripped"]
+	EventTypes *[]WebhookEventType `json:"event_types,omitempty"`
 
 	// Format Payload format for delivered events.
+	//
+	// Example: json
 	Format *WebhookEndpointInputFormat `json:"format,omitempty"`
 
 	// Secret Shared secret used to sign delivery payloads. Write-only.
+	//
+	// Example: whsec_do-not-log-this
 	Secret *string `json:"secret,omitempty"`
 
 	// Url HTTPS endpoint that receives event deliveries.
@@ -4709,11 +4779,20 @@ type WebhookEndpointInput struct {
 }
 
 // WebhookEndpointInputFormat Payload format for delivered events.
+//
+// Example: json
 type WebhookEndpointInputFormat string
+
+// WebhookEventType The kind of thing that happened. This is the set `event_types` on a webhook endpoint is chosen from, and the value delivered in the `X-PgBeam-Event` header. Subscribing to a value outside this set is rejected. New types are added over time, so a receiver should ignore a delivered type it does not recognise rather than failing the delivery.
+//
+// Example: query_blocked
+type WebhookEventType string
 
 // WebhookTestResponse Result of sending a synthetic test event to a webhook endpoint.
 type WebhookTestResponse struct {
 	// DeliveryId Identifier of the test delivery.
+	//
+	// Example: id_01j9x8y7z6w5v4u3t2s1r0q9p8
 	DeliveryId string `json:"delivery_id"`
 
 	// Error Error detail when the test delivery failed.
@@ -4723,6 +4802,8 @@ type WebhookTestResponse struct {
 	Status string `json:"status"`
 
 	// StatusCode HTTP status code returned by the endpoint, if a response was received.
+	//
+	// Example: 10
 	StatusCode *int `json:"status_code,omitempty"`
 }
 
