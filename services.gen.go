@@ -108,8 +108,8 @@ func (s *ProjectsService) GetProjectMetrics(ctx context.Context, projectID strin
 	return doQuery[ProjectMetricsResponse](s.t, ctx, fmt.Sprintf("/v1/projects/%s/metrics", projectID), params)
 }
 
-func (s *ProjectsService) ListReplicas(ctx context.Context, databaseID string) (*ListReplicasResponse, error) {
-	return doJSON[ListReplicasResponse](s.t, ctx, "GET", fmt.Sprintf("/v1/databases/%s/replicas", databaseID), nil)
+func (s *ProjectsService) ListReplicas(ctx context.Context, databaseID string, params *ListReplicasParams) (*ListReplicasResponse, error) {
+	return doQuery[ListReplicasResponse](s.t, ctx, fmt.Sprintf("/v1/databases/%s/replicas", databaseID), params)
 }
 
 func (s *ProjectsService) CreateReplica(ctx context.Context, databaseID string, body CreateReplicaRequest) (*Replica, error) {
@@ -354,8 +354,8 @@ func (s *PlatformService) ListRegions(ctx context.Context) (*ListRegionsResponse
 	return doJSON[ListRegionsResponse](s.t, ctx, "GET", "/v1/regions", nil)
 }
 
-func (s *PlatformService) ListSelfHostEnrollments(ctx context.Context, orgID string) (*ListSelfHostEnrollmentsResponse, error) {
-	return doJSON[ListSelfHostEnrollmentsResponse](s.t, ctx, "GET", fmt.Sprintf("/v1/organizations/%s/self-host-enrollments", orgID), nil)
+func (s *PlatformService) ListSelfHostEnrollments(ctx context.Context, orgID string, params *ListSelfHostEnrollmentsParams) (*ListSelfHostEnrollmentsResponse, error) {
+	return doQuery[ListSelfHostEnrollmentsResponse](s.t, ctx, fmt.Sprintf("/v1/organizations/%s/self-host-enrollments", orgID), params)
 }
 
 func (s *PlatformService) CreateSelfHostEnrollment(ctx context.Context, orgID string, body CreateSelfHostEnrollmentRequest) (*SelfHostEnrollmentSecret, error) {

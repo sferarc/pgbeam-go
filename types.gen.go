@@ -3676,6 +3676,9 @@ type ListSchemaAnnotationsResponse struct {
 type ListSelfHostEnrollmentsResponse struct {
 	// Enrollments The organization's self-host enrollments, newest first.
 	Enrollments []SelfHostEnrollment `json:"enrollments"`
+
+	// NextPageToken Opaque token for cursor-based pagination.
+	NextPageToken *string `json:"next_page_token,omitempty"`
 }
 
 // ListSupportCasesResponse Paginated list of support cases.
@@ -5548,6 +5551,12 @@ type ExportAccountDataParams struct {
 
 // ListReplicasParams defines parameters for ListReplicas.
 type ListReplicasParams struct {
+	// PageSize Maximum number of items to return (1-100, default 20).
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken Opaque token for cursor-based pagination.
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+
 	// IfNoneMatch Entity tag the client already holds, taken from the `ETag` of an earlier response. When it still matches the current representation the server answers `304 Not Modified` with no body, so a poll that finds nothing changed costs a round trip rather than a transfer.
 	//
 	// A comma-separated list is accepted, and `*` matches any current representation.
@@ -5634,6 +5643,12 @@ type GetOrganizationPlanParams struct {
 
 // ListSelfHostEnrollmentsParams defines parameters for ListSelfHostEnrollments.
 type ListSelfHostEnrollmentsParams struct {
+	// PageSize Maximum number of items to return (1-100, default 20).
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken Opaque token for cursor-based pagination.
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+
 	// IfNoneMatch Entity tag the client already holds, taken from the `ETag` of an earlier response. When it still matches the current representation the server answers `304 Not Modified` with no body, so a poll that finds nothing changed costs a round trip rather than a transfer.
 	//
 	// A comma-separated list is accepted, and `*` matches any current representation.
