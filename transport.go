@@ -179,6 +179,7 @@ func (t *transport) do(ctx context.Context, method, path string, body any, resul
 			Status:     resp.Status,
 			Body:       string(respBody),
 		}
+		apiErr.parseProblem()
 
 		// Non-retryable or last attempt — return error.
 		if !retryableStatusCodes[resp.StatusCode] || attempt == t.retry.MaxRetries {

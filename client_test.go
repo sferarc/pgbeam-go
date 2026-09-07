@@ -427,7 +427,9 @@ func TestAPIError_Error_MessageExtraction(t *testing.T) {
 	}{
 		{"nested error.message", `{"error":{"message":"boom"}}`, "pgbeam: 400 Bad Request (400): boom"},
 		{"flat message", `{"message":"flat boom"}`, "pgbeam: 400 Bad Request (400): flat boom"},
-		{"raw body", `not json`, "pgbeam: 400 Bad Request (400): not json"},
+		// A body in no recognised shape is not pasted into the error string: it
+		// only ever produced an unreadable blob where a sentence belongs.
+		{"raw body", `not json`, "pgbeam: 400 Bad Request (400)"},
 		{"empty body", ``, "pgbeam: 400 Bad Request (400)"},
 	}
 	for _, tt := range tests {
@@ -437,5 +439,92 @@ func TestAPIError_Error_MessageExtraction(t *testing.T) {
 				t.Errorf("Error() = %q, want %q", got, tt.want)
 			}
 		})
+	}
+}
+
+// The shape the control plane actually answers with.
+const problemBody = `{"type":"https://pgbeam.com/docs/api/errors/plan-limit-reached",` +
+	`"title":"Plan limit reached","status":403,` +
+	`"detail":"project limit reached: your plan allows 3 projects",` +
+	`"instance":"/v1/projects","code":"PLAN_LIMIT_REACHED","request_id":"9f8a1c2b"}`
+
+func TestAPIError_ParsesProblemDocument(t *testing.T) {
+	e := &APIError{StatusCode: 403, Status: "403 Forbidden", Body: problemBody}
+	e.parseProblem()
+
+	if e.Code != "PLAN_LIMIT_REACHED" {
+		t.Errorf("Code = %q, want PLAN_LIMIT_REACHED", e.Code)
+	}
+	if e.Title != "Plan limit reached" {
+		t.Errorf("Title = %q", e.Title)
+	}
+	if e.Detail != "project limit reached: your plan allows 3 projects" {
+		t.Errorf("Detail = %q", e.Detail)
+	}
+	if e.Instance != "/v1/projects" {
+		t.Errorf("Instance = %q", e.Instance)
+	}
+	if e.RequestID != "9f8a1c2b" {
+		t.Errorf("RequestID = %q", e.RequestID)
+	}
+	want := "pgbeam: 403 Forbidden (403) [PLAN_LIMIT_REACHED]: project limit reached: your plan allows 3 projects"
+	if got := e.Error(); got != want {
+		t.Errorf("Error() = %q, want %q", got, want)
+	}
+}
+
+func TestAPIError_ParsesFieldErrors(t *testing.T) {
+	e := &APIError{StatusCode: 400, Status: "400 Bad Request", Body: `{"code":"INVALID_INPUT",` +
+		`"detail":"database host is required",` +
+		`"errors":[{"field":"database.host","detail":"database host is required"}]}`}
+	e.parseProblem()
+
+	if len(e.Errors) != 1 {
+		t.Fatalf("Errors = %v, want one entry", e.Errors)
+	}
+	if e.Errors[0].Field != "database.host" {
+		t.Errorf("Field = %q", e.Errors[0].Field)
+	}
+}
+
+// The two 403s share a status, so the status alone cannot tell a caller which
+// fix to offer. HasCode is the check that can.
+func TestHasCode(t *testing.T) {
+	e := &APIError{StatusCode: 403, Status: "403 Forbidden", Body: problemBody}
+	e.parseProblem()
+
+	if !HasCode(error(e), "PLAN_LIMIT_REACHED") {
+		t.Error("HasCode(PLAN_LIMIT_REACHED) = false, want true")
+	}
+	if HasCode(error(e), "FORBIDDEN") {
+		t.Error("HasCode(FORBIDDEN) = true, want false")
+	}
+	if HasCode(errors.New("not an APIError"), "FORBIDDEN") {
+		t.Error("HasCode on a non-APIError = true, want false")
+	}
+}
+
+// The transport is what real callers get their APIError from, so the parse has
+// to happen there and not only when a test calls parseProblem itself.
+func TestTransport_PopulatesProblemFields(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		w.Header().Set("Content-Type", "application/problem+json")
+		w.WriteHeader(http.StatusForbidden)
+		_, _ = w.Write([]byte(problemBody))
+	}))
+	defer srv.Close()
+
+	tr := newTestTransport(srv, &RetryConfig{MaxRetries: 0})
+	err := tr.do(context.Background(), http.MethodPost, "/v1/projects", map[string]string{"name": "x"}, nil)
+
+	var apiErr *APIError
+	if !errors.As(err, &apiErr) {
+		t.Fatalf("expected APIError, got %T", err)
+	}
+	if apiErr.Code != "PLAN_LIMIT_REACHED" {
+		t.Errorf("Code = %q, want PLAN_LIMIT_REACHED", apiErr.Code)
+	}
+	if apiErr.RequestID != "9f8a1c2b" {
+		t.Errorf("RequestID = %q", apiErr.RequestID)
 	}
 }

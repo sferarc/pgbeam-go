@@ -633,6 +633,90 @@ func (e DryEvalResultVerdict) Valid() bool {
 	}
 }
 
+// Defines values for ErrorCode.
+const (
+	BADGATEWAY             ErrorCode = "BAD_GATEWAY"
+	CONFLICT               ErrorCode = "CONFLICT"
+	DEMOBUSY               ErrorCode = "DEMO_BUSY"
+	DEMOCAPACITYFULL       ErrorCode = "DEMO_CAPACITY_FULL"
+	DEMONOTCONFIGURED      ErrorCode = "DEMO_NOT_CONFIGURED"
+	DEMOPAUSED             ErrorCode = "DEMO_PAUSED"
+	DEMOTIERNOTPURCHASABLE ErrorCode = "DEMO_TIER_NOT_PURCHASABLE"
+	FORBIDDEN              ErrorCode = "FORBIDDEN"
+	IDEMPOTENCYKEYREUSED   ErrorCode = "IDEMPOTENCY_KEY_REUSED"
+	INTERNALERROR          ErrorCode = "INTERNAL_ERROR"
+	INVALIDINPUT           ErrorCode = "INVALID_INPUT"
+	INVALIDSTATE           ErrorCode = "INVALID_STATE"
+	METHODNOTALLOWED       ErrorCode = "METHOD_NOT_ALLOWED"
+	NOTFOUND               ErrorCode = "NOT_FOUND"
+	PAYLOADTOOLARGE        ErrorCode = "PAYLOAD_TOO_LARGE"
+	PAYMENTREQUIRED        ErrorCode = "PAYMENT_REQUIRED"
+	PLANLIMITREACHED       ErrorCode = "PLAN_LIMIT_REACHED"
+	PRECONDITIONFAILED     ErrorCode = "PRECONDITION_FAILED"
+	RATELIMITED            ErrorCode = "RATE_LIMITED"
+	RESOURCEEXISTS         ErrorCode = "RESOURCE_EXISTS"
+	SERVICEUNAVAILABLE     ErrorCode = "SERVICE_UNAVAILABLE"
+	TIMEOUT                ErrorCode = "TIMEOUT"
+	UNAUTHORIZED           ErrorCode = "UNAUTHORIZED"
+	UNSUPPORTEDMEDIATYPE   ErrorCode = "UNSUPPORTED_MEDIA_TYPE"
+)
+
+// Valid indicates whether the value is a known member of the ErrorCode enum.
+func (e ErrorCode) Valid() bool {
+	switch e {
+	case BADGATEWAY:
+		return true
+	case CONFLICT:
+		return true
+	case DEMOBUSY:
+		return true
+	case DEMOCAPACITYFULL:
+		return true
+	case DEMONOTCONFIGURED:
+		return true
+	case DEMOPAUSED:
+		return true
+	case DEMOTIERNOTPURCHASABLE:
+		return true
+	case FORBIDDEN:
+		return true
+	case IDEMPOTENCYKEYREUSED:
+		return true
+	case INTERNALERROR:
+		return true
+	case INVALIDINPUT:
+		return true
+	case INVALIDSTATE:
+		return true
+	case METHODNOTALLOWED:
+		return true
+	case NOTFOUND:
+		return true
+	case PAYLOADTOOLARGE:
+		return true
+	case PAYMENTREQUIRED:
+		return true
+	case PLANLIMITREACHED:
+		return true
+	case PRECONDITIONFAILED:
+		return true
+	case RATELIMITED:
+		return true
+	case RESOURCEEXISTS:
+		return true
+	case SERVICEUNAVAILABLE:
+		return true
+	case TIMEOUT:
+		return true
+	case UNAUTHORIZED:
+		return true
+	case UNSUPPORTEDMEDIATYPE:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for HealthResponseStatus.
 const (
 	Degraded HealthResponseStatus = "degraded"
@@ -3613,16 +3697,63 @@ type DryEvalResult struct {
 // DryEvalResultVerdict allow — permitted unchanged; block — rejected; mask — permitted but listed result columns are masked; row-filter — permitted but a WHERE predicate is injected (and any listed columns are also masked).
 type DryEvalResultVerdict string
 
-// Error Standard error response envelope for PgBeam API requests.
+// Error An RFC 9457 problem detail, served as `application/problem+json`. Every error the API returns has this shape.
 type Error struct {
-	// Error Error metadata for the failed request.
-	Error struct {
-		// Code Machine-readable error code.
-		Code string `json:"code"`
+	// Code Machine-readable identity of the error condition. This is the value to branch on: it is stable across wording changes, and it distinguishes conditions that share a status code (a permissions denial from a plan limit, a duplicate name from a state conflict). New codes are added for new conditions, so treat the set as open and fall back on the status.
+	//
+	// Example: PLAN_LIMIT_REACHED
+	Code ErrorCode `json:"code"`
 
-		// Message Human-readable error message.
-		Message string `json:"message"`
-	} `json:"error"`
+	// Detail Human-readable explanation specific to this occurrence. Written for a person; branch on `code` or `type` rather than on this string.
+	//
+	// Example: project limit reached: your plan allows 3 projects
+	Detail *string `json:"detail,omitempty"`
+
+	// Errors Field-level detail, present when the request failed validation. Each entry names the part of the request that was rejected.
+	Errors *[]FieldError `json:"errors,omitempty"`
+
+	// Instance Path of the request that produced the error.
+	//
+	// Example: /v1/projects
+	Instance *string `json:"instance,omitempty"`
+
+	// RequestId Correlation id for this request, also returned in the `X-Request-Id` header. Quote it when reporting a problem.
+	//
+	// Example: 9f8a1c2b3d4e5f60
+	RequestId *string `json:"request_id,omitempty"`
+
+	// Status HTTP status code, repeated here so the document is self-contained.
+	//
+	// Example: 403
+	Status int `json:"status"`
+
+	// Title Short human-readable summary of the error condition.
+	//
+	// Example: Plan limit reached
+	Title string `json:"title"`
+
+	// Type URI identifying the error condition. It resolves to that condition's entry in the published error catalog. This is the RFC 9457 identifier; `code` is the same identity as a short token.
+	//
+	// Example: https://pgbeam.com/docs/api/errors/plan-limit-reached
+	Type string `json:"type"`
+}
+
+// ErrorCode Machine-readable identity of the error condition. This is the value to branch on: it is stable across wording changes, and it distinguishes conditions that share a status code (a permissions denial from a plan limit, a duplicate name from a state conflict). New codes are added for new conditions, so treat the set as open and fall back on the status.
+//
+// Example: PLAN_LIMIT_REACHED
+type ErrorCode string
+
+// FieldError One request field that failed validation.
+type FieldError struct {
+	// Detail What is wrong with that field.
+	//
+	// Example: database host is required
+	Detail string `json:"detail"`
+
+	// Field Dotted path to the offending field in the request body.
+	//
+	// Example: database.host
+	Field string `json:"field"`
 }
 
 // GetSupportCaseResponse Support case with its message thread.
@@ -5938,29 +6069,38 @@ type SupportCaseId = string
 // WebhookId defines model for WebhookId.
 type WebhookId = string
 
-// BadRequest Standard error response envelope for PgBeam API requests.
+// BadRequest An RFC 9457 problem detail, served as `application/problem+json`. Every error the API returns has this shape.
 type BadRequest = Error
 
-// Conflict Standard error response envelope for PgBeam API requests.
+// Conflict An RFC 9457 problem detail, served as `application/problem+json`. Every error the API returns has this shape.
 type Conflict = Error
 
-// Forbidden Standard error response envelope for PgBeam API requests.
+// Forbidden An RFC 9457 problem detail, served as `application/problem+json`. Every error the API returns has this shape.
 type Forbidden = Error
 
-// NotFound Standard error response envelope for PgBeam API requests.
+// InternalServerError An RFC 9457 problem detail, served as `application/problem+json`. Every error the API returns has this shape.
+type InternalServerError = Error
+
+// NotFound An RFC 9457 problem detail, served as `application/problem+json`. Every error the API returns has this shape.
 type NotFound = Error
 
-// PreconditionFailed Standard error response envelope for PgBeam API requests.
+// PayloadTooLarge An RFC 9457 problem detail, served as `application/problem+json`. Every error the API returns has this shape.
+type PayloadTooLarge = Error
+
+// PreconditionFailed An RFC 9457 problem detail, served as `application/problem+json`. Every error the API returns has this shape.
 type PreconditionFailed = Error
 
-// ServiceUnavailable Standard error response envelope for PgBeam API requests.
+// ServiceUnavailable An RFC 9457 problem detail, served as `application/problem+json`. Every error the API returns has this shape.
 type ServiceUnavailable = Error
 
-// TooManyRequests Standard error response envelope for PgBeam API requests.
+// TooManyRequests An RFC 9457 problem detail, served as `application/problem+json`. Every error the API returns has this shape.
 type TooManyRequests = Error
 
-// Unauthorized Standard error response envelope for PgBeam API requests.
+// Unauthorized An RFC 9457 problem detail, served as `application/problem+json`. Every error the API returns has this shape.
 type Unauthorized = Error
+
+// UnsupportedMediaType An RFC 9457 problem detail, served as `application/problem+json`. Every error the API returns has this shape.
+type UnsupportedMediaType = Error
 
 // ExportAccountDataParams defines parameters for ExportAccountData.
 type ExportAccountDataParams struct {
