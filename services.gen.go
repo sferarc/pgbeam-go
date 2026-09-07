@@ -370,6 +370,10 @@ func (s *PlatformService) RotateSelfHostEnrollment(ctx context.Context, orgID st
 	return doJSON[SelfHostEnrollmentSecret](s.t, ctx, "POST", fmt.Sprintf("/v1/organizations/%s/self-host-enrollments/%s/rotate", orgID, enrollmentID), nil)
 }
 
+func (s *PlatformService) ScanText(ctx context.Context, body ScanTextRequest) (*ScanTextResult, error) {
+	return doJSON[ScanTextResult](s.t, ctx, "POST", "/v1/scan/text", body)
+}
+
 // AccountService provides account operations.
 type AccountService struct{ t *transport }
 
