@@ -219,6 +219,147 @@ func (e AuditSource) Valid() bool {
 	}
 }
 
+// Defines values for BatchOperationAgentStatus.
+const (
+	BatchOperationAgentStatusActive   BatchOperationAgentStatus = "active"
+	BatchOperationAgentStatusDisabled BatchOperationAgentStatus = "disabled"
+)
+
+// Valid indicates whether the value is a known member of the BatchOperationAgentStatus enum.
+func (e BatchOperationAgentStatus) Valid() bool {
+	switch e {
+	case BatchOperationAgentStatusActive:
+		return true
+	case BatchOperationAgentStatusDisabled:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for BatchOperationAnomalyStatus.
+const (
+	BatchOperationAnomalyStatusAcknowledged BatchOperationAnomalyStatus = "acknowledged"
+	BatchOperationAnomalyStatusResolved     BatchOperationAnomalyStatus = "resolved"
+)
+
+// Valid indicates whether the value is a known member of the BatchOperationAnomalyStatus enum.
+func (e BatchOperationAnomalyStatus) Valid() bool {
+	switch e {
+	case BatchOperationAnomalyStatusAcknowledged:
+		return true
+	case BatchOperationAnomalyStatusResolved:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for BatchOperationOp.
+const (
+	PutSchemaAnnotation      BatchOperationOp = "put_schema_annotation"
+	RevokeAgentCredential    BatchOperationOp = "revoke_agent_credential"
+	SetAgentCredentialStatus BatchOperationOp = "set_agent_credential_status"
+	UpdateAnomalyAlert       BatchOperationOp = "update_anomaly_alert"
+)
+
+// Valid indicates whether the value is a known member of the BatchOperationOp enum.
+func (e BatchOperationOp) Valid() bool {
+	switch e {
+	case PutSchemaAnnotation:
+		return true
+	case RevokeAgentCredential:
+		return true
+	case SetAgentCredentialStatus:
+		return true
+	case UpdateAnomalyAlert:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for BatchOperationErrorCode.
+const (
+	BatchOperationErrorCodeConflict     BatchOperationErrorCode = "conflict"
+	BatchOperationErrorCodeInternal     BatchOperationErrorCode = "internal"
+	BatchOperationErrorCodeInvalidInput BatchOperationErrorCode = "invalid_input"
+	BatchOperationErrorCodeNotFound     BatchOperationErrorCode = "not_found"
+)
+
+// Valid indicates whether the value is a known member of the BatchOperationErrorCode enum.
+func (e BatchOperationErrorCode) Valid() bool {
+	switch e {
+	case BatchOperationErrorCodeConflict:
+		return true
+	case BatchOperationErrorCodeInternal:
+		return true
+	case BatchOperationErrorCodeInvalidInput:
+		return true
+	case BatchOperationErrorCodeNotFound:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for BatchOperationResultStatus.
+const (
+	BatchOperationResultStatusFailed     BatchOperationResultStatus = "failed"
+	BatchOperationResultStatusNotApplied BatchOperationResultStatus = "not_applied"
+	BatchOperationResultStatusSucceeded  BatchOperationResultStatus = "succeeded"
+)
+
+// Valid indicates whether the value is a known member of the BatchOperationResultStatus enum.
+func (e BatchOperationResultStatus) Valid() bool {
+	switch e {
+	case BatchOperationResultStatusFailed:
+		return true
+	case BatchOperationResultStatusNotApplied:
+		return true
+	case BatchOperationResultStatusSucceeded:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for BatchRequestMode.
+const (
+	BatchRequestModeAtomic      BatchRequestMode = "atomic"
+	BatchRequestModeIndependent BatchRequestMode = "independent"
+)
+
+// Valid indicates whether the value is a known member of the BatchRequestMode enum.
+func (e BatchRequestMode) Valid() bool {
+	switch e {
+	case BatchRequestModeAtomic:
+		return true
+	case BatchRequestModeIndependent:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for BatchResponseMode.
+const (
+	BatchResponseModeAtomic      BatchResponseMode = "atomic"
+	BatchResponseModeIndependent BatchResponseMode = "independent"
+)
+
+// Valid indicates whether the value is a known member of the BatchResponseMode enum.
+func (e BatchResponseMode) Valid() bool {
+	switch e {
+	case BatchResponseModeAtomic:
+		return true
+	case BatchResponseModeIndependent:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for CacheRuleEntryQueryType.
 const (
 	CacheRuleEntryQueryTypeOther CacheRuleEntryQueryType = "other"
@@ -2287,6 +2428,138 @@ type AuditSessionSummary struct {
 
 // AuditSource Statement origin (wire, mcp, rest, or control).
 type AuditSource string
+
+// BatchOperation One operation in a batch. `op` selects which of the per-operation fields below are read; any other field is ignored. The set is closed on purpose: a batch is not a tunnel for arbitrary requests, so every operation it can perform is named in this contract and carries its own permission check.
+type BatchOperation struct {
+	// AgentId Agent credential to act on, for `revoke_agent_credential` and `set_agent_credential_status`. Must belong to the project in the path.
+	//
+	//
+	// Example: agt_01h455vb4pex5vsknk084sn02q
+	AgentId *string `json:"agent_id,omitempty"`
+
+	// AgentStatus Kill-switch position to set, for `set_agent_credential_status`. Disabling drops the credential's live connections within seconds. A revoked credential is gone for good, so setting either position on one fails with `conflict` rather than resurrecting it.
+	AgentStatus *BatchOperationAgentStatus `json:"agent_status,omitempty"`
+
+	// Annotation Request body for creating or replacing a schema annotation. Keyed by (schema_name, table_name, column_name); an existing annotation with the same key is replaced.
+	Annotation *SchemaAnnotationInput `json:"annotation,omitempty"`
+
+	// AnomalyId Anomaly alert to triage, for `update_anomaly_alert`. Must belong to the project in the path.
+	//
+	//
+	// Example: ano_01h455vb4pex5vsknk084sn02q
+	AnomalyId *string `json:"anomaly_id,omitempty"`
+
+	// AnomalyStatus New triage state for the alert, for `update_anomaly_alert`.
+	AnomalyStatus *BatchOperationAnomalyStatus `json:"anomaly_status,omitempty"`
+
+	// Id Caller-assigned label, echoed on this operation's result so a caller can line results up with what it sent without relying on array order. Must be unique within the request.
+	//
+	//
+	// Example: revoke-7
+	Id string `json:"id"`
+
+	// Op Which operation to apply. `revoke_agent_credential` and `set_agent_credential_status` read `agent_id` (the latter also reads `agent_status`), `update_anomaly_alert` reads `anomaly_id` and `anomaly_status`, and `put_schema_annotation` reads `annotation`.
+	Op BatchOperationOp `json:"op"`
+}
+
+// BatchOperationAgentStatus Kill-switch position to set, for `set_agent_credential_status`. Disabling drops the credential's live connections within seconds. A revoked credential is gone for good, so setting either position on one fails with `conflict` rather than resurrecting it.
+type BatchOperationAgentStatus string
+
+// BatchOperationAnomalyStatus New triage state for the alert, for `update_anomaly_alert`.
+type BatchOperationAnomalyStatus string
+
+// BatchOperationOp Which operation to apply. `revoke_agent_credential` and `set_agent_credential_status` read `agent_id` (the latter also reads `agent_status`), `update_anomaly_alert` reads `anomaly_id` and `anomaly_status`, and `put_schema_annotation` reads `annotation`.
+type BatchOperationOp string
+
+// BatchOperationError Why one operation in a batch failed. Present only on a failed result.
+type BatchOperationError struct {
+	// Code Machine-readable reason. `not_found` covers both a resource that does not exist and one that exists in another project, so a batch cannot be used to probe for resources the caller cannot see. There is no per-operation authorization code: a batch the caller's role does not fully permit is refused whole with 403 before anything runs.
+	Code BatchOperationErrorCode `json:"code"`
+
+	// Message Human-readable reason, safe to surface to an operator.
+	//
+	// Example: agent credential not found
+	Message string `json:"message"`
+}
+
+// BatchOperationErrorCode Machine-readable reason. `not_found` covers both a resource that does not exist and one that exists in another project, so a batch cannot be used to probe for resources the caller cannot see. There is no per-operation authorization code: a batch the caller's role does not fully permit is refused whole with 403 before anything runs.
+type BatchOperationErrorCode string
+
+// BatchOperationResult The outcome of one operation in a batch.
+type BatchOperationResult struct {
+	// Error Why one operation in a batch failed. Present only on a failed result.
+	Error *BatchOperationError `json:"error,omitempty"`
+
+	// Id The `id` the caller assigned to this operation.
+	//
+	// Example: revoke-7
+	Id string `json:"id"`
+
+	// Op The operation kind that was requested, echoed back.
+	//
+	// Example: revoke_agent_credential
+	Op string `json:"op"`
+
+	// Status Whether this operation applied. `not_applied` means the batch was atomic and rolled back, so this operation left no trace whether or not it had run by the time the batch failed.
+	Status BatchOperationResultStatus `json:"status"`
+}
+
+// BatchOperationResultStatus Whether this operation applied. `not_applied` means the batch was atomic and rolled back, so this operation left no trace whether or not it had run by the time the batch failed.
+type BatchOperationResultStatus string
+
+// BatchRequest A set of project-scoped operations to apply in one request, together with the failure semantics the caller wants. Every operation is authorized against the caller's scope before any of them runs, and a batch carrying an operation the caller's role does not permit is refused whole with 403 rather than half-applied. Authorization here is a property of the caller's role rather than a per-item runtime condition, so reporting it per item would make "you may not do this" look like an ordinary item failure and would invite a caller to send a batch of things it may not do to see which stick.
+type BatchRequest struct {
+	// Mode How the batch treats a failing operation. `atomic` applies all of them or none: the first runtime failure rolls the whole batch back and the response is 409, so the status code alone never says a batch applied when it did not. `independent` applies each operation on its own, so one failure stops nothing else and the response is 200 with the outcome of each item. There is no default. An operator revoking fifty credentials during an incident wants all fifty gone, an operator importing fifty column annotations wants the forty-seven that parsed, and picking one of those for a caller who did not say would silently do the wrong thing to the other.
+	Mode BatchRequestMode `json:"mode"`
+
+	// Operations The operations to apply, in order. At most 100 per request; a longer list is rejected with 400 and nothing runs. Each entry must carry a distinct `id`, and no two entries may target the same resource.
+	Operations []BatchOperation `json:"operations"`
+}
+
+// BatchRequestMode How the batch treats a failing operation. `atomic` applies all of them or none: the first runtime failure rolls the whole batch back and the response is 409, so the status code alone never says a batch applied when it did not. `independent` applies each operation on its own, so one failure stops nothing else and the response is 200 with the outcome of each item. There is no default. An operator revoking fifty credentials during an incident wants all fifty gone, an operator importing fifty column annotations wants the forty-seven that parsed, and picking one of those for a caller who did not say would silently do the wrong thing to the other.
+type BatchRequestMode string
+
+// BatchResponse The outcome of a batch. `results` carries one entry per requested operation in the order they were sent, and `summary` is the same information counted so a caller can branch on one field instead of scanning. Results deliberately do not carry the mutated resources: a batch reports what happened to each item, and a caller that needs the resource reads it, which keeps the response size a function of the item count alone and keeps one response shape for every operation kind.
+type BatchResponse struct {
+	// Applied Whether any of the batch's writes are in effect. False only for an atomic batch that rolled back, which is also answered with 409.
+	Applied bool `json:"applied"`
+
+	// Mode The failure semantics this batch ran under, echoed back.
+	Mode BatchResponseMode `json:"mode"`
+
+	// Results One result per requested operation, in request order.
+	Results []BatchOperationResult `json:"results"`
+
+	// Summary Counts of the per-operation outcomes in a batch.
+	Summary BatchSummary `json:"summary"`
+}
+
+// BatchResponseMode The failure semantics this batch ran under, echoed back.
+type BatchResponseMode string
+
+// BatchSummary Counts of the per-operation outcomes in a batch.
+type BatchSummary struct {
+	// Failed How many operations failed. Retry exactly these.
+	//
+	// Example: 3
+	Failed int `json:"failed"`
+
+	// NotApplied How many operations were rolled back or never ran. Non-zero only for a rolled-back atomic batch, where every operation that did not itself fail is reported this way.
+	//
+	//
+	// Example: 0
+	NotApplied int `json:"not_applied"`
+
+	// Requested How many operations the request carried.
+	//
+	// Example: 50
+	Requested int `json:"requested"`
+
+	// Succeeded How many operations applied. Always 0 for a rolled-back atomic batch.
+	//
+	// Example: 47
+	Succeeded int `json:"succeeded"`
+}
 
 // CacheConfig Query cache configuration.
 type CacheConfig struct {
@@ -6105,6 +6378,9 @@ type ApproveApprovalRequestJSONRequestBody = ApprovalDecisionRequest
 
 // RejectApprovalRequestJSONRequestBody defines body for RejectApprovalRequest for application/json ContentType.
 type RejectApprovalRequestJSONRequestBody = ApprovalDecisionRequest
+
+// ExecuteBatchJSONRequestBody defines body for ExecuteBatch for application/json ContentType.
+type ExecuteBatchJSONRequestBody = BatchRequest
 
 // CreateDatabaseJSONRequestBody defines body for CreateDatabase for application/json ContentType.
 type CreateDatabaseJSONRequestBody = CreateDatabaseRequest

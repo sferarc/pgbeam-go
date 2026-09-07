@@ -23,6 +23,7 @@ type Client struct {
 	Analytics         *AnalyticsService
 	Platform          *PlatformService
 	Account           *AccountService
+	Batch             *BatchService
 	Demo              *DemoService
 	Honeytokens       *HoneytokensService
 	Internal          *InternalService
@@ -47,6 +48,7 @@ func NewClient(opts *ClientOptions) *Client {
 	c.Analytics = &AnalyticsService{t: t}
 	c.Platform = &PlatformService{t: t}
 	c.Account = &AccountService{t: t}
+	c.Batch = &BatchService{t: t}
 	c.Demo = &DemoService{t: t}
 	c.Honeytokens = &HoneytokensService{t: t}
 	c.Internal = &InternalService{t: t}
@@ -409,6 +411,13 @@ func (s *AccountService) UpdateOnboardingProgress(ctx context.Context, orgID str
 
 func (s *AccountService) ListOrganizations(ctx context.Context) (*ListOrganizationsResponse, error) {
 	return doJSON[ListOrganizationsResponse](s.t, ctx, "GET", "/v1/organizations", nil)
+}
+
+// BatchService provides batch operations.
+type BatchService struct{ t *transport }
+
+func (s *BatchService) ExecuteBatch(ctx context.Context, projectID string, body BatchRequest) (*BatchResponse, error) {
+	return doJSON[BatchResponse](s.t, ctx, "POST", fmt.Sprintf("/v1/projects/%s/batch", projectID), body)
 }
 
 // DemoService provides demo operations.
