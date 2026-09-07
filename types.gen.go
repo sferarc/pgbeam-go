@@ -2714,6 +2714,57 @@ type BatchSummary struct {
 	Succeeded int `json:"succeeded"`
 }
 
+// BudgetTopup Purchased query headroom, already granted and streamed to the data planes.
+type BudgetTopup struct {
+	// Amount Amount charged, in the smallest unit of the currency.
+	//
+	// Example: 200
+	Amount int64 `json:"amount"`
+
+	// CredentialId Agent credential the queries were granted to.
+	//
+	// Example: agt_01hxyz
+	CredentialId string `json:"credential_id"`
+
+	// Currency ISO 4217 code, lowercase.
+	//
+	// Example: usd
+	Currency string `json:"currency"`
+
+	// ExpiresAt When the unspent remainder stops being spendable.
+	ExpiresAt time.Time `json:"expires_at"`
+
+	// GrantId Identifier of the budget grant this payment created.
+	//
+	// Example: bgt_9f2c1d4e6a8b
+	GrantId string `json:"grant_id"`
+
+	// PaymentReference Processor reference for the charge (a Stripe PaymentIntent id).
+	//
+	// Example: pi_3PabcDEF0123456789
+	PaymentReference *string `json:"payment_reference,omitempty"`
+
+	// Queries Queries granted.
+	//
+	// Example: 1000
+	Queries int64 `json:"queries"`
+
+	// Receipt The `Payment-Receipt` header value, repeated in the body for clients that
+	// cannot read response headers.
+	Receipt *string `json:"receipt,omitempty"`
+}
+
+// BudgetTopupInput How much query budget to buy for the agent credential the request is
+// authenticated as.
+type BudgetTopupInput struct {
+	// Packs Packs of query budget to buy. One pack is `units_per_pack` queries at
+	// `amount_per_pack`, both readable from `GET /v1/payments/resources`.
+	//
+	//
+	// Example: 1
+	Packs *int64 `json:"packs,omitempty"`
+}
+
 // CacheConfig Query cache configuration.
 type CacheConfig struct {
 	// Enabled Whether query caching is enabled. When false, all queries bypass the cache.
@@ -3774,6 +3825,12 @@ type ListOrganizationsResponse struct {
 	Organizations []OrganizationSummary `json:"organizations"`
 }
 
+// ListPaymentResourcesResponse Everything this deployment sells over the Machine Payments Protocol.
+type ListPaymentResourcesResponse struct {
+	// Resources The priced resources, in catalog order.
+	Resources []PaymentResource `json:"resources"`
+}
+
 // ListPlansResponse Response envelope for listing available billing plans.
 type ListPlansResponse struct {
 	// Plans Billing plans available for self-serve signups.
@@ -4206,6 +4263,83 @@ type OrganizationSummary struct {
 	//
 	// Example: acme-corp
 	Slug string `json:"slug"`
+}
+
+// PaymentProblem RFC 9457 Problem Details for a payment failure. MPP puts the reason in the
+// body and the challenge in the `WWW-Authenticate` header, so a 402 carries
+// both.
+type PaymentProblem struct {
+	// ChallengeId Identifier of the challenge this problem refers to.
+	ChallengeId *string `json:"challengeId,omitempty"`
+
+	// Detail Human-readable explanation of this particular occurrence.
+	Detail *string `json:"detail,omitempty"`
+
+	// Status HTTP status code, repeated for clients that read only the body.
+	//
+	// Example: 402
+	Status int `json:"status"`
+
+	// Title Short human-readable summary of the problem type.
+	//
+	// Example: Payment Required
+	Title string `json:"title"`
+
+	// Type Problem type URI, from the MPP problem registry.
+	//
+	// Example: https://paymentauth.org/problems/payment-required
+	Type string `json:"type"`
+}
+
+// PaymentResource One thing an agent can buy over the Machine Payments Protocol.
+type PaymentResource struct {
+	// AmountPerPack Price of one pack in the smallest unit of the currency.
+	//
+	// Example: 200
+	AmountPerPack int64 `json:"amount_per_pack"`
+
+	// Currency ISO 4217 code, lowercase.
+	//
+	// Example: usd
+	Currency string `json:"currency"`
+
+	// Description What buying this resource gets you, and how it is spent.
+	Description *string `json:"description,omitempty"`
+
+	// Id Stable resource identifier, carried in the payment challenge.
+	//
+	// Example: query_budget_topup
+	Id string `json:"id"`
+
+	// MaxPacks Most packs one payment may buy.
+	//
+	// Example: 25
+	MaxPacks int64 `json:"max_packs"`
+
+	// MinPacks Fewest packs one payment may buy.
+	//
+	// Example: 1
+	MinPacks int64 `json:"min_packs"`
+
+	// OperationId OpenAPI operation that sells this resource.
+	//
+	// Example: createBudgetTopup
+	OperationId *string `json:"operation_id,omitempty"`
+
+	// Title Short human-readable name for the resource.
+	//
+	// Example: Query budget top-up
+	Title string `json:"title"`
+
+	// Unit What one unit is.
+	//
+	// Example: queries
+	Unit string `json:"unit"`
+
+	// UnitsPerPack Units contained in one purchasable pack.
+	//
+	// Example: 1000
+	UnitsPerPack int64 `json:"units_per_pack"`
 }
 
 // PiiSuggestion A single likely-PII column detected by the scanner, with a recommended masking rule. Suggestions are advisory only — nothing is applied until the operator reviews and adds it to a policy profile.
@@ -6043,6 +6177,19 @@ type GetVercelInstallationParams struct {
 	IfNoneMatch *IfNoneMatch `json:"If-None-Match,omitempty"`
 }
 
+// CreateBudgetTopupParams defines parameters for CreateBudgetTopup.
+type CreateBudgetTopupParams struct {
+	// PaymentAuthorization The MPP payment credential, `Payment <base64url>`, echoing the
+	// challenge from the `402` and carrying the method-specific proof. For
+	// the `stripe` method the payload is `{"spt": "spt_..."}`, a single-use
+	// Shared Payment Token.
+	PaymentAuthorization *string `json:"Payment-Authorization,omitempty"`
+
+	// AcceptPayment Payment method and intent preferences, for example `stripe/charge`.
+	// Ignored when it matches nothing this endpoint offers.
+	AcceptPayment *string `json:"Accept-Payment,omitempty"`
+}
+
 // ListPlansParams defines parameters for ListPlans.
 type ListPlansParams struct {
 	// IfNoneMatch Entity tag the client already holds, taken from the `ETag` of an earlier response. When it still matches the current representation the server answers `304 Not Modified` with no body, so a poll that finds nothing changed costs a round trip rather than a transfer.
@@ -6662,6 +6809,9 @@ type UpdateSupportCaseJSONRequestBody = UpdateSupportCaseRequest
 
 // CreateSupportMessageJSONRequestBody defines body for CreateSupportMessage for application/json ContentType.
 type CreateSupportMessageJSONRequestBody = CreateSupportMessageRequest
+
+// CreateBudgetTopupJSONRequestBody defines body for CreateBudgetTopup for application/json ContentType.
+type CreateBudgetTopupJSONRequestBody = BudgetTopupInput
 
 // CreateProjectJSONRequestBody defines body for CreateProject for application/json ContentType.
 type CreateProjectJSONRequestBody = CreateProjectRequest

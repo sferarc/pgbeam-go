@@ -27,6 +27,7 @@ type Client struct {
 	Demo              *DemoService
 	Honeytokens       *HoneytokensService
 	Internal          *InternalService
+	Payments          *PaymentsService
 	Schemaannotations *SchemaannotationsService
 	Support           *SupportService
 	t                 *transport
@@ -52,6 +53,7 @@ func NewClient(opts *ClientOptions) *Client {
 	c.Demo = &DemoService{t: t}
 	c.Honeytokens = &HoneytokensService{t: t}
 	c.Internal = &InternalService{t: t}
+	c.Payments = &PaymentsService{t: t}
 	c.Schemaannotations = &SchemaannotationsService{t: t}
 	c.Support = &SupportService{t: t}
 	return c
@@ -467,6 +469,17 @@ type InternalService struct{ t *transport }
 
 func (s *InternalService) HandleSlackSupportEvent(ctx context.Context, body SlackEventPayload) error {
 	return doVoid(s.t, ctx, "POST", "/v1/internal/support/slack-event", body)
+}
+
+// PaymentsService provides payments operations.
+type PaymentsService struct{ t *transport }
+
+func (s *PaymentsService) ListPaymentResources(ctx context.Context) (*ListPaymentResourcesResponse, error) {
+	return doJSON[ListPaymentResourcesResponse](s.t, ctx, "GET", "/v1/payments/resources", nil)
+}
+
+func (s *PaymentsService) CreateBudgetTopup(ctx context.Context, body BudgetTopupInput) (*BudgetTopup, error) {
+	return doJSON[BudgetTopup](s.t, ctx, "POST", "/v1/payments/budget-topups", body)
 }
 
 // SchemaannotationsService provides schemaannotations operations.
