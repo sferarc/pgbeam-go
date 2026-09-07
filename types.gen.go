@@ -4846,6 +4846,12 @@ type HoneytokenId = string
 // IdempotencyKey Example: a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d
 type IdempotencyKey = string
 
+// IfMatch Example: "9f8a1c2b3d4e5f60a1b2c3d4e5f60718"
+type IfMatch = string
+
+// IfNoneMatch Example: "9f8a1c2b3d4e5f60a1b2c3d4e5f60718"
+type IfNoneMatch = string
+
 // InvitationId Example: 9f3c1a7b2e4d6058b1c9d3f5a7e02468
 type InvitationId = string
 
@@ -4888,11 +4894,30 @@ type Forbidden = Error
 // NotFound Standard error response envelope for PgBeam API requests.
 type NotFound = Error
 
+// PreconditionFailed Standard error response envelope for PgBeam API requests.
+type PreconditionFailed = Error
+
 // TooManyRequests Standard error response envelope for PgBeam API requests.
 type TooManyRequests = Error
 
 // Unauthorized Standard error response envelope for PgBeam API requests.
 type Unauthorized = Error
+
+// ExportAccountDataParams defines parameters for ExportAccountData.
+type ExportAccountDataParams struct {
+	// IfNoneMatch Entity tag the client already holds, taken from the `ETag` of an earlier response. When it still matches the current representation the server answers `304 Not Modified` with no body, so a poll that finds nothing changed costs a round trip rather than a transfer.
+	//
+	// A comma-separated list is accepted, and `*` matches any current representation.
+	IfNoneMatch *IfNoneMatch `json:"If-None-Match,omitempty"`
+}
+
+// ListReplicasParams defines parameters for ListReplicas.
+type ListReplicasParams struct {
+	// IfNoneMatch Entity tag the client already holds, taken from the `ETag` of an earlier response. When it still matches the current representation the server answers `304 Not Modified` with no body, so a poll that finds nothing changed costs a round trip rather than a transfer.
+	//
+	// A comma-separated list is accepted, and `*` matches any current representation.
+	IfNoneMatch *IfNoneMatch `json:"If-None-Match,omitempty"`
+}
 
 // CreateReplicaParams defines parameters for CreateReplica.
 type CreateReplicaParams struct {
@@ -4906,6 +4931,22 @@ type CreateReplicaParams struct {
 	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
 }
 
+// GetHealthParams defines parameters for GetHealth.
+type GetHealthParams struct {
+	// IfNoneMatch Entity tag the client already holds, taken from the `ETag` of an earlier response. When it still matches the current representation the server answers `304 Not Modified` with no body, so a poll that finds nothing changed costs a round trip rather than a transfer.
+	//
+	// A comma-separated list is accepted, and `*` matches any current representation.
+	IfNoneMatch *IfNoneMatch `json:"If-None-Match,omitempty"`
+}
+
+// ListOrganizationsParams defines parameters for ListOrganizations.
+type ListOrganizationsParams struct {
+	// IfNoneMatch Entity tag the client already holds, taken from the `ETag` of an earlier response. When it still matches the current representation the server answers `304 Not Modified` with no body, so a poll that finds nothing changed costs a round trip rather than a transfer.
+	//
+	// A comma-separated list is accepted, and `*` matches any current representation.
+	IfNoneMatch *IfNoneMatch `json:"If-None-Match,omitempty"`
+}
+
 // ListOrgInvitationsParams defines parameters for ListOrgInvitations.
 type ListOrgInvitationsParams struct {
 	// Status Filter to a single status. Omit to list every invitation.
@@ -4916,6 +4957,11 @@ type ListOrgInvitationsParams struct {
 
 	// PageToken Opaque token for cursor-based pagination.
 	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+
+	// IfNoneMatch Entity tag the client already holds, taken from the `ETag` of an earlier response. When it still matches the current representation the server answers `304 Not Modified` with no body, so a poll that finds nothing changed costs a round trip rather than a transfer.
+	//
+	// A comma-separated list is accepted, and `*` matches any current representation.
+	IfNoneMatch *IfNoneMatch `json:"If-None-Match,omitempty"`
 }
 
 // ListOrgInvitationsParamsStatus defines parameters for ListOrgInvitations.
@@ -4928,6 +4974,35 @@ type ListOrgMembersParams struct {
 
 	// PageToken Opaque token for cursor-based pagination.
 	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+
+	// IfNoneMatch Entity tag the client already holds, taken from the `ETag` of an earlier response. When it still matches the current representation the server answers `304 Not Modified` with no body, so a poll that finds nothing changed costs a round trip rather than a transfer.
+	//
+	// A comma-separated list is accepted, and `*` matches any current representation.
+	IfNoneMatch *IfNoneMatch `json:"If-None-Match,omitempty"`
+}
+
+// GetOnboardingProgressParams defines parameters for GetOnboardingProgress.
+type GetOnboardingProgressParams struct {
+	// IfNoneMatch Entity tag the client already holds, taken from the `ETag` of an earlier response. When it still matches the current representation the server answers `304 Not Modified` with no body, so a poll that finds nothing changed costs a round trip rather than a transfer.
+	//
+	// A comma-separated list is accepted, and `*` matches any current representation.
+	IfNoneMatch *IfNoneMatch `json:"If-None-Match,omitempty"`
+}
+
+// GetOrganizationPlanParams defines parameters for GetOrganizationPlan.
+type GetOrganizationPlanParams struct {
+	// IfNoneMatch Entity tag the client already holds, taken from the `ETag` of an earlier response. When it still matches the current representation the server answers `304 Not Modified` with no body, so a poll that finds nothing changed costs a round trip rather than a transfer.
+	//
+	// A comma-separated list is accepted, and `*` matches any current representation.
+	IfNoneMatch *IfNoneMatch `json:"If-None-Match,omitempty"`
+}
+
+// ListSelfHostEnrollmentsParams defines parameters for ListSelfHostEnrollments.
+type ListSelfHostEnrollmentsParams struct {
+	// IfNoneMatch Entity tag the client already holds, taken from the `ETag` of an earlier response. When it still matches the current representation the server answers `304 Not Modified` with no body, so a poll that finds nothing changed costs a round trip rather than a transfer.
+	//
+	// A comma-separated list is accepted, and `*` matches any current representation.
+	IfNoneMatch *IfNoneMatch `json:"If-None-Match,omitempty"`
 }
 
 // CreateSelfHostEnrollmentParams defines parameters for CreateSelfHostEnrollment.
@@ -4967,6 +5042,11 @@ type ListSupportCasesParams struct {
 
 	// Page Page number (1-based, default 1).
 	Page *int `form:"page,omitempty" json:"page,omitempty"`
+
+	// IfNoneMatch Entity tag the client already holds, taken from the `ETag` of an earlier response. When it still matches the current representation the server answers `304 Not Modified` with no body, so a poll that finds nothing changed costs a round trip rather than a transfer.
+	//
+	// A comma-separated list is accepted, and `*` matches any current representation.
+	IfNoneMatch *IfNoneMatch `json:"If-None-Match,omitempty"`
 }
 
 // CreateSupportCaseParams defines parameters for CreateSupportCase.
@@ -4979,6 +5059,14 @@ type CreateSupportCaseParams struct {
 	//
 	// Use a fresh UUID per logical operation. The PgBeam SDKs generate one per call and reuse it across their own automatic retries.
 	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
+}
+
+// GetSupportCaseParams defines parameters for GetSupportCase.
+type GetSupportCaseParams struct {
+	// IfNoneMatch Entity tag the client already holds, taken from the `ETag` of an earlier response. When it still matches the current representation the server answers `304 Not Modified` with no body, so a poll that finds nothing changed costs a round trip rather than a transfer.
+	//
+	// A comma-separated list is accepted, and `*` matches any current representation.
+	IfNoneMatch *IfNoneMatch `json:"If-None-Match,omitempty"`
 }
 
 // CreateSupportMessageParams defines parameters for CreateSupportMessage.
@@ -5000,6 +5088,27 @@ type GetOrganizationUsageParams struct {
 
 	// EndDate End date (inclusive, YYYY-MM-DD).
 	EndDate openapi_types.Date `form:"end_date" json:"end_date"`
+
+	// IfNoneMatch Entity tag the client already holds, taken from the `ETag` of an earlier response. When it still matches the current representation the server answers `304 Not Modified` with no body, so a poll that finds nothing changed costs a round trip rather than a transfer.
+	//
+	// A comma-separated list is accepted, and `*` matches any current representation.
+	IfNoneMatch *IfNoneMatch `json:"If-None-Match,omitempty"`
+}
+
+// GetVercelInstallationParams defines parameters for GetVercelInstallation.
+type GetVercelInstallationParams struct {
+	// IfNoneMatch Entity tag the client already holds, taken from the `ETag` of an earlier response. When it still matches the current representation the server answers `304 Not Modified` with no body, so a poll that finds nothing changed costs a round trip rather than a transfer.
+	//
+	// A comma-separated list is accepted, and `*` matches any current representation.
+	IfNoneMatch *IfNoneMatch `json:"If-None-Match,omitempty"`
+}
+
+// ListPlansParams defines parameters for ListPlans.
+type ListPlansParams struct {
+	// IfNoneMatch Entity tag the client already holds, taken from the `ETag` of an earlier response. When it still matches the current representation the server answers `304 Not Modified` with no body, so a poll that finds nothing changed costs a round trip rather than a transfer.
+	//
+	// A comma-separated list is accepted, and `*` matches any current representation.
+	IfNoneMatch *IfNoneMatch `json:"If-None-Match,omitempty"`
 }
 
 // ListProjectsParams defines parameters for ListProjects.
@@ -5015,6 +5124,11 @@ type ListProjectsParams struct {
 
 	// SortBy Sort field for projects list.
 	SortBy *ListProjectsParamsSortBy `form:"sort_by,omitempty" json:"sort_by,omitempty"`
+
+	// IfNoneMatch Entity tag the client already holds, taken from the `ETag` of an earlier response. When it still matches the current representation the server answers `304 Not Modified` with no body, so a poll that finds nothing changed costs a round trip rather than a transfer.
+	//
+	// A comma-separated list is accepted, and `*` matches any current representation.
+	IfNoneMatch *IfNoneMatch `json:"If-None-Match,omitempty"`
 }
 
 // ListProjectsParamsSortBy defines parameters for ListProjects.
@@ -5032,6 +5146,24 @@ type CreateProjectParams struct {
 	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
 }
 
+// GetProjectParams defines parameters for GetProject.
+type GetProjectParams struct {
+	// IfNoneMatch Entity tag the client already holds, taken from the `ETag` of an earlier response. When it still matches the current representation the server answers `304 Not Modified` with no body, so a poll that finds nothing changed costs a round trip rather than a transfer.
+	//
+	// A comma-separated list is accepted, and `*` matches any current representation.
+	IfNoneMatch *IfNoneMatch `json:"If-None-Match,omitempty"`
+}
+
+// UpdateProjectParams defines parameters for UpdateProject.
+type UpdateProjectParams struct {
+	// IfMatch Entity tag the write is based on, taken from the `ETag` of the read that produced the values being sent. The write proceeds only if it still matches the current representation; otherwise it is refused with `412 Precondition Failed` and nothing is changed.
+	//
+	// This is what makes a read-modify-write safe. Without it the last writer wins and a concurrent edit is silently discarded, which is the failure an agent is most likely to cause and least likely to notice. The `412` response carries the current `ETag`, so a caller can re-read, re-apply its change and retry.
+	//
+	// Omitting the header keeps the old unconditional behaviour. `*` matches any current representation, which asserts only that the resource exists.
+	IfMatch *IfMatch `json:"If-Match,omitempty"`
+}
+
 // ListAgentCredentialsParams defines parameters for ListAgentCredentials.
 type ListAgentCredentialsParams struct {
 	// PageSize Maximum number of items to return (1-100, default 20).
@@ -5039,6 +5171,11 @@ type ListAgentCredentialsParams struct {
 
 	// PageToken Opaque token for cursor-based pagination.
 	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+
+	// IfNoneMatch Entity tag the client already holds, taken from the `ETag` of an earlier response. When it still matches the current representation the server answers `304 Not Modified` with no body, so a poll that finds nothing changed costs a round trip rather than a transfer.
+	//
+	// A comma-separated list is accepted, and `*` matches any current representation.
+	IfNoneMatch *IfNoneMatch `json:"If-None-Match,omitempty"`
 }
 
 // CreateAgentCredentialParams defines parameters for CreateAgentCredential.
@@ -5051,6 +5188,24 @@ type CreateAgentCredentialParams struct {
 	//
 	// Use a fresh UUID per logical operation. The PgBeam SDKs generate one per call and reuse it across their own automatic retries.
 	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
+}
+
+// GetAgentCredentialParams defines parameters for GetAgentCredential.
+type GetAgentCredentialParams struct {
+	// IfNoneMatch Entity tag the client already holds, taken from the `ETag` of an earlier response. When it still matches the current representation the server answers `304 Not Modified` with no body, so a poll that finds nothing changed costs a round trip rather than a transfer.
+	//
+	// A comma-separated list is accepted, and `*` matches any current representation.
+	IfNoneMatch *IfNoneMatch `json:"If-None-Match,omitempty"`
+}
+
+// UpdateAgentCredentialStatusParams defines parameters for UpdateAgentCredentialStatus.
+type UpdateAgentCredentialStatusParams struct {
+	// IfMatch Entity tag the write is based on, taken from the `ETag` of the read that produced the values being sent. The write proceeds only if it still matches the current representation; otherwise it is refused with `412 Precondition Failed` and nothing is changed.
+	//
+	// This is what makes a read-modify-write safe. Without it the last writer wins and a concurrent edit is silently discarded, which is the failure an agent is most likely to cause and least likely to notice. The `412` response carries the current `ETag`, so a caller can re-read, re-apply its change and retry.
+	//
+	// Omitting the header keeps the old unconditional behaviour. `*` matches any current representation, which asserts only that the resource exists.
+	IfMatch *IfMatch `json:"If-Match,omitempty"`
 }
 
 // RotateAgentCredentialParams defines parameters for RotateAgentCredential.
@@ -5075,6 +5230,11 @@ type ListAnomalyAlertsParams struct {
 
 	// PageToken Opaque token for cursor-based pagination.
 	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+
+	// IfNoneMatch Entity tag the client already holds, taken from the `ETag` of an earlier response. When it still matches the current representation the server answers `304 Not Modified` with no body, so a poll that finds nothing changed costs a round trip rather than a transfer.
+	//
+	// A comma-separated list is accepted, and `*` matches any current representation.
+	IfNoneMatch *IfNoneMatch `json:"If-None-Match,omitempty"`
 }
 
 // ListAnomalyAlertsParamsStatus defines parameters for ListAnomalyAlerts.
@@ -5090,6 +5250,11 @@ type ListApprovalRequestsParams struct {
 
 	// PageToken Opaque token for cursor-based pagination.
 	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+
+	// IfNoneMatch Entity tag the client already holds, taken from the `ETag` of an earlier response. When it still matches the current representation the server answers `304 Not Modified` with no body, so a poll that finds nothing changed costs a round trip rather than a transfer.
+	//
+	// A comma-separated list is accepted, and `*` matches any current representation.
+	IfNoneMatch *IfNoneMatch `json:"If-None-Match,omitempty"`
 }
 
 // ListApprovalRequestsParamsStatus defines parameters for ListApprovalRequests.
@@ -5120,6 +5285,11 @@ type ListAuditLogsParams struct {
 
 	// PageSize Maximum number of items to return (1-100, default 20).
 	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// IfNoneMatch Entity tag the client already holds, taken from the `ETag` of an earlier response. When it still matches the current representation the server answers `304 Not Modified` with no body, so a poll that finds nothing changed costs a round trip rather than a transfer.
+	//
+	// A comma-separated list is accepted, and `*` matches any current representation.
+	IfNoneMatch *IfNoneMatch `json:"If-None-Match,omitempty"`
 }
 
 // ExportAuditLogsParams defines parameters for ExportAuditLogs.
@@ -5150,6 +5320,11 @@ type GetAuditSessionSummaryParams struct {
 
 	// End Return entries strictly older than this timestamp (cursor / upper bound).
 	End *AuditEnd `form:"end,omitempty" json:"end,omitempty"`
+
+	// IfNoneMatch Entity tag the client already holds, taken from the `ETag` of an earlier response. When it still matches the current representation the server answers `304 Not Modified` with no body, so a poll that finds nothing changed costs a round trip rather than a transfer.
+	//
+	// A comma-separated list is accepted, and `*` matches any current representation.
+	IfNoneMatch *IfNoneMatch `json:"If-None-Match,omitempty"`
 }
 
 // VerifyAuditChainParams defines parameters for VerifyAuditChain.
@@ -5159,6 +5334,11 @@ type VerifyAuditChainParams struct {
 
 	// End Return entries strictly older than this timestamp (cursor / upper bound).
 	End *AuditEnd `form:"end,omitempty" json:"end,omitempty"`
+
+	// IfNoneMatch Entity tag the client already holds, taken from the `ETag` of an earlier response. When it still matches the current representation the server answers `304 Not Modified` with no body, so a poll that finds nothing changed costs a round trip rather than a transfer.
+	//
+	// A comma-separated list is accepted, and `*` matches any current representation.
+	IfNoneMatch *IfNoneMatch `json:"If-None-Match,omitempty"`
 }
 
 // ListDatabaseBranchesParams defines parameters for ListDatabaseBranches.
@@ -5171,6 +5351,11 @@ type ListDatabaseBranchesParams struct {
 
 	// PageToken Opaque token for cursor-based pagination.
 	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+
+	// IfNoneMatch Entity tag the client already holds, taken from the `ETag` of an earlier response. When it still matches the current representation the server answers `304 Not Modified` with no body, so a poll that finds nothing changed costs a round trip rather than a transfer.
+	//
+	// A comma-separated list is accepted, and `*` matches any current representation.
+	IfNoneMatch *IfNoneMatch `json:"If-None-Match,omitempty"`
 }
 
 // ListDatabaseBranchesParamsStatus defines parameters for ListDatabaseBranches.
@@ -5183,6 +5368,11 @@ type ListDatabasesParams struct {
 
 	// PageToken Opaque token for cursor-based pagination.
 	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+
+	// IfNoneMatch Entity tag the client already holds, taken from the `ETag` of an earlier response. When it still matches the current representation the server answers `304 Not Modified` with no body, so a poll that finds nothing changed costs a round trip rather than a transfer.
+	//
+	// A comma-separated list is accepted, and `*` matches any current representation.
+	IfNoneMatch *IfNoneMatch `json:"If-None-Match,omitempty"`
 }
 
 // CreateDatabaseParams defines parameters for CreateDatabase.
@@ -5197,6 +5387,24 @@ type CreateDatabaseParams struct {
 	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
 }
 
+// GetDatabaseParams defines parameters for GetDatabase.
+type GetDatabaseParams struct {
+	// IfNoneMatch Entity tag the client already holds, taken from the `ETag` of an earlier response. When it still matches the current representation the server answers `304 Not Modified` with no body, so a poll that finds nothing changed costs a round trip rather than a transfer.
+	//
+	// A comma-separated list is accepted, and `*` matches any current representation.
+	IfNoneMatch *IfNoneMatch `json:"If-None-Match,omitempty"`
+}
+
+// UpdateDatabaseParams defines parameters for UpdateDatabase.
+type UpdateDatabaseParams struct {
+	// IfMatch Entity tag the write is based on, taken from the `ETag` of the read that produced the values being sent. The write proceeds only if it still matches the current representation; otherwise it is refused with `412 Precondition Failed` and nothing is changed.
+	//
+	// This is what makes a read-modify-write safe. Without it the last writer wins and a concurrent edit is silently discarded, which is the failure an agent is most likely to cause and least likely to notice. The `412` response carries the current `ETag`, so a caller can re-read, re-apply its change and retry.
+	//
+	// Omitting the header keeps the old unconditional behaviour. `*` matches any current representation, which asserts only that the resource exists.
+	IfMatch *IfMatch `json:"If-Match,omitempty"`
+}
+
 // ListCacheRulesParams defines parameters for ListCacheRules.
 type ListCacheRulesParams struct {
 	// PageSize Maximum number of items to return (1-100, default 20).
@@ -5204,6 +5412,19 @@ type ListCacheRulesParams struct {
 
 	// PageToken Opaque token for cursor-based pagination.
 	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+
+	// IfNoneMatch Entity tag the client already holds, taken from the `ETag` of an earlier response. When it still matches the current representation the server answers `304 Not Modified` with no body, so a poll that finds nothing changed costs a round trip rather than a transfer.
+	//
+	// A comma-separated list is accepted, and `*` matches any current representation.
+	IfNoneMatch *IfNoneMatch `json:"If-None-Match,omitempty"`
+}
+
+// GetSchemaCatalogParams defines parameters for GetSchemaCatalog.
+type GetSchemaCatalogParams struct {
+	// IfNoneMatch Entity tag the client already holds, taken from the `ETag` of an earlier response. When it still matches the current representation the server answers `304 Not Modified` with no body, so a poll that finds nothing changed costs a round trip rather than a transfer.
+	//
+	// A comma-separated list is accepted, and `*` matches any current representation.
+	IfNoneMatch *IfNoneMatch `json:"If-None-Match,omitempty"`
 }
 
 // ListCustomDomainsParams defines parameters for ListCustomDomains.
@@ -5213,6 +5434,11 @@ type ListCustomDomainsParams struct {
 
 	// PageToken Opaque token for cursor-based pagination.
 	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+
+	// IfNoneMatch Entity tag the client already holds, taken from the `ETag` of an earlier response. When it still matches the current representation the server answers `304 Not Modified` with no body, so a poll that finds nothing changed costs a round trip rather than a transfer.
+	//
+	// A comma-separated list is accepted, and `*` matches any current representation.
+	IfNoneMatch *IfNoneMatch `json:"If-None-Match,omitempty"`
 }
 
 // CreateCustomDomainParams defines parameters for CreateCustomDomain.
@@ -5234,6 +5460,11 @@ type ListHoneytokensParams struct {
 
 	// PageToken Opaque token for cursor-based pagination.
 	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+
+	// IfNoneMatch Entity tag the client already holds, taken from the `ETag` of an earlier response. When it still matches the current representation the server answers `304 Not Modified` with no body, so a poll that finds nothing changed costs a round trip rather than a transfer.
+	//
+	// A comma-separated list is accepted, and `*` matches any current representation.
+	IfNoneMatch *IfNoneMatch `json:"If-None-Match,omitempty"`
 }
 
 // CreateHoneytokenParams defines parameters for CreateHoneytoken.
@@ -5248,6 +5479,24 @@ type CreateHoneytokenParams struct {
 	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
 }
 
+// GetHoneytokenParams defines parameters for GetHoneytoken.
+type GetHoneytokenParams struct {
+	// IfNoneMatch Entity tag the client already holds, taken from the `ETag` of an earlier response. When it still matches the current representation the server answers `304 Not Modified` with no body, so a poll that finds nothing changed costs a round trip rather than a transfer.
+	//
+	// A comma-separated list is accepted, and `*` matches any current representation.
+	IfNoneMatch *IfNoneMatch `json:"If-None-Match,omitempty"`
+}
+
+// UpdateHoneytokenParams defines parameters for UpdateHoneytoken.
+type UpdateHoneytokenParams struct {
+	// IfMatch Entity tag the write is based on, taken from the `ETag` of the read that produced the values being sent. The write proceeds only if it still matches the current representation; otherwise it is refused with `412 Precondition Failed` and nothing is changed.
+	//
+	// This is what makes a read-modify-write safe. Without it the last writer wins and a concurrent edit is silently discarded, which is the failure an agent is most likely to cause and least likely to notice. The `412` response carries the current `ETag`, so a caller can re-read, re-apply its change and retry.
+	//
+	// Omitting the header keeps the old unconditional behaviour. `*` matches any current representation, which asserts only that the resource exists.
+	IfMatch *IfMatch `json:"If-Match,omitempty"`
+}
+
 // GetProjectInsightsParams defines parameters for GetProjectInsights.
 type GetProjectInsightsParams struct {
 	// Range Time range to query. Defaults to 24h.
@@ -5255,6 +5504,11 @@ type GetProjectInsightsParams struct {
 
 	// Limit Maximum number of top queries to return (1-100).
 	Limit *int `form:"limit,omitempty" json:"limit,omitempty"`
+
+	// IfNoneMatch Entity tag the client already holds, taken from the `ETag` of an earlier response. When it still matches the current representation the server answers `304 Not Modified` with no body, so a poll that finds nothing changed costs a round trip rather than a transfer.
+	//
+	// A comma-separated list is accepted, and `*` matches any current representation.
+	IfNoneMatch *IfNoneMatch `json:"If-None-Match,omitempty"`
 }
 
 // GetProjectInsightsParamsRange defines parameters for GetProjectInsights.
@@ -5267,6 +5521,11 @@ type GetProjectMetricsParams struct {
 
 	// Region Filter metrics by region code.
 	Region *string `form:"region,omitempty" json:"region,omitempty"`
+
+	// IfNoneMatch Entity tag the client already holds, taken from the `ETag` of an earlier response. When it still matches the current representation the server answers `304 Not Modified` with no body, so a poll that finds nothing changed costs a round trip rather than a transfer.
+	//
+	// A comma-separated list is accepted, and `*` matches any current representation.
+	IfNoneMatch *IfNoneMatch `json:"If-None-Match,omitempty"`
 }
 
 // ListPolicyProfilesParams defines parameters for ListPolicyProfiles.
@@ -5276,6 +5535,11 @@ type ListPolicyProfilesParams struct {
 
 	// PageToken Opaque token for cursor-based pagination.
 	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+
+	// IfNoneMatch Entity tag the client already holds, taken from the `ETag` of an earlier response. When it still matches the current representation the server answers `304 Not Modified` with no body, so a poll that finds nothing changed costs a round trip rather than a transfer.
+	//
+	// A comma-separated list is accepted, and `*` matches any current representation.
+	IfNoneMatch *IfNoneMatch `json:"If-None-Match,omitempty"`
 }
 
 // CreatePolicyProfileParams defines parameters for CreatePolicyProfile.
@@ -5288,6 +5552,24 @@ type CreatePolicyProfileParams struct {
 	//
 	// Use a fresh UUID per logical operation. The PgBeam SDKs generate one per call and reuse it across their own automatic retries.
 	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
+}
+
+// GetPolicyProfileParams defines parameters for GetPolicyProfile.
+type GetPolicyProfileParams struct {
+	// IfNoneMatch Entity tag the client already holds, taken from the `ETag` of an earlier response. When it still matches the current representation the server answers `304 Not Modified` with no body, so a poll that finds nothing changed costs a round trip rather than a transfer.
+	//
+	// A comma-separated list is accepted, and `*` matches any current representation.
+	IfNoneMatch *IfNoneMatch `json:"If-None-Match,omitempty"`
+}
+
+// UpdatePolicyProfileParams defines parameters for UpdatePolicyProfile.
+type UpdatePolicyProfileParams struct {
+	// IfMatch Entity tag the write is based on, taken from the `ETag` of the read that produced the values being sent. The write proceeds only if it still matches the current representation; otherwise it is refused with `412 Precondition Failed` and nothing is changed.
+	//
+	// This is what makes a read-modify-write safe. Without it the last writer wins and a concurrent edit is silently discarded, which is the failure an agent is most likely to cause and least likely to notice. The `412` response carries the current `ETag`, so a caller can re-read, re-apply its change and retry.
+	//
+	// Omitting the header keeps the old unconditional behaviour. `*` matches any current representation, which asserts only that the resource exists.
+	IfMatch *IfMatch `json:"If-Match,omitempty"`
 }
 
 // DeleteSchemaAnnotationParams defines parameters for DeleteSchemaAnnotation.
@@ -5309,6 +5591,11 @@ type ListSchemaAnnotationsParams struct {
 
 	// PageToken Opaque token for cursor-based pagination.
 	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+
+	// IfNoneMatch Entity tag the client already holds, taken from the `ETag` of an earlier response. When it still matches the current representation the server answers `304 Not Modified` with no body, so a poll that finds nothing changed costs a round trip rather than a transfer.
+	//
+	// A comma-separated list is accepted, and `*` matches any current representation.
+	IfNoneMatch *IfNoneMatch `json:"If-None-Match,omitempty"`
 }
 
 // GetProjectUsageParams defines parameters for GetProjectUsage.
@@ -5318,6 +5605,11 @@ type GetProjectUsageParams struct {
 
 	// EndDate End date (inclusive, YYYY-MM-DD).
 	EndDate openapi_types.Date `form:"end_date" json:"end_date"`
+
+	// IfNoneMatch Entity tag the client already holds, taken from the `ETag` of an earlier response. When it still matches the current representation the server answers `304 Not Modified` with no body, so a poll that finds nothing changed costs a round trip rather than a transfer.
+	//
+	// A comma-separated list is accepted, and `*` matches any current representation.
+	IfNoneMatch *IfNoneMatch `json:"If-None-Match,omitempty"`
 }
 
 // GetAgentUsageBreakdownParams defines parameters for GetAgentUsageBreakdown.
@@ -5327,6 +5619,11 @@ type GetAgentUsageBreakdownParams struct {
 
 	// End Return entries strictly older than this timestamp (cursor / upper bound).
 	End *AuditEnd `form:"end,omitempty" json:"end,omitempty"`
+
+	// IfNoneMatch Entity tag the client already holds, taken from the `ETag` of an earlier response. When it still matches the current representation the server answers `304 Not Modified` with no body, so a poll that finds nothing changed costs a round trip rather than a transfer.
+	//
+	// A comma-separated list is accepted, and `*` matches any current representation.
+	IfNoneMatch *IfNoneMatch `json:"If-None-Match,omitempty"`
 }
 
 // ListWebhookEndpointsParams defines parameters for ListWebhookEndpoints.
@@ -5336,6 +5633,11 @@ type ListWebhookEndpointsParams struct {
 
 	// PageToken Opaque token for cursor-based pagination.
 	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+
+	// IfNoneMatch Entity tag the client already holds, taken from the `ETag` of an earlier response. When it still matches the current representation the server answers `304 Not Modified` with no body, so a poll that finds nothing changed costs a round trip rather than a transfer.
+	//
+	// A comma-separated list is accepted, and `*` matches any current representation.
+	IfNoneMatch *IfNoneMatch `json:"If-None-Match,omitempty"`
 }
 
 // CreateWebhookEndpointParams defines parameters for CreateWebhookEndpoint.
@@ -5348,6 +5650,32 @@ type CreateWebhookEndpointParams struct {
 	//
 	// Use a fresh UUID per logical operation. The PgBeam SDKs generate one per call and reuse it across their own automatic retries.
 	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
+}
+
+// GetWebhookEndpointParams defines parameters for GetWebhookEndpoint.
+type GetWebhookEndpointParams struct {
+	// IfNoneMatch Entity tag the client already holds, taken from the `ETag` of an earlier response. When it still matches the current representation the server answers `304 Not Modified` with no body, so a poll that finds nothing changed costs a round trip rather than a transfer.
+	//
+	// A comma-separated list is accepted, and `*` matches any current representation.
+	IfNoneMatch *IfNoneMatch `json:"If-None-Match,omitempty"`
+}
+
+// UpdateWebhookEndpointParams defines parameters for UpdateWebhookEndpoint.
+type UpdateWebhookEndpointParams struct {
+	// IfMatch Entity tag the write is based on, taken from the `ETag` of the read that produced the values being sent. The write proceeds only if it still matches the current representation; otherwise it is refused with `412 Precondition Failed` and nothing is changed.
+	//
+	// This is what makes a read-modify-write safe. Without it the last writer wins and a concurrent edit is silently discarded, which is the failure an agent is most likely to cause and least likely to notice. The `412` response carries the current `ETag`, so a caller can re-read, re-apply its change and retry.
+	//
+	// Omitting the header keeps the old unconditional behaviour. `*` matches any current representation, which asserts only that the resource exists.
+	IfMatch *IfMatch `json:"If-Match,omitempty"`
+}
+
+// ListRegionsParams defines parameters for ListRegions.
+type ListRegionsParams struct {
+	// IfNoneMatch Entity tag the client already holds, taken from the `ETag` of an earlier response. When it still matches the current representation the server answers `304 Not Modified` with no body, so a poll that finds nothing changed costs a round trip rather than a transfer.
+	//
+	// A comma-separated list is accepted, and `*` matches any current representation.
+	IfNoneMatch *IfNoneMatch `json:"If-None-Match,omitempty"`
 }
 
 // CreateReplicaJSONRequestBody defines body for CreateReplica for application/json ContentType.
