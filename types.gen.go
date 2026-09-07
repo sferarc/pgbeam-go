@@ -138,6 +138,39 @@ func (e ApprovalRequestStatus) Valid() bool {
 	}
 }
 
+// Defines values for AssignableOrgRole.
+const (
+	AssignableOrgRoleAdmin         AssignableOrgRole = "admin"
+	AssignableOrgRoleApprover      AssignableOrgRole = "approver"
+	AssignableOrgRoleAuditor       AssignableOrgRole = "auditor"
+	AssignableOrgRoleBillingAdmin  AssignableOrgRole = "billing_admin"
+	AssignableOrgRoleMember        AssignableOrgRole = "member"
+	AssignableOrgRolePolicyAuthor  AssignableOrgRole = "policy-author"
+	AssignableOrgRoleSecurityAdmin AssignableOrgRole = "security_admin"
+)
+
+// Valid indicates whether the value is a known member of the AssignableOrgRole enum.
+func (e AssignableOrgRole) Valid() bool {
+	switch e {
+	case AssignableOrgRoleAdmin:
+		return true
+	case AssignableOrgRoleApprover:
+		return true
+	case AssignableOrgRoleAuditor:
+		return true
+	case AssignableOrgRoleBillingAdmin:
+		return true
+	case AssignableOrgRoleMember:
+		return true
+	case AssignableOrgRolePolicyAuthor:
+		return true
+	case AssignableOrgRoleSecurityAdmin:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for AuditDecision.
 const (
 	AuditDecisionAllow    AuditDecision = "allow"
@@ -525,6 +558,66 @@ func (e MigrationFindingSeverity) Valid() bool {
 	case MigrationFindingSeverityInfo:
 		return true
 	case MigrationFindingSeverityWarning:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for OrgInvitationStatus.
+const (
+	OrgInvitationStatusAccepted OrgInvitationStatus = "accepted"
+	OrgInvitationStatusCanceled OrgInvitationStatus = "canceled"
+	OrgInvitationStatusPending  OrgInvitationStatus = "pending"
+	OrgInvitationStatusRejected OrgInvitationStatus = "rejected"
+)
+
+// Valid indicates whether the value is a known member of the OrgInvitationStatus enum.
+func (e OrgInvitationStatus) Valid() bool {
+	switch e {
+	case OrgInvitationStatusAccepted:
+		return true
+	case OrgInvitationStatusCanceled:
+		return true
+	case OrgInvitationStatusPending:
+		return true
+	case OrgInvitationStatusRejected:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for OrgRole.
+const (
+	OrgRoleAdmin         OrgRole = "admin"
+	OrgRoleApprover      OrgRole = "approver"
+	OrgRoleAuditor       OrgRole = "auditor"
+	OrgRoleBillingAdmin  OrgRole = "billing_admin"
+	OrgRoleMember        OrgRole = "member"
+	OrgRoleOwner         OrgRole = "owner"
+	OrgRolePolicyAuthor  OrgRole = "policy-author"
+	OrgRoleSecurityAdmin OrgRole = "security_admin"
+)
+
+// Valid indicates whether the value is a known member of the OrgRole enum.
+func (e OrgRole) Valid() bool {
+	switch e {
+	case OrgRoleAdmin:
+		return true
+	case OrgRoleApprover:
+		return true
+	case OrgRoleAuditor:
+		return true
+	case OrgRoleBillingAdmin:
+		return true
+	case OrgRoleMember:
+		return true
+	case OrgRoleOwner:
+		return true
+	case OrgRolePolicyAuthor:
+		return true
+	case OrgRoleSecurityAdmin:
 		return true
 	default:
 		return false
@@ -1230,6 +1323,30 @@ func (e WebhookEndpointInputFormat) Valid() bool {
 	}
 }
 
+// Defines values for ListOrgInvitationsParamsStatus.
+const (
+	ListOrgInvitationsParamsStatusAccepted ListOrgInvitationsParamsStatus = "accepted"
+	ListOrgInvitationsParamsStatusCanceled ListOrgInvitationsParamsStatus = "canceled"
+	ListOrgInvitationsParamsStatusPending  ListOrgInvitationsParamsStatus = "pending"
+	ListOrgInvitationsParamsStatusRejected ListOrgInvitationsParamsStatus = "rejected"
+)
+
+// Valid indicates whether the value is a known member of the ListOrgInvitationsParamsStatus enum.
+func (e ListOrgInvitationsParamsStatus) Valid() bool {
+	switch e {
+	case ListOrgInvitationsParamsStatusAccepted:
+		return true
+	case ListOrgInvitationsParamsStatusCanceled:
+		return true
+	case ListOrgInvitationsParamsStatusPending:
+		return true
+	case ListOrgInvitationsParamsStatusRejected:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for ListProjectsParamsSortBy.
 const (
 	ActiveConnections ListProjectsParamsSortBy = "active_connections"
@@ -1850,6 +1967,11 @@ type ApprovalRequest struct {
 // ApprovalRequestStatus Current state of the approval request.
 type ApprovalRequestStatus string
 
+// AssignableOrgRole A role that can be assigned through the member API. This is `OrgRole` without `owner`: ownership is transferred through a separate flow, so requesting it here is rejected with a 400.
+//
+// Example: admin
+type AssignableOrgRole string
+
 // AuditChainVerification Result of recomputing the project's tamper-evident audit hash chain over a time range. The chain links each entry to its predecessor, so editing or deleting any row breaks it.
 type AuditChainVerification struct {
 	// AnchorStatus What the external anchor concluded, or null when there was nothing to consult (no anchor key configured, or no checkpoint signed for this project yet). A checkpoint commits to one seq range of the chain, and checkpoints chain, each starting where the last ended. verified: the newest signed range, and every older one still fully retained and contiguous with it, was re-derived from the stored entries and matched. checkpoint_range_expired: the newest checkpoint covers entries retention has since deleted, wholly or in part, so its assertion cannot be checked against the live chain; ok stays true, because deleting rows the retention window said to delete is not evidence of tampering. Otherwise it repeats the anchor failure reported in failure_reason.
@@ -2232,6 +2354,19 @@ type CreateDatabaseRequest struct {
 	//
 	// Example: pgbeam
 	Username string `json:"username"`
+}
+
+// CreateOrgInvitationRequest Invites someone to join the organization. Omitting `role` invites them as a `member`.
+type CreateOrgInvitationRequest struct {
+	// Email Address to invite.
+	//
+	// Example: engineer@example.com
+	Email string `json:"email"`
+
+	// Role A role that can be assigned through the member API. This is `OrgRole` without `owner`: ownership is transferred through a separate flow, so requesting it here is rejected with a 400.
+	//
+	// Example: admin
+	Role *AssignableOrgRole `json:"role,omitempty"`
 }
 
 // CreateProjectRequest Request body for creating a project and its primary database, which are created atomically.
@@ -2794,6 +2929,24 @@ type ListHoneytokensResponse struct {
 	NextPageToken *string `json:"next_page_token,omitempty"`
 }
 
+// ListOrgInvitationsResponse A page of pending invitations.
+type ListOrgInvitationsResponse struct {
+	// Invitations The organization's invitations.
+	Invitations []OrgInvitation `json:"invitations"`
+
+	// NextPageToken Opaque token for cursor-based pagination.
+	NextPageToken *string `json:"next_page_token,omitempty"`
+}
+
+// ListOrgMembersResponse A page of organization members.
+type ListOrgMembersResponse struct {
+	// Members Members of the organization.
+	Members []OrgMember `json:"members"`
+
+	// NextPageToken Opaque token for cursor-based pagination.
+	NextPageToken *string `json:"next_page_token,omitempty"`
+}
+
 // ListOrganizationsResponse Organizations visible to the caller's credential.
 type ListOrganizationsResponse struct {
 	// Organizations Organizations the caller can access.
@@ -3068,6 +3221,83 @@ type OnboardingProgress struct {
 	// StepsTotal Total number of onboarding steps.
 	StepsTotal int `json:"steps_total"`
 }
+
+// OrgInvitation A pending invitation to join an organization.
+type OrgInvitation struct {
+	// CreatedAt When the invitation was created.
+	//
+	// Example: 2026-01-15T09:30:00Z
+	CreatedAt time.Time `json:"created_at"`
+
+	// Email Address the invitation was sent to.
+	//
+	// Example: engineer@example.com
+	Email string `json:"email"`
+
+	// ExpiresAt After this the invitation can no longer be accepted.
+	//
+	// Example: 2026-01-22T09:30:00Z
+	ExpiresAt time.Time `json:"expires_at"`
+
+	// Id Unique invitation identifier. Opaque, with no type prefix. Pass it back as `invitation_id`.
+	//
+	// Example: 9f3c1a7b2e4d6058b1c9d3f5a7e02468
+	Id string `json:"id"`
+
+	// Role A member's role within the organization. Roles are additive bundles of permissions; `owner` has every permission including organization deletion and billing.
+	//
+	// Example: admin
+	Role OrgRole `json:"role"`
+
+	// Status Where the invitation has got to.
+	//
+	// Example: pending
+	Status OrgInvitationStatus `json:"status"`
+}
+
+// OrgInvitationStatus Where the invitation has got to.
+//
+// Example: pending
+type OrgInvitationStatus string
+
+// OrgMember A user's membership of an organization.
+type OrgMember struct {
+	// CreatedAt When the member joined the organization.
+	//
+	// Example: 2026-01-15T09:30:00Z
+	CreatedAt time.Time `json:"created_at"`
+
+	// Email The member's email address.
+	//
+	// Example: engineer@example.com
+	Email string `json:"email"`
+
+	// Id Unique membership identifier. Opaque, with no type prefix. Pass it back as `member_id`.
+	Id string `json:"id"`
+
+	// Image URL of the member's avatar, when they have one.
+	//
+	// Example: https://example.com/avatars/alex.png
+	Image *string `json:"image,omitempty"`
+
+	// Name The member's display name.
+	//
+	// Example: Alex Rivera
+	Name string `json:"name"`
+
+	// Role A member's role within the organization. Roles are additive bundles of permissions; `owner` has every permission including organization deletion and billing.
+	//
+	// Example: admin
+	Role OrgRole `json:"role"`
+
+	// UserId The user this membership belongs to. Opaque, with no type prefix. One user has one membership per organization, so this is stable across role changes while the membership lasts.
+	UserId string `json:"user_id"`
+}
+
+// OrgRole A member's role within the organization. Roles are additive bundles of permissions; `owner` has every permission including organization deletion and billing.
+//
+// Example: admin
+type OrgRole string
 
 // OrganizationPlan Billing state and plan limits for an organization.
 type OrganizationPlan struct {
@@ -4285,6 +4515,14 @@ type UpdateOnboardingRequest struct {
 // Example: project_created
 type UpdateOnboardingRequestStep string
 
+// UpdateOrgMemberRoleRequest Changes a member's role.
+type UpdateOrgMemberRoleRequest struct {
+	// Role A role that can be assigned through the member API. This is `OrgRole` without `owner`: ownership is transferred through a separate flow, so requesting it here is rejected with a 400.
+	//
+	// Example: admin
+	Role AssignableOrgRole `json:"role"`
+}
+
 // UpdateProjectRequest Request body for partially updating a project.
 type UpdateProjectRequest struct {
 	// AgentsDisabled Project-level kill-switch. Set true to block ALL agent-credential connections to this project (live agent sessions are dropped within seconds); set false to re-enable them. Passthrough/human connections are unaffected. Engaging the kill-switch emits a kill_switch webhook event.
@@ -4527,6 +4765,12 @@ type HoneytokenId = string
 // IdempotencyKey Example: a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d
 type IdempotencyKey = string
 
+// InvitationId Example: 9f3c1a7b2e4d6058b1c9d3f5a7e02468
+type InvitationId = string
+
+// MemberId defines model for MemberId.
+type MemberId = string
+
 // OrgId Example: org_abc123
 type OrgId = string
 
@@ -4579,6 +4823,30 @@ type CreateReplicaParams struct {
 	//
 	// Use a fresh UUID per logical operation. The PgBeam SDKs generate one per call and reuse it across their own automatic retries.
 	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
+}
+
+// ListOrgInvitationsParams defines parameters for ListOrgInvitations.
+type ListOrgInvitationsParams struct {
+	// Status Filter to a single status. Omit to list every invitation.
+	Status *ListOrgInvitationsParamsStatus `form:"status,omitempty" json:"status,omitempty"`
+
+	// PageSize Maximum number of items to return (1-100, default 20).
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken Opaque token for cursor-based pagination.
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+}
+
+// ListOrgInvitationsParamsStatus defines parameters for ListOrgInvitations.
+type ListOrgInvitationsParamsStatus string
+
+// ListOrgMembersParams defines parameters for ListOrgMembers.
+type ListOrgMembersParams struct {
+	// PageSize Maximum number of items to return (1-100, default 20).
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken Opaque token for cursor-based pagination.
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
 }
 
 // CreateSelfHostEnrollmentParams defines parameters for CreateSelfHostEnrollment.
@@ -5012,6 +5280,12 @@ type McpTransportJSONRequestBody = McpRequest
 
 // SubmitCancellationFeedbackJSONRequestBody defines body for SubmitCancellationFeedback for application/json ContentType.
 type SubmitCancellationFeedbackJSONRequestBody = CancellationFeedbackRequest
+
+// CreateOrgInvitationJSONRequestBody defines body for CreateOrgInvitation for application/json ContentType.
+type CreateOrgInvitationJSONRequestBody = CreateOrgInvitationRequest
+
+// UpdateOrgMemberRoleJSONRequestBody defines body for UpdateOrgMemberRole for application/json ContentType.
+type UpdateOrgMemberRoleJSONRequestBody = UpdateOrgMemberRoleRequest
 
 // UpdateOnboardingProgressJSONRequestBody defines body for UpdateOnboardingProgress for application/json ContentType.
 type UpdateOnboardingProgressJSONRequestBody = UpdateOnboardingRequest

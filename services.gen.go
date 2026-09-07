@@ -373,6 +373,30 @@ func (s *AccountService) ExportAccountData(ctx context.Context) (*AccountExport,
 	return doJSON[AccountExport](s.t, ctx, "GET", "/v1/account/export", nil)
 }
 
+func (s *AccountService) ListOrgMembers(ctx context.Context, orgID string, params *ListOrgMembersParams) (*ListOrgMembersResponse, error) {
+	return doQuery[ListOrgMembersResponse](s.t, ctx, fmt.Sprintf("/v1/organizations/%s/members", orgID), params)
+}
+
+func (s *AccountService) UpdateOrgMemberRole(ctx context.Context, orgID string, memberID string, body UpdateOrgMemberRoleRequest) (*OrgMember, error) {
+	return doJSON[OrgMember](s.t, ctx, "PATCH", fmt.Sprintf("/v1/organizations/%s/members/%s", orgID, memberID), body)
+}
+
+func (s *AccountService) RemoveOrgMember(ctx context.Context, orgID string, memberID string) error {
+	return doVoid(s.t, ctx, "DELETE", fmt.Sprintf("/v1/organizations/%s/members/%s", orgID, memberID), nil)
+}
+
+func (s *AccountService) ListOrgInvitations(ctx context.Context, orgID string, params *ListOrgInvitationsParams) (*ListOrgInvitationsResponse, error) {
+	return doQuery[ListOrgInvitationsResponse](s.t, ctx, fmt.Sprintf("/v1/organizations/%s/invitations", orgID), params)
+}
+
+func (s *AccountService) CreateOrgInvitation(ctx context.Context, orgID string, body CreateOrgInvitationRequest) (*OrgInvitation, error) {
+	return doJSON[OrgInvitation](s.t, ctx, "POST", fmt.Sprintf("/v1/organizations/%s/invitations", orgID), body)
+}
+
+func (s *AccountService) RevokeOrgInvitation(ctx context.Context, orgID string, invitationID string) error {
+	return doVoid(s.t, ctx, "DELETE", fmt.Sprintf("/v1/organizations/%s/invitations/%s", orgID, invitationID), nil)
+}
+
 func (s *AccountService) GetOnboardingProgress(ctx context.Context, orgID string) (*OnboardingProgress, error) {
 	return doJSON[OnboardingProgress](s.t, ctx, "GET", fmt.Sprintf("/v1/organizations/%s/onboarding", orgID), nil)
 }
