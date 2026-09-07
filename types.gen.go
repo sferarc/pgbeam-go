@@ -3839,6 +3839,11 @@ type ListSupportCasesResponse struct {
 	// Cases Support cases for the current page.
 	Cases []SupportCase `json:"cases"`
 
+	// NextPageToken Opaque token for cursor-based pagination.
+	//
+	// Example: 20
+	NextPageToken *string `json:"next_page_token,omitempty"`
+
 	// Total Total number of cases matching the filter.
 	Total int64 `json:"total"`
 }
@@ -5972,6 +5977,9 @@ type ListSupportCasesParams struct {
 	// PageSize Number of results per page (1-100, default 20).
 	PageSize *int `form:"page_size,omitempty" json:"page_size,omitempty"`
 
+	// PageToken Opaque token for cursor-based pagination.
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+
 	// Page Page number (1-based, default 1).
 	Page *int `form:"page,omitempty" json:"page,omitempty"`
 
@@ -6217,6 +6225,9 @@ type ListAuditLogsParams struct {
 
 	// PageSize Maximum number of items to return (1-100, default 20).
 	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken Opaque token for cursor-based pagination.
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
 
 	// IfNoneMatch Entity tag the client already holds, taken from the `ETag` of an earlier response. When it still matches the current representation the server answers `304 Not Modified` with no body, so a poll that finds nothing changed costs a round trip rather than a transfer.
 	//
