@@ -1,5 +1,14 @@
 # @pgbeam/go-sdk
 
+## 0.3.1
+
+### Patch Changes
+
+- 022577d: feat(api): the audit log handed out a cursor with nowhere to put it, so a generated client could not page it at all
+- 3f33063: fix(sdk,cli): read the API's RFC 9457 problem documents
+
+  `ApiError` now exposes `code`, `type`, `title`, `detail`, `instance`, `requestId` and `errors`, and its `message` comes from the document's `detail` rather than falling through to the status text. Branch on `code`: two conditions can share a status, and a 403 is either a permissions problem or a billing one. The CLI puts the code on the error line, lists field errors under it, and carries both in `--json` output.
+
 ## 0.3.0
 
 ### Minor Changes
