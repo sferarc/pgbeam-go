@@ -1131,6 +1131,27 @@ func (e PolicyProfileApprovalMode) Valid() bool {
 	}
 }
 
+// Defines values for PolicyProfileContentScanMode.
+const (
+	PolicyProfileContentScanModeAnnotate PolicyProfileContentScanMode = "annotate"
+	PolicyProfileContentScanModeBlock    PolicyProfileContentScanMode = "block"
+	PolicyProfileContentScanModeOff      PolicyProfileContentScanMode = "off"
+)
+
+// Valid indicates whether the value is a known member of the PolicyProfileContentScanMode enum.
+func (e PolicyProfileContentScanMode) Valid() bool {
+	switch e {
+	case PolicyProfileContentScanModeAnnotate:
+		return true
+	case PolicyProfileContentScanModeBlock:
+		return true
+	case PolicyProfileContentScanModeOff:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for PolicyProfileMigrationSafety.
 const (
 	PolicyProfileMigrationSafetyBlock PolicyProfileMigrationSafety = "block"
@@ -1209,6 +1230,27 @@ func (e PolicyProfileInputApprovalMode) Valid() bool {
 	case PolicyProfileInputApprovalModeOff:
 		return true
 	case PolicyProfileInputApprovalModeWrites:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for PolicyProfileInputContentScanMode.
+const (
+	PolicyProfileInputContentScanModeAnnotate PolicyProfileInputContentScanMode = "annotate"
+	PolicyProfileInputContentScanModeBlock    PolicyProfileInputContentScanMode = "block"
+	PolicyProfileInputContentScanModeOff      PolicyProfileInputContentScanMode = "off"
+)
+
+// Valid indicates whether the value is a known member of the PolicyProfileInputContentScanMode enum.
+func (e PolicyProfileInputContentScanMode) Valid() bool {
+	switch e {
+	case PolicyProfileInputContentScanModeAnnotate:
+		return true
+	case PolicyProfileInputContentScanModeBlock:
+		return true
+	case PolicyProfileInputContentScanModeOff:
 		return true
 	default:
 		return false
@@ -4616,6 +4658,12 @@ type PolicyProfile struct {
 	// BudgetQueriesPerHour Max queries per rolling hour window. 0 means unlimited.
 	BudgetQueriesPerHour *int `json:"budget_queries_per_hour,omitempty"`
 
+	// ContentScanMaxBytes Byte budget for one statement's content scan, spanning all values in the result. Stored but not yet read by any released proxy build, like content_scan_mode. Once enforced, values past it are reported unscannable rather than skipped quietly. 0 uses the scanner default (4 MiB), which covers an interactive result set and deliberately does not cover a bulk export.
+	ContentScanMaxBytes *int64 `json:"content_scan_max_bytes,omitempty"`
+
+	// ContentScanMode Result-content scanning, accepted and stored but not yet enforced: no released proxy build reads this field, so today every value behaves like off. Once enforcement ships on the data-plane relay path, values on their way out to an agent will be checked for instruction-shaped content (stored prompt injection). off will scan nothing and cost nothing. annotate will forward every value unchanged and record what it found. block will additionally refuse the statement with an error naming the column, and never drop a row silently. A proxy build without result-content scanning ignores this field.
+	ContentScanMode *PolicyProfileContentScanMode `json:"content_scan_mode,omitempty"`
+
 	// CreatedAt When the policy profile was created.
 	CreatedAt time.Time `json:"created_at"`
 
@@ -4677,6 +4725,9 @@ type PolicyProfileAccessMode string
 // PolicyProfileApprovalMode Which statement classes require human approval before execution.
 type PolicyProfileApprovalMode string
 
+// PolicyProfileContentScanMode Result-content scanning, accepted and stored but not yet enforced: no released proxy build reads this field, so today every value behaves like off. Once enforcement ships on the data-plane relay path, values on their way out to an agent will be checked for instruction-shaped content (stored prompt injection). off will scan nothing and cost nothing. annotate will forward every value unchanged and record what it found. block will additionally refuse the statement with an error naming the column, and never drop a row silently. A proxy build without result-content scanning ignores this field.
+type PolicyProfileContentScanMode string
+
 // PolicyProfileMigrationSafety Migration safety mode. warn surfaces findings, block refuses unsafe DDL.
 type PolicyProfileMigrationSafety string
 
@@ -4702,6 +4753,12 @@ type PolicyProfileInput struct {
 
 	// BudgetQueriesPerHour Max queries per rolling hour window. 0 means unlimited.
 	BudgetQueriesPerHour *int `json:"budget_queries_per_hour,omitempty"`
+
+	// ContentScanMaxBytes Byte budget for one statement's content scan, spanning all values in the result. Stored but not yet read by any released proxy build, like content_scan_mode. Once enforced, values past it are reported unscannable rather than skipped quietly. 0 uses the scanner default (4 MiB), which covers an interactive result set and deliberately does not cover a bulk export.
+	ContentScanMaxBytes *int64 `json:"content_scan_max_bytes,omitempty"`
+
+	// ContentScanMode Result-content scanning, accepted and stored but not yet enforced: no released proxy build reads this field, so today every value behaves like off. Once enforcement ships on the data-plane relay path, values on their way out to an agent will be checked for instruction-shaped content (stored prompt injection). off will scan nothing and cost nothing. annotate will forward every value unchanged and record what it found. block will additionally refuse the statement with an error naming the column, and never drop a row silently. A proxy build without result-content scanning ignores this field.
+	ContentScanMode *PolicyProfileInputContentScanMode `json:"content_scan_mode,omitempty"`
 
 	// EgressBytesPerDay Per-day egress budget in bytes. 0 means unlimited.
 	EgressBytesPerDay *int64 `json:"egress_bytes_per_day,omitempty"`
@@ -4745,6 +4802,9 @@ type PolicyProfileInputAccessMode string
 
 // PolicyProfileInputApprovalMode Which statement classes require human approval before execution.
 type PolicyProfileInputApprovalMode string
+
+// PolicyProfileInputContentScanMode Result-content scanning, accepted and stored but not yet enforced: no released proxy build reads this field, so today every value behaves like off. Once enforcement ships on the data-plane relay path, values on their way out to an agent will be checked for instruction-shaped content (stored prompt injection). off will scan nothing and cost nothing. annotate will forward every value unchanged and record what it found. block will additionally refuse the statement with an error naming the column, and never drop a row silently. A proxy build without result-content scanning ignores this field.
+type PolicyProfileInputContentScanMode string
 
 // PolicyProfileInputMigrationSafety Migration safety mode. warn surfaces findings, block refuses unsafe DDL.
 type PolicyProfileInputMigrationSafety string
