@@ -292,6 +292,26 @@ func (s *AnomaliesService) UpdateAnomalyAlert(ctx context.Context, projectID str
 	return doJSON[AnomalyAlert](s.t, ctx, "PATCH", fmt.Sprintf("/v1/projects/%s/anomalies/%s", projectID, anomalyID), body)
 }
 
+func (s *AnomaliesService) ListAnomalyRules(ctx context.Context, projectID string, params *ListAnomalyRulesParams) (*ListAnomalyRulesResponse, error) {
+	return doQuery[ListAnomalyRulesResponse](s.t, ctx, fmt.Sprintf("/v1/projects/%s/anomaly-rules", projectID), params)
+}
+
+func (s *AnomaliesService) CreateAnomalyRule(ctx context.Context, projectID string, body AnomalyRuleInput) (*AnomalyRule, error) {
+	return doJSON[AnomalyRule](s.t, ctx, "POST", fmt.Sprintf("/v1/projects/%s/anomaly-rules", projectID), body)
+}
+
+func (s *AnomaliesService) GetAnomalyRule(ctx context.Context, projectID string, anomalyRuleID string) (*AnomalyRule, error) {
+	return doJSON[AnomalyRule](s.t, ctx, "GET", fmt.Sprintf("/v1/projects/%s/anomaly-rules/%s", projectID, anomalyRuleID), nil)
+}
+
+func (s *AnomaliesService) UpdateAnomalyRule(ctx context.Context, projectID string, anomalyRuleID string, body AnomalyRuleInput) (*AnomalyRule, error) {
+	return doJSON[AnomalyRule](s.t, ctx, "PUT", fmt.Sprintf("/v1/projects/%s/anomaly-rules/%s", projectID, anomalyRuleID), body)
+}
+
+func (s *AnomaliesService) DeleteAnomalyRule(ctx context.Context, projectID string, anomalyRuleID string) error {
+	return doVoid(s.t, ctx, "DELETE", fmt.Sprintf("/v1/projects/%s/anomaly-rules/%s", projectID, anomalyRuleID), nil)
+}
+
 // BranchesService provides branches operations.
 type BranchesService struct{ t *transport }
 

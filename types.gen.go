@@ -108,6 +108,33 @@ func (e AnomalyAlertStatus) Valid() bool {
 	}
 }
 
+// Defines values for AnomalyMetric.
+const (
+	ActiveHours    AnomalyMetric = "active_hours"
+	BytesPerHour   AnomalyMetric = "bytes_per_hour"
+	DistinctShapes AnomalyMetric = "distinct_shapes"
+	ErrorsPerHour  AnomalyMetric = "errors_per_hour"
+	QueriesPerHour AnomalyMetric = "queries_per_hour"
+)
+
+// Valid indicates whether the value is a known member of the AnomalyMetric enum.
+func (e AnomalyMetric) Valid() bool {
+	switch e {
+	case ActiveHours:
+		return true
+	case BytesPerHour:
+		return true
+	case DistinctShapes:
+		return true
+	case ErrorsPerHour:
+		return true
+	case QueriesPerHour:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for ApprovalRequestStatus.
 const (
 	ApprovalRequestStatusApproved ApprovalRequestStatus = "approved"
@@ -2445,6 +2472,93 @@ type AnomalyAlertSeverity string
 // AnomalyAlertStatus Triage state of the alert.
 type AnomalyAlertStatus string
 
+// AnomalyMetric One of the five detection metrics. A rule retunes how sensitive one of them is; it adds no detection algorithm and no alert kind.
+//
+// Example: bytes_per_hour
+type AnomalyMetric string
+
+// AnomalyRule Per-project (and optionally per-credential) sensitivity for one detection metric. Without a rule every metric resolves to the deployment default, so a noisy credential cannot be loosened, a sensitive one cannot be tightened, and off-hours cannot be silenced for a credential that legitimately runs at 3am.
+type AnomalyRule struct {
+	// CreatedAt When the rule was created.
+	CreatedAt time.Time `json:"created_at"`
+
+	// CredentialId Agent credential the rule applies to. Null applies it to every credential in the project.
+	//
+	//
+	// Example: agt_01j9x8y7z6w5v4u3t2s1r0q9p8
+	CredentialId *string `json:"credential_id,omitempty"`
+
+	// Enabled False silences this metric for this scope. Note the polarity is the opposite of honeytokens.enabled: the rule IS the switch, so disabling it disables the metric rather than deactivating the rule.
+	//
+	//
+	// Example: true
+	Enabled bool `json:"enabled"`
+
+	// Floor Absolute floor below which the metric never alerts. Null leaves the deployment default in place. Only queries_per_hour, bytes_per_hour and errors_per_hour have a floor.
+	//
+	//
+	// Example: 100
+	Floor *float64 `json:"floor,omitempty"`
+
+	// Id Unique anomaly rule identifier.
+	//
+	// Example: anr_01j9x8y7z6w5v4u3t2s1r0q9p8
+	Id string `json:"id"`
+
+	// Metric One of the five detection metrics. A rule retunes how sensitive one of them is; it adds no detection algorithm and no alert kind.
+	//
+	//
+	// Example: bytes_per_hour
+	Metric AnomalyMetric `json:"metric"`
+
+	// ProjectId Project the rule belongs to.
+	//
+	// Example: prj_01j9x8y7z6w5v4u3t2s1r0q9p8
+	ProjectId string `json:"project_id"`
+
+	// SigmaThreshold N in the "mean + N * dispersion" spike rule. Null leaves the deployment default in place.
+	//
+	//
+	// Example: 4.5
+	SigmaThreshold *float64 `json:"sigma_threshold,omitempty"`
+
+	// UpdatedAt When the rule was last updated.
+	UpdatedAt time.Time `json:"updated_at"`
+}
+
+// AnomalyRuleInput Request body for creating or updating an anomaly rule. One rule exists per (project, credential, metric); creating a second for the same scope is a conflict.
+type AnomalyRuleInput struct {
+	// CredentialId Agent credential to scope the rule to. Null or omitted applies it to every credential in the project. The credential must belong to this project.
+	//
+	//
+	// Example: agt_01j9x8y7z6w5v4u3t2s1r0q9p8
+	CredentialId *string `json:"credential_id,omitempty"`
+
+	// Enabled False silences this metric for this scope. The baseline keeps advancing while it is silenced, so re-enabling resumes from the existing history rather than a cold warm-up.
+	//
+	//
+	// Example: true
+	Enabled *bool `json:"enabled,omitempty"`
+
+	// Floor Absolute floor below which the metric never alerts. Must be greater than zero, for the same reason as sigma_threshold. Rejected for distinct_shapes and active_hours, which have no rate for a floor to bound. Null or omitted leaves the deployment default in place.
+	//
+	//
+	// Example: 100
+	Floor *float64 `json:"floor,omitempty"`
+
+	// Metric One of the five detection metrics. A rule retunes how sensitive one of them is; it adds no detection algorithm and no alert kind.
+	//
+	//
+	// Example: bytes_per_hour
+	Metric AnomalyMetric `json:"metric"`
+
+	// SigmaThreshold N in the "mean + N * dispersion" spike rule. Must be greater than zero; the detector reads any value at or below zero as "use the default", so a stored zero could never mean what setting it would suggest. Rejected for distinct_shapes and active_hours, which have no rate for sigma to put a threshold on. Null or omitted leaves the deployment default in place.
+	//
+	//
+	// Example: 4.5
+	SigmaThreshold *float64 `json:"sigma_threshold,omitempty"`
+}
+
 // ApprovalDecisionRequest Optional note attached to an approve/reject decision.
 type ApprovalDecisionRequest struct {
 	// Reason Human-readable note explaining the decision.
@@ -3908,6 +4022,15 @@ type ListAnomalyAlertsResponse struct {
 	Anomalies []AnomalyAlert `json:"anomalies"`
 
 	// NextPageToken Token for the next page. Empty if no more results.
+	NextPageToken *string `json:"next_page_token,omitempty"`
+}
+
+// ListAnomalyRulesResponse Cursor-paginated anomaly rules for a project.
+type ListAnomalyRulesResponse struct {
+	// AnomalyRules Anomaly rules on the current page.
+	AnomalyRules []AnomalyRule `json:"anomaly_rules"`
+
+	// NextPageToken Opaque token for cursor-based pagination.
 	NextPageToken *string `json:"next_page_token,omitempty"`
 }
 
@@ -6060,6 +6183,9 @@ type AgentId = string
 // AnomalyId defines model for AnomalyId.
 type AnomalyId = string
 
+// AnomalyRuleId defines model for AnomalyRuleId.
+type AnomalyRuleId = string
+
 // ApprovalId defines model for ApprovalId.
 type ApprovalId = string
 
@@ -6526,6 +6652,50 @@ type ListAnomalyAlertsParams struct {
 
 // ListAnomalyAlertsParamsStatus defines parameters for ListAnomalyAlerts.
 type ListAnomalyAlertsParamsStatus string
+
+// ListAnomalyRulesParams defines parameters for ListAnomalyRules.
+type ListAnomalyRulesParams struct {
+	// PageSize Maximum number of items to return (1-100, default 20).
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken Opaque token for cursor-based pagination.
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+
+	// IfNoneMatch Entity tag the client already holds, taken from the `ETag` of an earlier response. When it still matches the current representation the server answers `304 Not Modified` with no body, so a poll that finds nothing changed costs a round trip rather than a transfer.
+	//
+	// A comma-separated list is accepted, and `*` matches any current representation.
+	IfNoneMatch *IfNoneMatch `json:"If-None-Match,omitempty"`
+}
+
+// CreateAnomalyRuleParams defines parameters for CreateAnomalyRule.
+type CreateAnomalyRuleParams struct {
+	// IdempotencyKey Client-generated key that makes a retry of this request safe. The first request carrying a given key executes normally and its response (status, content type and body) is stored for 24 hours; a later request with the same key returns that stored response without running the operation again, so a retry after a lost or timed-out response cannot create a second resource.
+	//
+	// Reusing a key with a different request body returns `409 Conflict`: a key is a promise about one specific request, so a changed body is a client bug rather than a retry. Keys are scoped to the calling organization (or to the user, for account-scoped tokens), so one tenant can never read another's stored response.
+	//
+	// A `5xx`, `408` or `429` is never stored, because those describe a request that produced no settled answer and the next attempt with the same key must run for real. A `4xx` is stored: it is the server's settled answer about this exact request.
+	//
+	// Use a fresh UUID per logical operation. The PgBeam SDKs generate one per call and reuse it across their own automatic retries.
+	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
+}
+
+// GetAnomalyRuleParams defines parameters for GetAnomalyRule.
+type GetAnomalyRuleParams struct {
+	// IfNoneMatch Entity tag the client already holds, taken from the `ETag` of an earlier response. When it still matches the current representation the server answers `304 Not Modified` with no body, so a poll that finds nothing changed costs a round trip rather than a transfer.
+	//
+	// A comma-separated list is accepted, and `*` matches any current representation.
+	IfNoneMatch *IfNoneMatch `json:"If-None-Match,omitempty"`
+}
+
+// UpdateAnomalyRuleParams defines parameters for UpdateAnomalyRule.
+type UpdateAnomalyRuleParams struct {
+	// IfMatch Entity tag the write is based on, taken from the `ETag` of the read that produced the values being sent. The write proceeds only if it still matches the current representation; otherwise it is refused with `412 Precondition Failed` and nothing is changed.
+	//
+	// This is what makes a read-modify-write safe. Without it the last writer wins and a concurrent edit is silently discarded, which is the failure an agent is most likely to cause and least likely to notice. The `412` response carries the current `ETag`, so a caller can re-read, re-apply its change and retry.
+	//
+	// Omitting the header keeps the old unconditional behaviour. `*` matches any current representation, which asserts only that the resource exists.
+	IfMatch *IfMatch `json:"If-Match,omitempty"`
+}
 
 // ListApprovalRequestsParams defines parameters for ListApprovalRequests.
 type ListApprovalRequestsParams struct {
@@ -7030,6 +7200,12 @@ type RecommendAgentPolicyJSONRequestBody = PolicyRecommendationInput
 
 // UpdateAnomalyAlertJSONRequestBody defines body for UpdateAnomalyAlert for application/json ContentType.
 type UpdateAnomalyAlertJSONRequestBody = UpdateAnomalyAlertRequest
+
+// CreateAnomalyRuleJSONRequestBody defines body for CreateAnomalyRule for application/json ContentType.
+type CreateAnomalyRuleJSONRequestBody = AnomalyRuleInput
+
+// UpdateAnomalyRuleJSONRequestBody defines body for UpdateAnomalyRule for application/json ContentType.
+type UpdateAnomalyRuleJSONRequestBody = AnomalyRuleInput
 
 // ApproveApprovalRequestJSONRequestBody defines body for ApproveApprovalRequest for application/json ContentType.
 type ApproveApprovalRequestJSONRequestBody = ApprovalDecisionRequest
