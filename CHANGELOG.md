@@ -1,5 +1,11 @@
 # @pgbeam/go-sdk
 
+## 0.3.3
+
+### Patch Changes
+
+- cb41f54: Publish the Go SDK surface for anomaly rules, which #2357 generated into `providers/pgbeam-go/` without moving the version sentinel. `go.pgbeam.com/sdk v0.3.2` predates `AnomaliesService.GetAnomalyRule`, `AnomalyRuleInput` and `AnomalyMetric`, so a provider that consumes them cannot build against the published module.
+
 ## 0.3.2
 
 ### Patch Changes
