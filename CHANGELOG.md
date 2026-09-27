@@ -1,5 +1,11 @@
 # @pgbeam/go-sdk
 
+## 0.3.4
+
+### Patch Changes
+
+- 16ed7f3: feat(proxy): content_scan_mode=block now blocks, and it does it out loud (roadmap item 7, rung 3)
+
 ## 0.3.3
 
 ### Patch Changes
