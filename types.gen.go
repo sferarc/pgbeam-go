@@ -2570,6 +2570,9 @@ type ApprovalDecisionRequest struct {
 
 // ApprovalRequest A statement held by the gateway awaiting a human approval decision.
 type ApprovalRequest struct {
+	// ApprovalRuleName Name of the approval rule that held the statement, as it was named when the statement was held. Null when the policy profile's approval_mode held it rather than a rule.
+	ApprovalRuleName *string `json:"approval_rule_name,omitempty"`
+
 	// CredentialId Agent credential that submitted the statement, if known.
 	CredentialId *string `json:"credential_id,omitempty"`
 
