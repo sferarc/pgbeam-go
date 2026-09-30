@@ -3852,11 +3852,11 @@ type DryEvalResult struct {
 	// Example: ok
 	Rule string `json:"rule"`
 
-	// Verdict allow — permitted unchanged; block — rejected; mask — permitted but listed result columns are masked; row-filter — permitted but a WHERE predicate is injected (and any listed columns are also masked).
+	// Verdict allow: permitted unchanged; block: rejected; mask: permitted but listed result columns are masked; row-filter: permitted but a WHERE predicate is injected (and any listed columns are also masked).
 	Verdict DryEvalResultVerdict `json:"verdict"`
 }
 
-// DryEvalResultVerdict allow — permitted unchanged; block — rejected; mask — permitted but listed result columns are masked; row-filter — permitted but a WHERE predicate is injected (and any listed columns are also masked).
+// DryEvalResultVerdict allow: permitted unchanged; block: rejected; mask: permitted but listed result columns are masked; row-filter: permitted but a WHERE predicate is injected (and any listed columns are also masked).
 type DryEvalResultVerdict string
 
 // Error An RFC 9457 problem detail, served as `application/problem+json`. Every error the API returns has this shape.
@@ -4644,7 +4644,7 @@ type PaymentResource struct {
 	UnitsPerPack int64 `json:"units_per_pack"`
 }
 
-// PiiSuggestion A single likely-PII column detected by the scanner, with a recommended masking rule. Suggestions are advisory only — nothing is applied until the operator reviews and adds it to a policy profile.
+// PiiSuggestion A single likely-PII column detected by the scanner, with a recommended masking rule. Suggestions are advisory only: nothing is applied until the operator reviews and adds it to a policy profile.
 type PiiSuggestion struct {
 	// Column The detected column name.
 	//
@@ -5629,7 +5629,7 @@ type SchemaCatalogColumn struct {
 	// Example: text
 	DataType string `json:"data_type"`
 
-	// IsBinary True for binary-typed columns (e.g. bytea). Masking a binary column always returns NULL — a redact/hash token would corrupt the wire type — so the editor warns when a masking rule targets one.
+	// IsBinary True for binary-typed columns (e.g. bytea). Masking a binary column always returns NULL, because a redact/hash token would corrupt the wire type, so the editor warns when a masking rule targets one.
 	IsBinary bool `json:"is_binary"`
 
 	// Name Column name.
@@ -5643,7 +5643,7 @@ type SchemaCatalogRelation struct {
 	// Columns The relation's columns.
 	Columns []SchemaCatalogColumn `json:"columns"`
 
-	// Kind Relation kind. Allowlists, masking, and row-filters are enforced against the named relation itself, NOT through a view to its base tables — so a view over a row-filtered base table can leak. The editor warns when a policy entry targets a view.
+	// Kind Relation kind. Allowlists, masking, and row-filters are enforced against the named relation itself, NOT through a view to its base tables, so a view over a row-filtered base table can leak. The editor warns when a policy entry targets a view.
 	Kind SchemaCatalogRelationKind `json:"kind"`
 
 	// Name Relation name.
@@ -5657,7 +5657,7 @@ type SchemaCatalogRelation struct {
 	Schema string `json:"schema"`
 }
 
-// SchemaCatalogRelationKind Relation kind. Allowlists, masking, and row-filters are enforced against the named relation itself, NOT through a view to its base tables — so a view over a row-filtered base table can leak. The editor warns when a policy entry targets a view.
+// SchemaCatalogRelationKind Relation kind. Allowlists, masking, and row-filters are enforced against the named relation itself, NOT through a view to its base tables, so a view over a row-filtered base table can leak. The editor warns when a policy entry targets a view.
 type SchemaCatalogRelationKind string
 
 // SelfHostEnrollment An enrollment that lets a self-hosted (BYOC) proxy authenticate to the control plane's config/audit gRPC stream on behalf of an organization. The token itself is never returned after creation, only its metadata.
