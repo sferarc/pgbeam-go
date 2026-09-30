@@ -108,6 +108,39 @@ func (e AnomalyAlertStatus) Valid() bool {
 	}
 }
 
+// Defines values for AnomalyKind.
+const (
+	AnomalyKindCanaryTripped  AnomalyKind = "canary_tripped"
+	AnomalyKindContentFlagged AnomalyKind = "content_flagged"
+	AnomalyKindEgressSpike    AnomalyKind = "egress_spike"
+	AnomalyKindErrorSpike     AnomalyKind = "error_spike"
+	AnomalyKindNewQueryShape  AnomalyKind = "new_query_shape"
+	AnomalyKindOffHours       AnomalyKind = "off_hours"
+	AnomalyKindVolumeSpike    AnomalyKind = "volume_spike"
+)
+
+// Valid indicates whether the value is a known member of the AnomalyKind enum.
+func (e AnomalyKind) Valid() bool {
+	switch e {
+	case AnomalyKindCanaryTripped:
+		return true
+	case AnomalyKindContentFlagged:
+		return true
+	case AnomalyKindEgressSpike:
+		return true
+	case AnomalyKindErrorSpike:
+		return true
+	case AnomalyKindNewQueryShape:
+		return true
+	case AnomalyKindOffHours:
+		return true
+	case AnomalyKindVolumeSpike:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for AnomalyMetric.
 const (
 	ActiveHours    AnomalyMetric = "active_hours"
@@ -2447,7 +2480,7 @@ type AnomalyAlert struct {
 	// Example: ano_01h455vb4pex5vsknk084sn02q
 	Id string `json:"id"`
 
-	// Kind Machine-readable anomaly kind (e.g. egress_spike, novel_query_shape).
+	// Kind Machine-readable anomaly kind, one of the AnomalyKind values (e.g. egress_spike, new_query_shape). A string rather than the enum so a client built before a new kind ships still reads the alert.
 	Kind string `json:"kind"`
 
 	// ProjectId Owning project ID.
@@ -2474,6 +2507,11 @@ type AnomalyAlertSeverity string
 
 // AnomalyAlertStatus Triage state of the alert.
 type AnomalyAlertStatus string
+
+// AnomalyKind Every kind of anomaly alert the platform raises: the five detector kinds, a honeytoken trip, and a high-confidence result-content scan finding.
+//
+// Example: egress_spike
+type AnomalyKind string
 
 // AnomalyMetric One of the five detection metrics. A rule retunes how sensitive one of them is; it adds no detection algorithm and no alert kind.
 //
@@ -6643,6 +6681,9 @@ type RotateAgentCredentialParams struct {
 type ListAnomalyAlertsParams struct {
 	// Status Filter to a single status.
 	Status *ListAnomalyAlertsParamsStatus `form:"status,omitempty" json:"status,omitempty"`
+
+	// Kind Filter to a single anomaly kind.
+	Kind *AnomalyKind `form:"kind,omitempty" json:"kind,omitempty"`
 
 	// PageSize Maximum number of items to return (1-100, default 20).
 	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
