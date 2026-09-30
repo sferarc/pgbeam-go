@@ -1,5 +1,11 @@
 # @pgbeam/go-sdk
 
+## 0.3.5
+
+### Patch Changes
+
+- b821f90: Approval requests carry `approval_rule_name`, the approval rule that held the statement.
+
 ## 0.3.4
 
 ### Patch Changes
