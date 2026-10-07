@@ -2792,10 +2792,25 @@ type AuditLogEntry struct {
 	Ts time.Time `json:"ts"`
 }
 
+// AuditSessionAnomalies Anomaly alerts related to the session, split by how they relate to it. Absent from the summary when the caller's role does not hold anomaly:read, because alerts are read under that permission everywhere else and the summary is gated on audit:read.
+type AuditSessionAnomalies struct {
+	// CredentialWindowAlerts Rate and shape alerts (query volume, egress, error rate, new query shapes, unusual hours) raised for this session's credentials over a window that overlaps the session, oldest first. These are computed across every session the credential ran in that window and are not attributed to this one.
+	CredentialWindowAlerts []AnomalyAlert `json:"credential_window_alerts"`
+
+	// SessionAlerts Alerts raised from one of this session's own audit entries (a honeytoken trip or a flagged query result), oldest first. Two limits apply. Alerts are deduplicated per credential, kind and window, so a hit that repeats an alert already open on the same credential raises nothing new: an empty list means no new alert was raised for this session, not that nothing happened in it, and the session's own canary_tripped and content_flagged audit entries are the complete record. And a session ID is not unique over time, so an alert from a different connection that drew the same ID can appear here.
+	SessionAlerts []AnomalyAlert `json:"session_alerts"`
+
+	// Truncated True when either list reached the per-list cap and more alerts exist than are shown. Read the full set from the anomalies list endpoint.
+	Truncated bool `json:"truncated"`
+}
+
 // AuditSessionSummary Deterministic summary of one agent session's recorded statements: what it touched, how much it moved, and how often the policy engine stepped in. Computed from the project's audit log with no model in the loop, so the same entries always summarize the same way. Carries schema metadata (table names) and counts only, never row values.
 type AuditSessionSummary struct {
 	// Allowed Statements that ran unmodified (event `query`).
 	Allowed int64 `json:"allowed"`
+
+	// Anomalies Anomaly alerts related to the session, split by how they relate to it. Absent from the summary when the caller's role does not hold anomaly:read, because alerts are read under that permission everywhere else and the summary is gated on audit:read.
+	Anomalies *AuditSessionAnomalies `json:"anomalies,omitempty"`
 
 	// Blocked Statements refused (events `blocked`, `budget_exhausted`, `auth_failed`, `credential_expired`), the same grouping the audit list's `block` decision filter uses.
 	Blocked int64 `json:"blocked"`
