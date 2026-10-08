@@ -1,5 +1,11 @@
 # @pgbeam/go-sdk
 
+## 0.3.7
+
+### Patch Changes
+
+- 14df323: Approval rules can be authored: five operations under `/v1/projects/{project_id}/approval-rules` and `pgbeam approvals rules {list,create,show,update,delete}`.
+
 ## 0.3.6
 
 ### Patch Changes
