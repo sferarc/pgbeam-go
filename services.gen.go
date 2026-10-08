@@ -242,6 +242,26 @@ func (s *AgentsService) GetAgentUsageBreakdown(ctx context.Context, projectID st
 // ApprovalsService provides approvals operations.
 type ApprovalsService struct{ t *transport }
 
+func (s *ApprovalsService) ListApprovalRules(ctx context.Context, projectID string, params *ListApprovalRulesParams) (*ListApprovalRulesResponse, error) {
+	return doQuery[ListApprovalRulesResponse](s.t, ctx, fmt.Sprintf("/v1/projects/%s/approval-rules", projectID), params)
+}
+
+func (s *ApprovalsService) CreateApprovalRule(ctx context.Context, projectID string, body ApprovalRuleInput) (*ApprovalRule, error) {
+	return doJSON[ApprovalRule](s.t, ctx, "POST", fmt.Sprintf("/v1/projects/%s/approval-rules", projectID), body)
+}
+
+func (s *ApprovalsService) GetApprovalRule(ctx context.Context, projectID string, approvalRuleID string) (*ApprovalRule, error) {
+	return doJSON[ApprovalRule](s.t, ctx, "GET", fmt.Sprintf("/v1/projects/%s/approval-rules/%s", projectID, approvalRuleID), nil)
+}
+
+func (s *ApprovalsService) UpdateApprovalRule(ctx context.Context, projectID string, approvalRuleID string, body ApprovalRuleInput) (*ApprovalRule, error) {
+	return doJSON[ApprovalRule](s.t, ctx, "PUT", fmt.Sprintf("/v1/projects/%s/approval-rules/%s", projectID, approvalRuleID), body)
+}
+
+func (s *ApprovalsService) DeleteApprovalRule(ctx context.Context, projectID string, approvalRuleID string) error {
+	return doVoid(s.t, ctx, "DELETE", fmt.Sprintf("/v1/projects/%s/approval-rules/%s", projectID, approvalRuleID), nil)
+}
+
 func (s *ApprovalsService) ListApprovalRequests(ctx context.Context, projectID string, params *ListApprovalRequestsParams) (*ListApprovalRequestsResponse, error) {
 	return doQuery[ListApprovalRequestsResponse](s.t, ctx, fmt.Sprintf("/v1/projects/%s/approvals", projectID), params)
 }

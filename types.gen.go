@@ -198,6 +198,30 @@ func (e ApprovalRequestStatus) Valid() bool {
 	}
 }
 
+// Defines values for ApprovalRuleStatementKind.
+const (
+	ApprovalRuleStatementKindDdl    ApprovalRuleStatementKind = "ddl"
+	ApprovalRuleStatementKindDelete ApprovalRuleStatementKind = "delete"
+	ApprovalRuleStatementKindInsert ApprovalRuleStatementKind = "insert"
+	ApprovalRuleStatementKindUpdate ApprovalRuleStatementKind = "update"
+)
+
+// Valid indicates whether the value is a known member of the ApprovalRuleStatementKind enum.
+func (e ApprovalRuleStatementKind) Valid() bool {
+	switch e {
+	case ApprovalRuleStatementKindDdl:
+		return true
+	case ApprovalRuleStatementKindDelete:
+		return true
+	case ApprovalRuleStatementKindInsert:
+		return true
+	case ApprovalRuleStatementKindUpdate:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for AssignableOrgRole.
 const (
 	AssignableOrgRoleAdmin         AssignableOrgRole = "admin"
@@ -2668,6 +2692,93 @@ type ApprovalRequest struct {
 // ApprovalRequestStatus Current state of the approval request.
 type ApprovalRequestStatus string
 
+// ApprovalRule A named, project-scoped rule that sends the agent statements it matches to a human for approval, whatever the policy profile's approval_mode says. A rule can only add approval: approval_mode stays the coarse switch and no rule can exempt a statement from it.
+type ApprovalRule struct {
+	// CreatedAt When the rule was created.
+	CreatedAt time.Time `json:"created_at"`
+
+	// Enabled False switches the rule off, so it holds nothing.
+	//
+	// Example: true
+	Enabled bool `json:"enabled"`
+
+	// Id Unique approval rule identifier.
+	//
+	// Example: apl_01j9x8y7z6w5v4u3t2s1r0q9p8
+	Id string `json:"id"`
+
+	// MinAffectedRows Hold only statements affecting at least this many rows. Null holds every matching statement. A statement whose affected rows cannot be counted (DDL, a batch, a data-modifying CTE) is held regardless.
+	//
+	//
+	// Example: 1000
+	MinAffectedRows *int32 `json:"min_affected_rows,omitempty"`
+
+	// Name Label shown to the reviewer on every approval request this rule holds. Unique within the project.
+	//
+	//
+	// Example: payments deletes
+	Name string `json:"name"`
+
+	// ProjectId Project the rule belongs to.
+	//
+	// Example: prj_01j9x8y7z6w5v4u3t2s1r0q9p8
+	ProjectId string `json:"project_id"`
+
+	// RelationName Relation the rule is scoped to. Null matches every relation. Without a schema it matches that name in every schema.
+	//
+	//
+	// Example: payments
+	RelationName *string `json:"relation_name,omitempty"`
+
+	// SchemaName Schema the rule is scoped to. Null matches every schema.
+	//
+	// Example: public
+	SchemaName *string `json:"schema_name,omitempty"`
+
+	// StatementKinds Statement kinds the rule holds. Empty holds every kind.
+	StatementKinds []ApprovalRuleStatementKind `json:"statement_kinds"`
+
+	// UpdatedAt When the rule was last updated.
+	UpdatedAt time.Time `json:"updated_at"`
+}
+
+// ApprovalRuleInput Request body for creating or updating an approval rule.
+type ApprovalRuleInput struct {
+	// Enabled False switches the rule off, so it holds nothing.
+	//
+	// Example: true
+	Enabled *bool `json:"enabled,omitempty"`
+
+	// MinAffectedRows Hold only statements affecting at least this many rows. Must be at least 1. Null or omitted holds every matching statement. The count is taken in a rolled-back trial run; a statement that reports no count (DDL, a batch, a data-modifying CTE) is held regardless.
+	//
+	//
+	// Example: 1000
+	MinAffectedRows *int32 `json:"min_affected_rows,omitempty"`
+
+	// Name Label shown to the reviewer on every approval request this rule holds. Must be unique within the project and not blank.
+	//
+	//
+	// Example: payments deletes
+	Name string `json:"name"`
+
+	// RelationName Relation to scope the rule to. Null, empty or omitted matches every relation. Without a schema it matches that name in every schema.
+	//
+	//
+	// Example: payments
+	RelationName *string `json:"relation_name,omitempty"`
+
+	// SchemaName Schema to scope the rule to. Null, empty or omitted matches every schema.
+	//
+	// Example: public
+	SchemaName *string `json:"schema_name,omitempty"`
+
+	// StatementKinds Statement kinds the rule holds. Empty or omitted holds every kind.
+	StatementKinds *[]ApprovalRuleStatementKind `json:"statement_kinds,omitempty"`
+}
+
+// ApprovalRuleStatementKind A statement kind an approval rule can hold. COPY and reads are not in the vocabulary: approval reasons about the same kinds approval_mode does.
+type ApprovalRuleStatementKind string
+
 // AssignableOrgRole A role that can be assigned through the member API. This is `OrgRole` without `owner`: ownership is transferred through a separate flow, so requesting it here is rejected with a 400.
 //
 // Example: admin
@@ -4099,6 +4210,15 @@ type ListApprovalRequestsResponse struct {
 	Approvals []ApprovalRequest `json:"approvals"`
 
 	// NextPageToken Token for the next page. Empty if no more results.
+	NextPageToken *string `json:"next_page_token,omitempty"`
+}
+
+// ListApprovalRulesResponse Cursor-paginated approval rules for a project.
+type ListApprovalRulesResponse struct {
+	// ApprovalRules Approval rules on the current page.
+	ApprovalRules []ApprovalRule `json:"approval_rules"`
+
+	// NextPageToken Opaque token for cursor-based pagination.
 	NextPageToken *string `json:"next_page_token,omitempty"`
 }
 
@@ -6248,6 +6368,9 @@ type AnomalyRuleId = string
 // ApprovalId defines model for ApprovalId.
 type ApprovalId = string
 
+// ApprovalRuleId defines model for ApprovalRuleId.
+type ApprovalRuleId = string
+
 // AuditCredentialId defines model for AuditCredentialId.
 type AuditCredentialId = string
 
@@ -6751,6 +6874,50 @@ type GetAnomalyRuleParams struct {
 
 // UpdateAnomalyRuleParams defines parameters for UpdateAnomalyRule.
 type UpdateAnomalyRuleParams struct {
+	// IfMatch Entity tag the write is based on, taken from the `ETag` of the read that produced the values being sent. The write proceeds only if it still matches the current representation; otherwise it is refused with `412 Precondition Failed` and nothing is changed.
+	//
+	// This is what makes a read-modify-write safe. Without it the last writer wins and a concurrent edit is silently discarded, which is the failure an agent is most likely to cause and least likely to notice. The `412` response carries the current `ETag`, so a caller can re-read, re-apply its change and retry.
+	//
+	// Omitting the header keeps the old unconditional behaviour. `*` matches any current representation, which asserts only that the resource exists.
+	IfMatch *IfMatch `json:"If-Match,omitempty"`
+}
+
+// ListApprovalRulesParams defines parameters for ListApprovalRules.
+type ListApprovalRulesParams struct {
+	// PageSize Maximum number of items to return (1-100, default 20).
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken Opaque token for cursor-based pagination.
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+
+	// IfNoneMatch Entity tag the client already holds, taken from the `ETag` of an earlier response. When it still matches the current representation the server answers `304 Not Modified` with no body, so a poll that finds nothing changed costs a round trip rather than a transfer.
+	//
+	// A comma-separated list is accepted, and `*` matches any current representation.
+	IfNoneMatch *IfNoneMatch `json:"If-None-Match,omitempty"`
+}
+
+// CreateApprovalRuleParams defines parameters for CreateApprovalRule.
+type CreateApprovalRuleParams struct {
+	// IdempotencyKey Client-generated key that makes a retry of this request safe. The first request carrying a given key executes normally and its response (status, content type and body) is stored for 24 hours; a later request with the same key returns that stored response without running the operation again, so a retry after a lost or timed-out response cannot create a second resource.
+	//
+	// Reusing a key with a different request body returns `409 Conflict`: a key is a promise about one specific request, so a changed body is a client bug rather than a retry. Keys are scoped to the calling organization (or to the user, for account-scoped tokens), so one tenant can never read another's stored response.
+	//
+	// A `5xx`, `408` or `429` is never stored, because those describe a request that produced no settled answer and the next attempt with the same key must run for real. A `4xx` is stored: it is the server's settled answer about this exact request.
+	//
+	// Use a fresh UUID per logical operation. The PgBeam SDKs generate one per call and reuse it across their own automatic retries.
+	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
+}
+
+// GetApprovalRuleParams defines parameters for GetApprovalRule.
+type GetApprovalRuleParams struct {
+	// IfNoneMatch Entity tag the client already holds, taken from the `ETag` of an earlier response. When it still matches the current representation the server answers `304 Not Modified` with no body, so a poll that finds nothing changed costs a round trip rather than a transfer.
+	//
+	// A comma-separated list is accepted, and `*` matches any current representation.
+	IfNoneMatch *IfNoneMatch `json:"If-None-Match,omitempty"`
+}
+
+// UpdateApprovalRuleParams defines parameters for UpdateApprovalRule.
+type UpdateApprovalRuleParams struct {
 	// IfMatch Entity tag the write is based on, taken from the `ETag` of the read that produced the values being sent. The write proceeds only if it still matches the current representation; otherwise it is refused with `412 Precondition Failed` and nothing is changed.
 	//
 	// This is what makes a read-modify-write safe. Without it the last writer wins and a concurrent edit is silently discarded, which is the failure an agent is most likely to cause and least likely to notice. The `412` response carries the current `ETag`, so a caller can re-read, re-apply its change and retry.
@@ -7268,6 +7435,12 @@ type CreateAnomalyRuleJSONRequestBody = AnomalyRuleInput
 
 // UpdateAnomalyRuleJSONRequestBody defines body for UpdateAnomalyRule for application/json ContentType.
 type UpdateAnomalyRuleJSONRequestBody = AnomalyRuleInput
+
+// CreateApprovalRuleJSONRequestBody defines body for CreateApprovalRule for application/json ContentType.
+type CreateApprovalRuleJSONRequestBody = ApprovalRuleInput
+
+// UpdateApprovalRuleJSONRequestBody defines body for UpdateApprovalRule for application/json ContentType.
+type UpdateApprovalRuleJSONRequestBody = ApprovalRuleInput
 
 // ApproveApprovalRequestJSONRequestBody defines body for ApproveApprovalRequest for application/json ContentType.
 type ApproveApprovalRequestJSONRequestBody = ApprovalDecisionRequest
