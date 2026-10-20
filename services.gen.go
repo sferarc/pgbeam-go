@@ -5,9 +5,11 @@ package pgbeam
 import (
 	"context"
 	"fmt"
+	"net/url"
 )
 
 var _ = fmt.Sprintf
+var _ = url.PathEscape
 
 // Client is the PgBeam API client. Access operations through service fields.
 type Client struct {
@@ -63,27 +65,27 @@ func NewClient(opts *ClientOptions) *Client {
 type ProjectsService struct{ t *transport }
 
 func (s *ProjectsService) ListCacheRules(ctx context.Context, projectID string, databaseID string, params *ListCacheRulesParams) (*ListCacheRulesResponse, error) {
-	return doQuery[ListCacheRulesResponse](s.t, ctx, fmt.Sprintf("/v1/projects/%s/databases/%s/cache-rules", projectID, databaseID), params)
+	return doQuery[ListCacheRulesResponse](s.t, ctx, fmt.Sprintf("/v1/projects/%s/databases/%s/cache-rules", url.PathEscape(projectID), url.PathEscape(databaseID)), params)
 }
 
 func (s *ProjectsService) UpdateCacheRule(ctx context.Context, projectID string, databaseID string, queryHash string, body UpdateCacheRuleRequest) (*UpdateCacheRuleResponse, error) {
-	return doJSON[UpdateCacheRuleResponse](s.t, ctx, "PUT", fmt.Sprintf("/v1/projects/%s/databases/%s/cache-rules/%s", projectID, databaseID, queryHash), body)
+	return doJSON[UpdateCacheRuleResponse](s.t, ctx, "PUT", fmt.Sprintf("/v1/projects/%s/databases/%s/cache-rules/%s", url.PathEscape(projectID), url.PathEscape(databaseID), url.PathEscape(queryHash)), body)
 }
 
 func (s *ProjectsService) ListCustomDomains(ctx context.Context, projectID string, params *ListCustomDomainsParams) (*ListCustomDomainsResponse, error) {
-	return doQuery[ListCustomDomainsResponse](s.t, ctx, fmt.Sprintf("/v1/projects/%s/domains", projectID), params)
+	return doQuery[ListCustomDomainsResponse](s.t, ctx, fmt.Sprintf("/v1/projects/%s/domains", url.PathEscape(projectID)), params)
 }
 
 func (s *ProjectsService) CreateCustomDomain(ctx context.Context, projectID string, body CreateCustomDomainRequest) (*CustomDomain, error) {
-	return doJSON[CustomDomain](s.t, ctx, "POST", fmt.Sprintf("/v1/projects/%s/domains", projectID), body)
+	return doJSON[CustomDomain](s.t, ctx, "POST", fmt.Sprintf("/v1/projects/%s/domains", url.PathEscape(projectID)), body)
 }
 
 func (s *ProjectsService) DeleteCustomDomain(ctx context.Context, projectID string, domainID string) error {
-	return doVoid(s.t, ctx, "DELETE", fmt.Sprintf("/v1/projects/%s/domains/%s", projectID, domainID), nil)
+	return doVoid(s.t, ctx, "DELETE", fmt.Sprintf("/v1/projects/%s/domains/%s", url.PathEscape(projectID), url.PathEscape(domainID)), nil)
 }
 
 func (s *ProjectsService) VerifyCustomDomain(ctx context.Context, projectID string, domainID string) (*VerifyCustomDomainResponse, error) {
-	return doJSON[VerifyCustomDomainResponse](s.t, ctx, "POST", fmt.Sprintf("/v1/projects/%s/domains/%s/verify", projectID, domainID), nil)
+	return doJSON[VerifyCustomDomainResponse](s.t, ctx, "POST", fmt.Sprintf("/v1/projects/%s/domains/%s/verify", url.PathEscape(projectID), url.PathEscape(domainID)), nil)
 }
 
 func (s *ProjectsService) ListProjects(ctx context.Context, params *ListProjectsParams) (*ListProjectsResponse, error) {
@@ -95,259 +97,279 @@ func (s *ProjectsService) CreateProject(ctx context.Context, body CreateProjectR
 }
 
 func (s *ProjectsService) GetProject(ctx context.Context, projectID string) (*Project, error) {
-	return doJSON[Project](s.t, ctx, "GET", fmt.Sprintf("/v1/projects/%s", projectID), nil)
+	return doJSON[Project](s.t, ctx, "GET", fmt.Sprintf("/v1/projects/%s", url.PathEscape(projectID)), nil)
 }
 
 func (s *ProjectsService) UpdateProject(ctx context.Context, projectID string, body UpdateProjectRequest) (*Project, error) {
-	return doJSON[Project](s.t, ctx, "PATCH", fmt.Sprintf("/v1/projects/%s", projectID), body)
+	return doJSON[Project](s.t, ctx, "PATCH", fmt.Sprintf("/v1/projects/%s", url.PathEscape(projectID)), body)
 }
 
 func (s *ProjectsService) DeleteProject(ctx context.Context, projectID string) error {
-	return doVoid(s.t, ctx, "DELETE", fmt.Sprintf("/v1/projects/%s", projectID), nil)
+	return doVoid(s.t, ctx, "DELETE", fmt.Sprintf("/v1/projects/%s", url.PathEscape(projectID)), nil)
 }
 
 func (s *ProjectsService) GetProjectMetrics(ctx context.Context, projectID string, params *GetProjectMetricsParams) (*ProjectMetricsResponse, error) {
-	return doQuery[ProjectMetricsResponse](s.t, ctx, fmt.Sprintf("/v1/projects/%s/metrics", projectID), params)
+	return doQuery[ProjectMetricsResponse](s.t, ctx, fmt.Sprintf("/v1/projects/%s/metrics", url.PathEscape(projectID)), params)
 }
 
 func (s *ProjectsService) ListReplicas(ctx context.Context, databaseID string, params *ListReplicasParams) (*ListReplicasResponse, error) {
-	return doQuery[ListReplicasResponse](s.t, ctx, fmt.Sprintf("/v1/databases/%s/replicas", databaseID), params)
+	return doQuery[ListReplicasResponse](s.t, ctx, fmt.Sprintf("/v1/databases/%s/replicas", url.PathEscape(databaseID)), params)
 }
 
 func (s *ProjectsService) CreateReplica(ctx context.Context, databaseID string, body CreateReplicaRequest) (*Replica, error) {
-	return doJSON[Replica](s.t, ctx, "POST", fmt.Sprintf("/v1/databases/%s/replicas", databaseID), body)
+	return doJSON[Replica](s.t, ctx, "POST", fmt.Sprintf("/v1/databases/%s/replicas", url.PathEscape(databaseID)), body)
 }
 
 func (s *ProjectsService) DeleteReplica(ctx context.Context, databaseID string, replicaID string) error {
-	return doVoid(s.t, ctx, "DELETE", fmt.Sprintf("/v1/databases/%s/replicas/%s", databaseID, replicaID), nil)
+	return doVoid(s.t, ctx, "DELETE", fmt.Sprintf("/v1/databases/%s/replicas/%s", url.PathEscape(databaseID), url.PathEscape(replicaID)), nil)
 }
 
 // DatabasesService provides databases operations.
 type DatabasesService struct{ t *transport }
 
 func (s *DatabasesService) ListDatabases(ctx context.Context, projectID string, params *ListDatabasesParams) (*ListDatabasesResponse, error) {
-	return doQuery[ListDatabasesResponse](s.t, ctx, fmt.Sprintf("/v1/projects/%s/databases", projectID), params)
+	return doQuery[ListDatabasesResponse](s.t, ctx, fmt.Sprintf("/v1/projects/%s/databases", url.PathEscape(projectID)), params)
 }
 
 func (s *DatabasesService) CreateDatabase(ctx context.Context, projectID string, body CreateDatabaseRequest) (*Database, error) {
-	return doJSON[Database](s.t, ctx, "POST", fmt.Sprintf("/v1/projects/%s/databases", projectID), body)
+	return doJSON[Database](s.t, ctx, "POST", fmt.Sprintf("/v1/projects/%s/databases", url.PathEscape(projectID)), body)
 }
 
 func (s *DatabasesService) GetDatabase(ctx context.Context, projectID string, databaseID string) (*Database, error) {
-	return doJSON[Database](s.t, ctx, "GET", fmt.Sprintf("/v1/projects/%s/databases/%s", projectID, databaseID), nil)
+	return doJSON[Database](s.t, ctx, "GET", fmt.Sprintf("/v1/projects/%s/databases/%s", url.PathEscape(projectID), url.PathEscape(databaseID)), nil)
 }
 
 func (s *DatabasesService) UpdateDatabase(ctx context.Context, projectID string, databaseID string, body UpdateDatabaseRequest) (*Database, error) {
-	return doJSON[Database](s.t, ctx, "PATCH", fmt.Sprintf("/v1/projects/%s/databases/%s", projectID, databaseID), body)
+	return doJSON[Database](s.t, ctx, "PATCH", fmt.Sprintf("/v1/projects/%s/databases/%s", url.PathEscape(projectID), url.PathEscape(databaseID)), body)
 }
 
 func (s *DatabasesService) DeleteDatabase(ctx context.Context, projectID string, databaseID string) error {
-	return doVoid(s.t, ctx, "DELETE", fmt.Sprintf("/v1/projects/%s/databases/%s", projectID, databaseID), nil)
+	return doVoid(s.t, ctx, "DELETE", fmt.Sprintf("/v1/projects/%s/databases/%s", url.PathEscape(projectID), url.PathEscape(databaseID)), nil)
 }
 
 func (s *DatabasesService) TestDatabaseConnection(ctx context.Context, projectID string, databaseID string) (*TestConnectionResult, error) {
-	return doJSON[TestConnectionResult](s.t, ctx, "POST", fmt.Sprintf("/v1/projects/%s/databases/%s/test-connection", projectID, databaseID), nil)
+	return doJSON[TestConnectionResult](s.t, ctx, "POST", fmt.Sprintf("/v1/projects/%s/databases/%s/test-connection", url.PathEscape(projectID), url.PathEscape(databaseID)), nil)
 }
 
 func (s *DatabasesService) ScanDatabaseForPii(ctx context.Context, projectID string, databaseID string) (*ScanPiiResult, error) {
-	return doJSON[ScanPiiResult](s.t, ctx, "POST", fmt.Sprintf("/v1/projects/%s/databases/%s/scan-pii", projectID, databaseID), nil)
+	return doJSON[ScanPiiResult](s.t, ctx, "POST", fmt.Sprintf("/v1/projects/%s/databases/%s/scan-pii", url.PathEscape(projectID), url.PathEscape(databaseID)), nil)
 }
 
 func (s *DatabasesService) GetSchemaCatalog(ctx context.Context, projectID string, databaseID string) (*SchemaCatalog, error) {
-	return doJSON[SchemaCatalog](s.t, ctx, "GET", fmt.Sprintf("/v1/projects/%s/databases/%s/schema-catalog", projectID, databaseID), nil)
+	return doJSON[SchemaCatalog](s.t, ctx, "GET", fmt.Sprintf("/v1/projects/%s/databases/%s/schema-catalog", url.PathEscape(projectID), url.PathEscape(databaseID)), nil)
 }
 
 // PoliciesService provides policies operations.
 type PoliciesService struct{ t *transport }
 
 func (s *PoliciesService) RecommendAgentPolicy(ctx context.Context, projectID string, agentID string, body PolicyRecommendationInput) (*PolicyRecommendation, error) {
-	return doJSON[PolicyRecommendation](s.t, ctx, "POST", fmt.Sprintf("/v1/projects/%s/agents/%s/policy-recommendation", projectID, agentID), body)
+	return doJSON[PolicyRecommendation](s.t, ctx, "POST", fmt.Sprintf("/v1/projects/%s/agents/%s/policy-recommendation", url.PathEscape(projectID), url.PathEscape(agentID)), body)
 }
 
 func (s *PoliciesService) ListPolicyProfiles(ctx context.Context, projectID string, params *ListPolicyProfilesParams) (*ListPolicyProfilesResponse, error) {
-	return doQuery[ListPolicyProfilesResponse](s.t, ctx, fmt.Sprintf("/v1/projects/%s/policies", projectID), params)
+	return doQuery[ListPolicyProfilesResponse](s.t, ctx, fmt.Sprintf("/v1/projects/%s/policies", url.PathEscape(projectID)), params)
 }
 
 func (s *PoliciesService) CreatePolicyProfile(ctx context.Context, projectID string, body PolicyProfileInput) (*PolicyProfile, error) {
-	return doJSON[PolicyProfile](s.t, ctx, "POST", fmt.Sprintf("/v1/projects/%s/policies", projectID), body)
+	return doJSON[PolicyProfile](s.t, ctx, "POST", fmt.Sprintf("/v1/projects/%s/policies", url.PathEscape(projectID)), body)
 }
 
 func (s *PoliciesService) GetPolicyProfile(ctx context.Context, projectID string, policyID string) (*PolicyProfile, error) {
-	return doJSON[PolicyProfile](s.t, ctx, "GET", fmt.Sprintf("/v1/projects/%s/policies/%s", projectID, policyID), nil)
+	return doJSON[PolicyProfile](s.t, ctx, "GET", fmt.Sprintf("/v1/projects/%s/policies/%s", url.PathEscape(projectID), url.PathEscape(policyID)), nil)
 }
 
 func (s *PoliciesService) UpdatePolicyProfile(ctx context.Context, projectID string, policyID string, body PolicyProfileInput) (*PolicyProfile, error) {
-	return doJSON[PolicyProfile](s.t, ctx, "PUT", fmt.Sprintf("/v1/projects/%s/policies/%s", projectID, policyID), body)
+	return doJSON[PolicyProfile](s.t, ctx, "PUT", fmt.Sprintf("/v1/projects/%s/policies/%s", url.PathEscape(projectID), url.PathEscape(policyID)), body)
 }
 
 func (s *PoliciesService) DeletePolicyProfile(ctx context.Context, projectID string, policyID string) error {
-	return doVoid(s.t, ctx, "DELETE", fmt.Sprintf("/v1/projects/%s/policies/%s", projectID, policyID), nil)
+	return doVoid(s.t, ctx, "DELETE", fmt.Sprintf("/v1/projects/%s/policies/%s", url.PathEscape(projectID), url.PathEscape(policyID)), nil)
 }
 
 func (s *PoliciesService) DryEvalPolicy(ctx context.Context, projectID string, body DryEvalInput) (*DryEvalResult, error) {
-	return doJSON[DryEvalResult](s.t, ctx, "POST", fmt.Sprintf("/v1/projects/%s/policy-evaluations", projectID), body)
+	return doJSON[DryEvalResult](s.t, ctx, "POST", fmt.Sprintf("/v1/projects/%s/policy-evaluations", url.PathEscape(projectID)), body)
 }
 
 func (s *PoliciesService) ReplayPolicy(ctx context.Context, projectID string, body PolicyReplayInput) (*PolicyReplayResult, error) {
-	return doJSON[PolicyReplayResult](s.t, ctx, "POST", fmt.Sprintf("/v1/projects/%s/policy-replays", projectID), body)
+	return doJSON[PolicyReplayResult](s.t, ctx, "POST", fmt.Sprintf("/v1/projects/%s/policy-replays", url.PathEscape(projectID)), body)
+}
+
+func (s *PoliciesService) ListQueryTemplates(ctx context.Context, projectID string, params *ListQueryTemplatesParams) (*ListQueryTemplatesResponse, error) {
+	return doQuery[ListQueryTemplatesResponse](s.t, ctx, fmt.Sprintf("/v1/projects/%s/query-templates", url.PathEscape(projectID)), params)
+}
+
+func (s *PoliciesService) CreateQueryTemplate(ctx context.Context, projectID string, body QueryTemplateInput) (*QueryTemplate, error) {
+	return doJSON[QueryTemplate](s.t, ctx, "POST", fmt.Sprintf("/v1/projects/%s/query-templates", url.PathEscape(projectID)), body)
+}
+
+func (s *PoliciesService) GetQueryTemplate(ctx context.Context, projectID string, queryTemplateID string) (*QueryTemplate, error) {
+	return doJSON[QueryTemplate](s.t, ctx, "GET", fmt.Sprintf("/v1/projects/%s/query-templates/%s", url.PathEscape(projectID), url.PathEscape(queryTemplateID)), nil)
+}
+
+func (s *PoliciesService) UpdateQueryTemplate(ctx context.Context, projectID string, queryTemplateID string, body QueryTemplateInput) (*QueryTemplate, error) {
+	return doJSON[QueryTemplate](s.t, ctx, "PUT", fmt.Sprintf("/v1/projects/%s/query-templates/%s", url.PathEscape(projectID), url.PathEscape(queryTemplateID)), body)
+}
+
+func (s *PoliciesService) DeleteQueryTemplate(ctx context.Context, projectID string, queryTemplateID string) error {
+	return doVoid(s.t, ctx, "DELETE", fmt.Sprintf("/v1/projects/%s/query-templates/%s", url.PathEscape(projectID), url.PathEscape(queryTemplateID)), nil)
 }
 
 // AgentsService provides agents operations.
 type AgentsService struct{ t *transport }
 
 func (s *AgentsService) ListAgentCredentials(ctx context.Context, projectID string, params *ListAgentCredentialsParams) (*ListAgentCredentialsResponse, error) {
-	return doQuery[ListAgentCredentialsResponse](s.t, ctx, fmt.Sprintf("/v1/projects/%s/agents", projectID), params)
+	return doQuery[ListAgentCredentialsResponse](s.t, ctx, fmt.Sprintf("/v1/projects/%s/agents", url.PathEscape(projectID)), params)
 }
 
 func (s *AgentsService) CreateAgentCredential(ctx context.Context, projectID string, body CreateAgentCredentialRequest) (*AgentCredentialSecrets, error) {
-	return doJSON[AgentCredentialSecrets](s.t, ctx, "POST", fmt.Sprintf("/v1/projects/%s/agents", projectID), body)
+	return doJSON[AgentCredentialSecrets](s.t, ctx, "POST", fmt.Sprintf("/v1/projects/%s/agents", url.PathEscape(projectID)), body)
 }
 
 func (s *AgentsService) GetAgentCredential(ctx context.Context, projectID string, agentID string) (*AgentCredential, error) {
-	return doJSON[AgentCredential](s.t, ctx, "GET", fmt.Sprintf("/v1/projects/%s/agents/%s", projectID, agentID), nil)
+	return doJSON[AgentCredential](s.t, ctx, "GET", fmt.Sprintf("/v1/projects/%s/agents/%s", url.PathEscape(projectID), url.PathEscape(agentID)), nil)
 }
 
 func (s *AgentsService) UpdateAgentCredentialStatus(ctx context.Context, projectID string, agentID string, body UpdateAgentCredentialStatusRequest) (*AgentCredential, error) {
-	return doJSON[AgentCredential](s.t, ctx, "PATCH", fmt.Sprintf("/v1/projects/%s/agents/%s", projectID, agentID), body)
+	return doJSON[AgentCredential](s.t, ctx, "PATCH", fmt.Sprintf("/v1/projects/%s/agents/%s", url.PathEscape(projectID), url.PathEscape(agentID)), body)
 }
 
 func (s *AgentsService) RevokeAgentCredential(ctx context.Context, projectID string, agentID string) error {
-	return doVoid(s.t, ctx, "DELETE", fmt.Sprintf("/v1/projects/%s/agents/%s", projectID, agentID), nil)
+	return doVoid(s.t, ctx, "DELETE", fmt.Sprintf("/v1/projects/%s/agents/%s", url.PathEscape(projectID), url.PathEscape(agentID)), nil)
 }
 
 func (s *AgentsService) RotateAgentCredential(ctx context.Context, projectID string, agentID string) (*AgentCredentialSecrets, error) {
-	return doJSON[AgentCredentialSecrets](s.t, ctx, "POST", fmt.Sprintf("/v1/projects/%s/agents/%s/rotate", projectID, agentID), nil)
+	return doJSON[AgentCredentialSecrets](s.t, ctx, "POST", fmt.Sprintf("/v1/projects/%s/agents/%s/rotate", url.PathEscape(projectID), url.PathEscape(agentID)), nil)
 }
 
 func (s *AgentsService) ListAuditLogs(ctx context.Context, projectID string, params *ListAuditLogsParams) (*ListAuditLogsResponse, error) {
-	return doQuery[ListAuditLogsResponse](s.t, ctx, fmt.Sprintf("/v1/projects/%s/audit-logs", projectID), params)
+	return doQuery[ListAuditLogsResponse](s.t, ctx, fmt.Sprintf("/v1/projects/%s/audit-logs", url.PathEscape(projectID)), params)
 }
 
-func (s *AgentsService) ExportAuditLogs(ctx context.Context, projectID string, params *ExportAuditLogsParams) error {
-	return doVoid(s.t, ctx, "GET", fmt.Sprintf("/v1/projects/%s/audit-logs/export", projectID), nil)
+func (s *AgentsService) ExportAuditLogs(ctx context.Context, projectID string, params *ExportAuditLogsParams) ([]byte, error) {
+	return doRaw(s.t, ctx, "GET", withQuery(fmt.Sprintf("/v1/projects/%s/audit-logs/export", url.PathEscape(projectID)), params), "text/csv", nil)
 }
 
 func (s *AgentsService) GetAuditSessionSummary(ctx context.Context, projectID string, sessionID string, params *GetAuditSessionSummaryParams) (*AuditSessionSummary, error) {
-	return doQuery[AuditSessionSummary](s.t, ctx, fmt.Sprintf("/v1/projects/%s/audit-logs/sessions/%s", projectID, sessionID), params)
+	return doQuery[AuditSessionSummary](s.t, ctx, fmt.Sprintf("/v1/projects/%s/audit-logs/sessions/%s", url.PathEscape(projectID), url.PathEscape(sessionID)), params)
 }
 
 func (s *AgentsService) VerifyAuditChain(ctx context.Context, projectID string, params *VerifyAuditChainParams) (*AuditChainVerification, error) {
-	return doQuery[AuditChainVerification](s.t, ctx, fmt.Sprintf("/v1/projects/%s/audit-logs/verify", projectID), params)
+	return doQuery[AuditChainVerification](s.t, ctx, fmt.Sprintf("/v1/projects/%s/audit-logs/verify", url.PathEscape(projectID)), params)
 }
 
 func (s *AgentsService) GetAgentUsageBreakdown(ctx context.Context, projectID string, params *GetAgentUsageBreakdownParams) (*AgentUsageReport, error) {
-	return doQuery[AgentUsageReport](s.t, ctx, fmt.Sprintf("/v1/projects/%s/usage/agents", projectID), params)
+	return doQuery[AgentUsageReport](s.t, ctx, fmt.Sprintf("/v1/projects/%s/usage/agents", url.PathEscape(projectID)), params)
 }
 
 // ApprovalsService provides approvals operations.
 type ApprovalsService struct{ t *transport }
 
 func (s *ApprovalsService) ListApprovalRules(ctx context.Context, projectID string, params *ListApprovalRulesParams) (*ListApprovalRulesResponse, error) {
-	return doQuery[ListApprovalRulesResponse](s.t, ctx, fmt.Sprintf("/v1/projects/%s/approval-rules", projectID), params)
+	return doQuery[ListApprovalRulesResponse](s.t, ctx, fmt.Sprintf("/v1/projects/%s/approval-rules", url.PathEscape(projectID)), params)
 }
 
 func (s *ApprovalsService) CreateApprovalRule(ctx context.Context, projectID string, body ApprovalRuleInput) (*ApprovalRule, error) {
-	return doJSON[ApprovalRule](s.t, ctx, "POST", fmt.Sprintf("/v1/projects/%s/approval-rules", projectID), body)
+	return doJSON[ApprovalRule](s.t, ctx, "POST", fmt.Sprintf("/v1/projects/%s/approval-rules", url.PathEscape(projectID)), body)
 }
 
 func (s *ApprovalsService) GetApprovalRule(ctx context.Context, projectID string, approvalRuleID string) (*ApprovalRule, error) {
-	return doJSON[ApprovalRule](s.t, ctx, "GET", fmt.Sprintf("/v1/projects/%s/approval-rules/%s", projectID, approvalRuleID), nil)
+	return doJSON[ApprovalRule](s.t, ctx, "GET", fmt.Sprintf("/v1/projects/%s/approval-rules/%s", url.PathEscape(projectID), url.PathEscape(approvalRuleID)), nil)
 }
 
 func (s *ApprovalsService) UpdateApprovalRule(ctx context.Context, projectID string, approvalRuleID string, body ApprovalRuleInput) (*ApprovalRule, error) {
-	return doJSON[ApprovalRule](s.t, ctx, "PUT", fmt.Sprintf("/v1/projects/%s/approval-rules/%s", projectID, approvalRuleID), body)
+	return doJSON[ApprovalRule](s.t, ctx, "PUT", fmt.Sprintf("/v1/projects/%s/approval-rules/%s", url.PathEscape(projectID), url.PathEscape(approvalRuleID)), body)
 }
 
 func (s *ApprovalsService) DeleteApprovalRule(ctx context.Context, projectID string, approvalRuleID string) error {
-	return doVoid(s.t, ctx, "DELETE", fmt.Sprintf("/v1/projects/%s/approval-rules/%s", projectID, approvalRuleID), nil)
+	return doVoid(s.t, ctx, "DELETE", fmt.Sprintf("/v1/projects/%s/approval-rules/%s", url.PathEscape(projectID), url.PathEscape(approvalRuleID)), nil)
 }
 
 func (s *ApprovalsService) ListApprovalRequests(ctx context.Context, projectID string, params *ListApprovalRequestsParams) (*ListApprovalRequestsResponse, error) {
-	return doQuery[ListApprovalRequestsResponse](s.t, ctx, fmt.Sprintf("/v1/projects/%s/approvals", projectID), params)
+	return doQuery[ListApprovalRequestsResponse](s.t, ctx, fmt.Sprintf("/v1/projects/%s/approvals", url.PathEscape(projectID)), params)
 }
 
 func (s *ApprovalsService) ApproveApprovalRequest(ctx context.Context, projectID string, approvalID string, body ApprovalDecisionRequest) (*ApprovalRequest, error) {
-	return doJSON[ApprovalRequest](s.t, ctx, "POST", fmt.Sprintf("/v1/projects/%s/approvals/%s/approve", projectID, approvalID), body)
+	return doJSON[ApprovalRequest](s.t, ctx, "POST", fmt.Sprintf("/v1/projects/%s/approvals/%s/approve", url.PathEscape(projectID), url.PathEscape(approvalID)), body)
 }
 
 func (s *ApprovalsService) RejectApprovalRequest(ctx context.Context, projectID string, approvalID string, body ApprovalDecisionRequest) (*ApprovalRequest, error) {
-	return doJSON[ApprovalRequest](s.t, ctx, "POST", fmt.Sprintf("/v1/projects/%s/approvals/%s/reject", projectID, approvalID), body)
+	return doJSON[ApprovalRequest](s.t, ctx, "POST", fmt.Sprintf("/v1/projects/%s/approvals/%s/reject", url.PathEscape(projectID), url.PathEscape(approvalID)), body)
 }
 
 // WebhooksService provides webhooks operations.
 type WebhooksService struct{ t *transport }
 
 func (s *WebhooksService) ListWebhookEndpoints(ctx context.Context, projectID string, params *ListWebhookEndpointsParams) (*ListWebhookEndpointsResponse, error) {
-	return doQuery[ListWebhookEndpointsResponse](s.t, ctx, fmt.Sprintf("/v1/projects/%s/webhooks", projectID), params)
+	return doQuery[ListWebhookEndpointsResponse](s.t, ctx, fmt.Sprintf("/v1/projects/%s/webhooks", url.PathEscape(projectID)), params)
 }
 
 func (s *WebhooksService) CreateWebhookEndpoint(ctx context.Context, projectID string, body WebhookEndpointInput) (*WebhookEndpoint, error) {
-	return doJSON[WebhookEndpoint](s.t, ctx, "POST", fmt.Sprintf("/v1/projects/%s/webhooks", projectID), body)
+	return doJSON[WebhookEndpoint](s.t, ctx, "POST", fmt.Sprintf("/v1/projects/%s/webhooks", url.PathEscape(projectID)), body)
 }
 
 func (s *WebhooksService) GetWebhookEndpoint(ctx context.Context, projectID string, webhookID string) (*WebhookEndpoint, error) {
-	return doJSON[WebhookEndpoint](s.t, ctx, "GET", fmt.Sprintf("/v1/projects/%s/webhooks/%s", projectID, webhookID), nil)
+	return doJSON[WebhookEndpoint](s.t, ctx, "GET", fmt.Sprintf("/v1/projects/%s/webhooks/%s", url.PathEscape(projectID), url.PathEscape(webhookID)), nil)
 }
 
 func (s *WebhooksService) UpdateWebhookEndpoint(ctx context.Context, projectID string, webhookID string, body WebhookEndpointInput) (*WebhookEndpoint, error) {
-	return doJSON[WebhookEndpoint](s.t, ctx, "PUT", fmt.Sprintf("/v1/projects/%s/webhooks/%s", projectID, webhookID), body)
+	return doJSON[WebhookEndpoint](s.t, ctx, "PUT", fmt.Sprintf("/v1/projects/%s/webhooks/%s", url.PathEscape(projectID), url.PathEscape(webhookID)), body)
 }
 
 func (s *WebhooksService) DeleteWebhookEndpoint(ctx context.Context, projectID string, webhookID string) error {
-	return doVoid(s.t, ctx, "DELETE", fmt.Sprintf("/v1/projects/%s/webhooks/%s", projectID, webhookID), nil)
+	return doVoid(s.t, ctx, "DELETE", fmt.Sprintf("/v1/projects/%s/webhooks/%s", url.PathEscape(projectID), url.PathEscape(webhookID)), nil)
 }
 
-func (s *WebhooksService) TestWebhookEndpoint(ctx context.Context, projectID string, webhookID string) error {
-	return doVoid(s.t, ctx, "POST", fmt.Sprintf("/v1/projects/%s/webhooks/%s/test", projectID, webhookID), nil)
+func (s *WebhooksService) TestWebhookEndpoint(ctx context.Context, projectID string, webhookID string) (*WebhookTestResponse, error) {
+	return doJSON[WebhookTestResponse](s.t, ctx, "POST", fmt.Sprintf("/v1/projects/%s/webhooks/%s/test", url.PathEscape(projectID), url.PathEscape(webhookID)), nil)
 }
 
 // AnomaliesService provides anomalies operations.
 type AnomaliesService struct{ t *transport }
 
 func (s *AnomaliesService) ListAnomalyAlerts(ctx context.Context, projectID string, params *ListAnomalyAlertsParams) (*ListAnomalyAlertsResponse, error) {
-	return doQuery[ListAnomalyAlertsResponse](s.t, ctx, fmt.Sprintf("/v1/projects/%s/anomalies", projectID), params)
+	return doQuery[ListAnomalyAlertsResponse](s.t, ctx, fmt.Sprintf("/v1/projects/%s/anomalies", url.PathEscape(projectID)), params)
 }
 
 func (s *AnomaliesService) UpdateAnomalyAlert(ctx context.Context, projectID string, anomalyID string, body UpdateAnomalyAlertRequest) (*AnomalyAlert, error) {
-	return doJSON[AnomalyAlert](s.t, ctx, "PATCH", fmt.Sprintf("/v1/projects/%s/anomalies/%s", projectID, anomalyID), body)
+	return doJSON[AnomalyAlert](s.t, ctx, "PATCH", fmt.Sprintf("/v1/projects/%s/anomalies/%s", url.PathEscape(projectID), url.PathEscape(anomalyID)), body)
 }
 
 func (s *AnomaliesService) ListAnomalyRules(ctx context.Context, projectID string, params *ListAnomalyRulesParams) (*ListAnomalyRulesResponse, error) {
-	return doQuery[ListAnomalyRulesResponse](s.t, ctx, fmt.Sprintf("/v1/projects/%s/anomaly-rules", projectID), params)
+	return doQuery[ListAnomalyRulesResponse](s.t, ctx, fmt.Sprintf("/v1/projects/%s/anomaly-rules", url.PathEscape(projectID)), params)
 }
 
 func (s *AnomaliesService) CreateAnomalyRule(ctx context.Context, projectID string, body AnomalyRuleInput) (*AnomalyRule, error) {
-	return doJSON[AnomalyRule](s.t, ctx, "POST", fmt.Sprintf("/v1/projects/%s/anomaly-rules", projectID), body)
+	return doJSON[AnomalyRule](s.t, ctx, "POST", fmt.Sprintf("/v1/projects/%s/anomaly-rules", url.PathEscape(projectID)), body)
 }
 
 func (s *AnomaliesService) GetAnomalyRule(ctx context.Context, projectID string, anomalyRuleID string) (*AnomalyRule, error) {
-	return doJSON[AnomalyRule](s.t, ctx, "GET", fmt.Sprintf("/v1/projects/%s/anomaly-rules/%s", projectID, anomalyRuleID), nil)
+	return doJSON[AnomalyRule](s.t, ctx, "GET", fmt.Sprintf("/v1/projects/%s/anomaly-rules/%s", url.PathEscape(projectID), url.PathEscape(anomalyRuleID)), nil)
 }
 
 func (s *AnomaliesService) UpdateAnomalyRule(ctx context.Context, projectID string, anomalyRuleID string, body AnomalyRuleInput) (*AnomalyRule, error) {
-	return doJSON[AnomalyRule](s.t, ctx, "PUT", fmt.Sprintf("/v1/projects/%s/anomaly-rules/%s", projectID, anomalyRuleID), body)
+	return doJSON[AnomalyRule](s.t, ctx, "PUT", fmt.Sprintf("/v1/projects/%s/anomaly-rules/%s", url.PathEscape(projectID), url.PathEscape(anomalyRuleID)), body)
 }
 
 func (s *AnomaliesService) DeleteAnomalyRule(ctx context.Context, projectID string, anomalyRuleID string) error {
-	return doVoid(s.t, ctx, "DELETE", fmt.Sprintf("/v1/projects/%s/anomaly-rules/%s", projectID, anomalyRuleID), nil)
+	return doVoid(s.t, ctx, "DELETE", fmt.Sprintf("/v1/projects/%s/anomaly-rules/%s", url.PathEscape(projectID), url.PathEscape(anomalyRuleID)), nil)
 }
 
 // BranchesService provides branches operations.
 type BranchesService struct{ t *transport }
 
 func (s *BranchesService) ListDatabaseBranches(ctx context.Context, projectID string, params *ListDatabaseBranchesParams) (*ListDatabaseBranchesResponse, error) {
-	return doQuery[ListDatabaseBranchesResponse](s.t, ctx, fmt.Sprintf("/v1/projects/%s/branches", projectID), params)
+	return doQuery[ListDatabaseBranchesResponse](s.t, ctx, fmt.Sprintf("/v1/projects/%s/branches", url.PathEscape(projectID)), params)
 }
 
 func (s *BranchesService) DiscardDatabaseBranch(ctx context.Context, projectID string, branchID string) error {
-	return doVoid(s.t, ctx, "DELETE", fmt.Sprintf("/v1/projects/%s/branches/%s", projectID, branchID), nil)
+	return doVoid(s.t, ctx, "DELETE", fmt.Sprintf("/v1/projects/%s/branches/%s", url.PathEscape(projectID), url.PathEscape(branchID)), nil)
 }
 
 // MigrationsService provides migrations operations.
 type MigrationsService struct{ t *transport }
 
 func (s *MigrationsService) LintMigration(ctx context.Context, projectID string, body MigrationLintRequest) (*MigrationLintResponse, error) {
-	return doJSON[MigrationLintResponse](s.t, ctx, "POST", fmt.Sprintf("/v1/projects/%s/migrations:lint", projectID), body)
+	return doJSON[MigrationLintResponse](s.t, ctx, "POST", fmt.Sprintf("/v1/projects/%s/migrations:lint", url.PathEscape(projectID)), body)
 }
 
 // AnalyticsService provides analytics operations.
@@ -358,31 +380,31 @@ func (s *AnalyticsService) ListPlans(ctx context.Context) (*ListPlansResponse, e
 }
 
 func (s *AnalyticsService) GetOrganizationPlan(ctx context.Context, orgID string) (*OrganizationPlan, error) {
-	return doJSON[OrganizationPlan](s.t, ctx, "GET", fmt.Sprintf("/v1/organizations/%s/plan", orgID), nil)
+	return doJSON[OrganizationPlan](s.t, ctx, "GET", fmt.Sprintf("/v1/organizations/%s/plan", url.PathEscape(orgID)), nil)
 }
 
 func (s *AnalyticsService) GetVercelInstallation(ctx context.Context, orgID string) (*VercelInstallationStatus, error) {
-	return doJSON[VercelInstallationStatus](s.t, ctx, "GET", fmt.Sprintf("/v1/organizations/%s/vercel-installation", orgID), nil)
+	return doJSON[VercelInstallationStatus](s.t, ctx, "GET", fmt.Sprintf("/v1/organizations/%s/vercel-installation", url.PathEscape(orgID)), nil)
 }
 
 func (s *AnalyticsService) UpdateSpendLimit(ctx context.Context, orgID string, body UpdateSpendLimitRequest) (*OrganizationPlan, error) {
-	return doJSON[OrganizationPlan](s.t, ctx, "PUT", fmt.Sprintf("/v1/organizations/%s/spend-limit", orgID), body)
+	return doJSON[OrganizationPlan](s.t, ctx, "PUT", fmt.Sprintf("/v1/organizations/%s/spend-limit", url.PathEscape(orgID)), body)
 }
 
 func (s *AnalyticsService) SubmitCancellationFeedback(ctx context.Context, orgID string, body CancellationFeedbackRequest) error {
-	return doVoid(s.t, ctx, "POST", fmt.Sprintf("/v1/organizations/%s/cancellation-feedback", orgID), body)
+	return doVoid(s.t, ctx, "POST", fmt.Sprintf("/v1/organizations/%s/cancellation-feedback", url.PathEscape(orgID)), body)
 }
 
 func (s *AnalyticsService) GetProjectInsights(ctx context.Context, projectID string, params *GetProjectInsightsParams) (*ProjectInsights, error) {
-	return doQuery[ProjectInsights](s.t, ctx, fmt.Sprintf("/v1/projects/%s/insights", projectID), params)
+	return doQuery[ProjectInsights](s.t, ctx, fmt.Sprintf("/v1/projects/%s/insights", url.PathEscape(projectID)), params)
 }
 
 func (s *AnalyticsService) GetOrganizationUsage(ctx context.Context, orgID string, params *GetOrganizationUsageParams) (*UsageResponse, error) {
-	return doQuery[UsageResponse](s.t, ctx, fmt.Sprintf("/v1/organizations/%s/usage", orgID), params)
+	return doQuery[UsageResponse](s.t, ctx, fmt.Sprintf("/v1/organizations/%s/usage", url.PathEscape(orgID)), params)
 }
 
 func (s *AnalyticsService) GetProjectUsage(ctx context.Context, projectID string, params *GetProjectUsageParams) (*ProjectUsageResponse, error) {
-	return doQuery[ProjectUsageResponse](s.t, ctx, fmt.Sprintf("/v1/projects/%s/usage", projectID), params)
+	return doQuery[ProjectUsageResponse](s.t, ctx, fmt.Sprintf("/v1/projects/%s/usage", url.PathEscape(projectID)), params)
 }
 
 // PlatformService provides platform operations.
@@ -397,23 +419,23 @@ func (s *PlatformService) ListRegions(ctx context.Context) (*ListRegionsResponse
 }
 
 func (s *PlatformService) ListSelfHostEnrollments(ctx context.Context, orgID string, params *ListSelfHostEnrollmentsParams) (*ListSelfHostEnrollmentsResponse, error) {
-	return doQuery[ListSelfHostEnrollmentsResponse](s.t, ctx, fmt.Sprintf("/v1/organizations/%s/self-host-enrollments", orgID), params)
+	return doQuery[ListSelfHostEnrollmentsResponse](s.t, ctx, fmt.Sprintf("/v1/organizations/%s/self-host-enrollments", url.PathEscape(orgID)), params)
 }
 
 func (s *PlatformService) CreateSelfHostEnrollment(ctx context.Context, orgID string, body CreateSelfHostEnrollmentRequest) (*SelfHostEnrollmentSecret, error) {
-	return doJSON[SelfHostEnrollmentSecret](s.t, ctx, "POST", fmt.Sprintf("/v1/organizations/%s/self-host-enrollments", orgID), body)
+	return doJSON[SelfHostEnrollmentSecret](s.t, ctx, "POST", fmt.Sprintf("/v1/organizations/%s/self-host-enrollments", url.PathEscape(orgID)), body)
 }
 
 func (s *PlatformService) RevokeSelfHostEnrollment(ctx context.Context, orgID string, enrollmentID string) error {
-	return doVoid(s.t, ctx, "DELETE", fmt.Sprintf("/v1/organizations/%s/self-host-enrollments/%s", orgID, enrollmentID), nil)
+	return doVoid(s.t, ctx, "DELETE", fmt.Sprintf("/v1/organizations/%s/self-host-enrollments/%s", url.PathEscape(orgID), url.PathEscape(enrollmentID)), nil)
 }
 
 func (s *PlatformService) RotateSelfHostEnrollment(ctx context.Context, orgID string, enrollmentID string) (*SelfHostEnrollmentSecret, error) {
-	return doJSON[SelfHostEnrollmentSecret](s.t, ctx, "POST", fmt.Sprintf("/v1/organizations/%s/self-host-enrollments/%s/rotate", orgID, enrollmentID), nil)
+	return doJSON[SelfHostEnrollmentSecret](s.t, ctx, "POST", fmt.Sprintf("/v1/organizations/%s/self-host-enrollments/%s/rotate", url.PathEscape(orgID), url.PathEscape(enrollmentID)), nil)
 }
 
 func (s *PlatformService) ScanText(ctx context.Context, body ScanTextRequest) (*ScanTextResult, error) {
-	return doJSON[ScanTextResult](s.t, ctx, "POST", "/v1/scan/text", body)
+	return doJSON[ScanTextResult](s.t, withoutIdempotencyKey(ctx), "POST", "/v1/scan/text", body)
 }
 
 // AccountService provides account operations.
@@ -424,35 +446,35 @@ func (s *AccountService) ExportAccountData(ctx context.Context) (*AccountExport,
 }
 
 func (s *AccountService) ListOrgMembers(ctx context.Context, orgID string, params *ListOrgMembersParams) (*ListOrgMembersResponse, error) {
-	return doQuery[ListOrgMembersResponse](s.t, ctx, fmt.Sprintf("/v1/organizations/%s/members", orgID), params)
+	return doQuery[ListOrgMembersResponse](s.t, ctx, fmt.Sprintf("/v1/organizations/%s/members", url.PathEscape(orgID)), params)
 }
 
 func (s *AccountService) UpdateOrgMemberRole(ctx context.Context, orgID string, memberID string, body UpdateOrgMemberRoleRequest) (*OrgMember, error) {
-	return doJSON[OrgMember](s.t, ctx, "PATCH", fmt.Sprintf("/v1/organizations/%s/members/%s", orgID, memberID), body)
+	return doJSON[OrgMember](s.t, ctx, "PATCH", fmt.Sprintf("/v1/organizations/%s/members/%s", url.PathEscape(orgID), url.PathEscape(memberID)), body)
 }
 
 func (s *AccountService) RemoveOrgMember(ctx context.Context, orgID string, memberID string) error {
-	return doVoid(s.t, ctx, "DELETE", fmt.Sprintf("/v1/organizations/%s/members/%s", orgID, memberID), nil)
+	return doVoid(s.t, ctx, "DELETE", fmt.Sprintf("/v1/organizations/%s/members/%s", url.PathEscape(orgID), url.PathEscape(memberID)), nil)
 }
 
 func (s *AccountService) ListOrgInvitations(ctx context.Context, orgID string, params *ListOrgInvitationsParams) (*ListOrgInvitationsResponse, error) {
-	return doQuery[ListOrgInvitationsResponse](s.t, ctx, fmt.Sprintf("/v1/organizations/%s/invitations", orgID), params)
+	return doQuery[ListOrgInvitationsResponse](s.t, ctx, fmt.Sprintf("/v1/organizations/%s/invitations", url.PathEscape(orgID)), params)
 }
 
 func (s *AccountService) CreateOrgInvitation(ctx context.Context, orgID string, body CreateOrgInvitationRequest) (*OrgInvitation, error) {
-	return doJSON[OrgInvitation](s.t, ctx, "POST", fmt.Sprintf("/v1/organizations/%s/invitations", orgID), body)
+	return doJSON[OrgInvitation](s.t, ctx, "POST", fmt.Sprintf("/v1/organizations/%s/invitations", url.PathEscape(orgID)), body)
 }
 
 func (s *AccountService) RevokeOrgInvitation(ctx context.Context, orgID string, invitationID string) error {
-	return doVoid(s.t, ctx, "DELETE", fmt.Sprintf("/v1/organizations/%s/invitations/%s", orgID, invitationID), nil)
+	return doVoid(s.t, ctx, "DELETE", fmt.Sprintf("/v1/organizations/%s/invitations/%s", url.PathEscape(orgID), url.PathEscape(invitationID)), nil)
 }
 
 func (s *AccountService) GetOnboardingProgress(ctx context.Context, orgID string) (*OnboardingProgress, error) {
-	return doJSON[OnboardingProgress](s.t, ctx, "GET", fmt.Sprintf("/v1/organizations/%s/onboarding", orgID), nil)
+	return doJSON[OnboardingProgress](s.t, ctx, "GET", fmt.Sprintf("/v1/organizations/%s/onboarding", url.PathEscape(orgID)), nil)
 }
 
 func (s *AccountService) UpdateOnboardingProgress(ctx context.Context, orgID string, body UpdateOnboardingRequest) (*OnboardingProgress, error) {
-	return doJSON[OnboardingProgress](s.t, ctx, "PATCH", fmt.Sprintf("/v1/organizations/%s/onboarding", orgID), body)
+	return doJSON[OnboardingProgress](s.t, ctx, "PATCH", fmt.Sprintf("/v1/organizations/%s/onboarding", url.PathEscape(orgID)), body)
 }
 
 func (s *AccountService) ListOrganizations(ctx context.Context) (*ListOrganizationsResponse, error) {
@@ -463,7 +485,7 @@ func (s *AccountService) ListOrganizations(ctx context.Context) (*ListOrganizati
 type BatchService struct{ t *transport }
 
 func (s *BatchService) ExecuteBatch(ctx context.Context, projectID string, body BatchRequest) (*BatchResponse, error) {
-	return doJSON[BatchResponse](s.t, ctx, "POST", fmt.Sprintf("/v1/projects/%s/batch", projectID), body)
+	return doJSON[BatchResponse](s.t, ctx, "POST", fmt.Sprintf("/v1/projects/%s/batch", url.PathEscape(projectID)), body)
 }
 
 // DemoService provides demo operations.
@@ -478,30 +500,30 @@ func (s *DemoService) CreateDemoCredential(ctx context.Context, body CreateDemoC
 }
 
 func (s *DemoService) ReleaseDemoCredential(ctx context.Context, sessionID string, body ReleaseDemoCredentialRequest) (*DemoReleaseResult, error) {
-	return doJSON[DemoReleaseResult](s.t, ctx, "POST", fmt.Sprintf("/v1/demo/credentials/%s/release", sessionID), body)
+	return doJSON[DemoReleaseResult](s.t, ctx, "POST", fmt.Sprintf("/v1/demo/credentials/%s/release", url.PathEscape(sessionID)), body)
 }
 
 // HoneytokensService provides honeytokens operations.
 type HoneytokensService struct{ t *transport }
 
 func (s *HoneytokensService) ListHoneytokens(ctx context.Context, projectID string, params *ListHoneytokensParams) (*ListHoneytokensResponse, error) {
-	return doQuery[ListHoneytokensResponse](s.t, ctx, fmt.Sprintf("/v1/projects/%s/honeytokens", projectID), params)
+	return doQuery[ListHoneytokensResponse](s.t, ctx, fmt.Sprintf("/v1/projects/%s/honeytokens", url.PathEscape(projectID)), params)
 }
 
 func (s *HoneytokensService) CreateHoneytoken(ctx context.Context, projectID string, body HoneytokenInput) (*Honeytoken, error) {
-	return doJSON[Honeytoken](s.t, ctx, "POST", fmt.Sprintf("/v1/projects/%s/honeytokens", projectID), body)
+	return doJSON[Honeytoken](s.t, ctx, "POST", fmt.Sprintf("/v1/projects/%s/honeytokens", url.PathEscape(projectID)), body)
 }
 
 func (s *HoneytokensService) GetHoneytoken(ctx context.Context, projectID string, honeytokenID string) (*Honeytoken, error) {
-	return doJSON[Honeytoken](s.t, ctx, "GET", fmt.Sprintf("/v1/projects/%s/honeytokens/%s", projectID, honeytokenID), nil)
+	return doJSON[Honeytoken](s.t, ctx, "GET", fmt.Sprintf("/v1/projects/%s/honeytokens/%s", url.PathEscape(projectID), url.PathEscape(honeytokenID)), nil)
 }
 
 func (s *HoneytokensService) UpdateHoneytoken(ctx context.Context, projectID string, honeytokenID string, body HoneytokenInput) (*Honeytoken, error) {
-	return doJSON[Honeytoken](s.t, ctx, "PUT", fmt.Sprintf("/v1/projects/%s/honeytokens/%s", projectID, honeytokenID), body)
+	return doJSON[Honeytoken](s.t, ctx, "PUT", fmt.Sprintf("/v1/projects/%s/honeytokens/%s", url.PathEscape(projectID), url.PathEscape(honeytokenID)), body)
 }
 
 func (s *HoneytokensService) DeleteHoneytoken(ctx context.Context, projectID string, honeytokenID string) error {
-	return doVoid(s.t, ctx, "DELETE", fmt.Sprintf("/v1/projects/%s/honeytokens/%s", projectID, honeytokenID), nil)
+	return doVoid(s.t, ctx, "DELETE", fmt.Sprintf("/v1/projects/%s/honeytokens/%s", url.PathEscape(projectID), url.PathEscape(honeytokenID)), nil)
 }
 
 // InternalService provides internal operations.
@@ -526,36 +548,36 @@ func (s *PaymentsService) CreateBudgetTopup(ctx context.Context, body BudgetTopu
 type SchemaannotationsService struct{ t *transport }
 
 func (s *SchemaannotationsService) ListSchemaAnnotations(ctx context.Context, projectID string, params *ListSchemaAnnotationsParams) (*ListSchemaAnnotationsResponse, error) {
-	return doQuery[ListSchemaAnnotationsResponse](s.t, ctx, fmt.Sprintf("/v1/projects/%s/schema-annotations", projectID), params)
+	return doQuery[ListSchemaAnnotationsResponse](s.t, ctx, fmt.Sprintf("/v1/projects/%s/schema-annotations", url.PathEscape(projectID)), params)
 }
 
 func (s *SchemaannotationsService) PutSchemaAnnotation(ctx context.Context, projectID string, body SchemaAnnotationInput) (*SchemaAnnotation, error) {
-	return doJSON[SchemaAnnotation](s.t, ctx, "PUT", fmt.Sprintf("/v1/projects/%s/schema-annotations", projectID), body)
+	return doJSON[SchemaAnnotation](s.t, ctx, "PUT", fmt.Sprintf("/v1/projects/%s/schema-annotations", url.PathEscape(projectID)), body)
 }
 
 func (s *SchemaannotationsService) DeleteSchemaAnnotation(ctx context.Context, projectID string, params *DeleteSchemaAnnotationParams) error {
-	return doVoid(s.t, ctx, "DELETE", fmt.Sprintf("/v1/projects/%s/schema-annotations", projectID), nil)
+	return doVoid(s.t, ctx, "DELETE", withQuery(fmt.Sprintf("/v1/projects/%s/schema-annotations", url.PathEscape(projectID)), params), nil)
 }
 
 // SupportService provides support operations.
 type SupportService struct{ t *transport }
 
 func (s *SupportService) ListSupportCases(ctx context.Context, orgID string, params *ListSupportCasesParams) (*ListSupportCasesResponse, error) {
-	return doQuery[ListSupportCasesResponse](s.t, ctx, fmt.Sprintf("/v1/organizations/%s/support/cases", orgID), params)
+	return doQuery[ListSupportCasesResponse](s.t, ctx, fmt.Sprintf("/v1/organizations/%s/support/cases", url.PathEscape(orgID)), params)
 }
 
 func (s *SupportService) CreateSupportCase(ctx context.Context, orgID string, body CreateSupportCaseRequest) (*SupportCase, error) {
-	return doJSON[SupportCase](s.t, ctx, "POST", fmt.Sprintf("/v1/organizations/%s/support/cases", orgID), body)
+	return doJSON[SupportCase](s.t, ctx, "POST", fmt.Sprintf("/v1/organizations/%s/support/cases", url.PathEscape(orgID)), body)
 }
 
 func (s *SupportService) GetSupportCase(ctx context.Context, orgID string, caseID string) (*GetSupportCaseResponse, error) {
-	return doJSON[GetSupportCaseResponse](s.t, ctx, "GET", fmt.Sprintf("/v1/organizations/%s/support/cases/%s", orgID, caseID), nil)
+	return doJSON[GetSupportCaseResponse](s.t, ctx, "GET", fmt.Sprintf("/v1/organizations/%s/support/cases/%s", url.PathEscape(orgID), url.PathEscape(caseID)), nil)
 }
 
 func (s *SupportService) UpdateSupportCase(ctx context.Context, orgID string, caseID string, body UpdateSupportCaseRequest) (*SupportCase, error) {
-	return doJSON[SupportCase](s.t, ctx, "PATCH", fmt.Sprintf("/v1/organizations/%s/support/cases/%s", orgID, caseID), body)
+	return doJSON[SupportCase](s.t, ctx, "PATCH", fmt.Sprintf("/v1/organizations/%s/support/cases/%s", url.PathEscape(orgID), url.PathEscape(caseID)), body)
 }
 
 func (s *SupportService) CreateSupportMessage(ctx context.Context, orgID string, caseID string, body CreateSupportMessageRequest) (*SupportMessage, error) {
-	return doJSON[SupportMessage](s.t, ctx, "POST", fmt.Sprintf("/v1/organizations/%s/support/cases/%s/messages", orgID, caseID), body)
+	return doJSON[SupportMessage](s.t, ctx, "POST", fmt.Sprintf("/v1/organizations/%s/support/cases/%s/messages", url.PathEscape(orgID), url.PathEscape(caseID)), body)
 }

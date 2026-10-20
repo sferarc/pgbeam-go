@@ -1488,6 +1488,72 @@ func (e ProjectStatus) Valid() bool {
 	}
 }
 
+// Defines values for QueryTemplateParamType.
+const (
+	Bigint          QueryTemplateParamType = "bigint"
+	Boolean         QueryTemplateParamType = "boolean"
+	Date            QueryTemplateParamType = "date"
+	DoublePrecision QueryTemplateParamType = "double precision"
+	Integer         QueryTemplateParamType = "integer"
+	Jsonb           QueryTemplateParamType = "jsonb"
+	Numeric         QueryTemplateParamType = "numeric"
+	Text            QueryTemplateParamType = "text"
+	Timestamptz     QueryTemplateParamType = "timestamptz"
+	Uuid            QueryTemplateParamType = "uuid"
+)
+
+// Valid indicates whether the value is a known member of the QueryTemplateParamType enum.
+func (e QueryTemplateParamType) Valid() bool {
+	switch e {
+	case Bigint:
+		return true
+	case Boolean:
+		return true
+	case Date:
+		return true
+	case DoublePrecision:
+		return true
+	case Integer:
+		return true
+	case Jsonb:
+		return true
+	case Numeric:
+		return true
+	case Text:
+		return true
+	case Timestamptz:
+		return true
+	case Uuid:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for QueryTemplateStatementKind.
+const (
+	QueryTemplateStatementKindDelete QueryTemplateStatementKind = "delete"
+	QueryTemplateStatementKindInsert QueryTemplateStatementKind = "insert"
+	QueryTemplateStatementKindSelect QueryTemplateStatementKind = "select"
+	QueryTemplateStatementKindUpdate QueryTemplateStatementKind = "update"
+)
+
+// Valid indicates whether the value is a known member of the QueryTemplateStatementKind enum.
+func (e QueryTemplateStatementKind) Valid() bool {
+	switch e {
+	case QueryTemplateStatementKindDelete:
+		return true
+	case QueryTemplateStatementKindInsert:
+		return true
+	case QueryTemplateStatementKindSelect:
+		return true
+	case QueryTemplateStatementKindUpdate:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for RegionProvider.
 const (
 	RegionProviderAws   RegionProvider = "aws"
@@ -4333,6 +4399,15 @@ type ListProjectsResponse struct {
 	Total int `json:"total"`
 }
 
+// ListQueryTemplatesResponse Cursor-paginated query templates for a project.
+type ListQueryTemplatesResponse struct {
+	// NextPageToken Opaque token for cursor-based pagination.
+	NextPageToken *string `json:"next_page_token,omitempty"`
+
+	// QueryTemplates Query templates on the current page.
+	QueryTemplates []QueryTemplate `json:"query_templates"`
+}
+
 // ListRegionsResponse Response envelope for available region queries.
 type ListRegionsResponse struct {
 	// Regions Regions currently known to the control plane.
@@ -4427,7 +4502,7 @@ type McpRequest struct {
 	// Example: initialize
 	Method McpRequestMethod `json:"method"`
 
-	// Params Method-specific parameters.
+	// Params Method-specific parameters. For `tools/call`, `name` is one of the six registered tools (`search_endpoints`, `describe_endpoint`, `call_endpoint`, `list_skills`, `get_skill`, `install_skill`) and `arguments` holds its input; API operations are reached through `call_endpoint`, not called by name.
 	Params *map[string]interface{} `json:"params,omitempty"`
 }
 
@@ -5470,6 +5545,118 @@ type QueryInsight struct {
 	TotalCount int64 `json:"total_count"`
 }
 
+// QueryTemplate A named, parameterized statement, scoped to a project. A policy profile set to admit templates only lets its credentials run the project's enabled templates and nothing else. A template admits a statement; it never grants access. A statement it admits still meets the credential's whole policy (allowlists, masking, row filters, budgets and approvals).
+type QueryTemplate struct {
+	// CreatedAt When the template was created.
+	CreatedAt time.Time `json:"created_at"`
+
+	// Description What the template is for, shown to an agent that lists the templates.
+	//
+	// Example: Open orders for one customer, newest first.
+	Description string `json:"description"`
+
+	// Enabled False withdraws the template, so it admits nothing.
+	//
+	// Example: true
+	Enabled bool `json:"enabled"`
+
+	// Id Unique query template identifier.
+	//
+	// Example: qtp_01j9x8y7z6w5v4u3t2s1r0q9p8
+	Id string `json:"id"`
+
+	// IncludeSql True shows the SQL text to an agent that lists the templates. False shows only the name, description and parameters.
+	//
+	//
+	// Example: false
+	IncludeSql bool `json:"include_sql"`
+
+	// Name Name an agent invokes the template by. A lower-case identifier, unique within the project.
+	//
+	//
+	// Example: open_orders_for_customer
+	Name string `json:"name"`
+
+	// Params Declared parameters, in placeholder order.
+	Params []QueryTemplateParam `json:"params"`
+
+	// ProjectId Project the template belongs to.
+	//
+	// Example: prj_01j9x8y7z6w5v4u3t2s1r0q9p8
+	ProjectId string `json:"project_id"`
+
+	// Sql The statement, with its parameters as $1, $2 and so on. Exactly one SELECT, INSERT, UPDATE or DELETE. Matched on its parse tree, so whitespace, keyword case and comments do not matter and anything else does.
+	//
+	//
+	// Example: SELECT id, total FROM orders WHERE customer_id = $1 AND status = 'open' ORDER BY created_at DESC
+	Sql string `json:"sql"`
+
+	// StatementKind The statement kind a template compiles to. Absent on a stored template that no longer compiles, which a data plane skips rather than admits.
+	StatementKind *QueryTemplateStatementKind `json:"statement_kind,omitempty"`
+
+	// UpdatedAt When the template was last updated.
+	UpdatedAt time.Time `json:"updated_at"`
+}
+
+// QueryTemplateInput Request body for creating or updating a query template.
+type QueryTemplateInput struct {
+	// Description What the template is for, shown to an agent that lists the templates.
+	//
+	// Example: Open orders for one customer, newest first.
+	Description *string `json:"description,omitempty"`
+
+	// Enabled Defaults to true, so a template is admitted as soon as it is written. False saves it withdrawn.
+	//
+	//
+	// Example: true
+	Enabled *bool `json:"enabled,omitempty"`
+
+	// IncludeSql True shows the SQL text to an agent that lists the templates. Defaults to false, since a WHERE clause can itself be sensitive.
+	//
+	//
+	// Example: false
+	IncludeSql *bool `json:"include_sql,omitempty"`
+
+	// Name Name an agent invokes the template by. A lower-case identifier starting with a letter, at most 63 characters, unique within the project.
+	//
+	//
+	// Example: open_orders_for_customer
+	Name string `json:"name"`
+
+	// Params Declared parameters, in placeholder order. Omitted means none.
+	Params *[]QueryTemplateParam `json:"params,omitempty"`
+
+	// Sql The statement, with its parameters as $1, $2 and so on. Exactly one SELECT, INSERT, UPDATE or DELETE, at most 16384 bytes. Every placeholder must be declared in params and every declared parameter must be used.
+	//
+	//
+	// Example: SELECT id, total FROM orders WHERE customer_id = $1 AND status = 'open' ORDER BY created_at DESC
+	Sql string `json:"sql"`
+}
+
+// QueryTemplateParam One declared template parameter. Its position in the params array is its placeholder number, so the first entry is $1.
+type QueryTemplateParam struct {
+	// Name Parameter name, a lower-case identifier. Unique within the template. An agent passes the argument under this name.
+	//
+	//
+	// Example: customer_id
+	Name string `json:"name"`
+
+	// Nullable True lets the argument be omitted or null, which binds SQL NULL. A parameter that is not nullable must be given a value.
+	//
+	//
+	// Example: false
+	Nullable *bool `json:"nullable,omitempty"`
+
+	// Type The Postgres type a template parameter is declared as. An argument is checked against it and bound as a value of that type, never as SQL.
+	Type QueryTemplateParamType `json:"type"`
+}
+
+// QueryTemplateParamType The Postgres type a template parameter is declared as. An argument is checked against it and bound as a value of that type, never as SQL.
+type QueryTemplateParamType string
+
+// QueryTemplateStatementKind The statement kind a template compiles to. Absent on a stored template that no longer compiles, which a data plane skips rather than admits.
+type QueryTemplateStatementKind string
+
 // Region Data plane region available for PgBeam traffic.
 type Region struct {
 	// Available Whether new projects can currently be assigned to the region.
@@ -6163,7 +6350,7 @@ type UpdateProjectRequest struct {
 
 // UpdateSpendLimitRequest Request body for updating an organization's monthly spend cap.
 type UpdateSpendLimitRequest struct {
-	// SpendLimit Monthly spend limit in dollars. Null to remove the limit.
+	// SpendLimit Monthly spend limit in dollars. Null to remove the limit. An active spend cap lifts only when the limit is removed or raised.
 	//
 	// Example: 500
 	SpendLimit *float64 `json:"spend_limit,omitempty"`
@@ -6427,6 +6614,9 @@ type PolicyId = string
 
 // ProjectId defines model for ProjectId.
 type ProjectId = string
+
+// QueryTemplateId defines model for QueryTemplateId.
+type QueryTemplateId = string
 
 // ReplicaId defines model for ReplicaId.
 type ReplicaId = string
@@ -7261,6 +7451,50 @@ type UpdatePolicyProfileParams struct {
 	IfMatch *IfMatch `json:"If-Match,omitempty"`
 }
 
+// ListQueryTemplatesParams defines parameters for ListQueryTemplates.
+type ListQueryTemplatesParams struct {
+	// PageSize Maximum number of items to return (1-100, default 20).
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken Opaque token for cursor-based pagination.
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+
+	// IfNoneMatch Entity tag the client already holds, taken from the `ETag` of an earlier response. When it still matches the current representation the server answers `304 Not Modified` with no body, so a poll that finds nothing changed costs a round trip rather than a transfer.
+	//
+	// A comma-separated list is accepted, and `*` matches any current representation.
+	IfNoneMatch *IfNoneMatch `json:"If-None-Match,omitempty"`
+}
+
+// CreateQueryTemplateParams defines parameters for CreateQueryTemplate.
+type CreateQueryTemplateParams struct {
+	// IdempotencyKey Client-generated key that makes a retry of this request safe. The first request carrying a given key executes normally and its response (status, content type and body) is stored for 24 hours; a later request with the same key returns that stored response without running the operation again, so a retry after a lost or timed-out response cannot create a second resource.
+	//
+	// Reusing a key with a different request body returns `409 Conflict`: a key is a promise about one specific request, so a changed body is a client bug rather than a retry. Keys are scoped to the calling organization (or to the user, for account-scoped tokens), so one tenant can never read another's stored response.
+	//
+	// A `5xx`, `408` or `429` is never stored, because those describe a request that produced no settled answer and the next attempt with the same key must run for real. A `4xx` is stored: it is the server's settled answer about this exact request.
+	//
+	// Use a fresh UUID per logical operation. The PgBeam SDKs generate one per call and reuse it across their own automatic retries.
+	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
+}
+
+// GetQueryTemplateParams defines parameters for GetQueryTemplate.
+type GetQueryTemplateParams struct {
+	// IfNoneMatch Entity tag the client already holds, taken from the `ETag` of an earlier response. When it still matches the current representation the server answers `304 Not Modified` with no body, so a poll that finds nothing changed costs a round trip rather than a transfer.
+	//
+	// A comma-separated list is accepted, and `*` matches any current representation.
+	IfNoneMatch *IfNoneMatch `json:"If-None-Match,omitempty"`
+}
+
+// UpdateQueryTemplateParams defines parameters for UpdateQueryTemplate.
+type UpdateQueryTemplateParams struct {
+	// IfMatch Entity tag the write is based on, taken from the `ETag` of the read that produced the values being sent. The write proceeds only if it still matches the current representation; otherwise it is refused with `412 Precondition Failed` and nothing is changed.
+	//
+	// This is what makes a read-modify-write safe. Without it the last writer wins and a concurrent edit is silently discarded, which is the failure an agent is most likely to cause and least likely to notice. The `412` response carries the current `ETag`, so a caller can re-read, re-apply its change and retry.
+	//
+	// Omitting the header keeps the old unconditional behaviour. `*` matches any current representation, which asserts only that the resource exists.
+	IfMatch *IfMatch `json:"If-Match,omitempty"`
+}
+
 // DeleteSchemaAnnotationParams defines parameters for DeleteSchemaAnnotation.
 type DeleteSchemaAnnotationParams struct {
 	// TableName Relation (table or view) the annotation describes.
@@ -7483,6 +7717,12 @@ type DryEvalPolicyJSONRequestBody = DryEvalInput
 
 // ReplayPolicyJSONRequestBody defines body for ReplayPolicy for application/json ContentType.
 type ReplayPolicyJSONRequestBody = PolicyReplayInput
+
+// CreateQueryTemplateJSONRequestBody defines body for CreateQueryTemplate for application/json ContentType.
+type CreateQueryTemplateJSONRequestBody = QueryTemplateInput
+
+// UpdateQueryTemplateJSONRequestBody defines body for UpdateQueryTemplate for application/json ContentType.
+type UpdateQueryTemplateJSONRequestBody = QueryTemplateInput
 
 // PutSchemaAnnotationJSONRequestBody defines body for PutSchemaAnnotation for application/json ContentType.
 type PutSchemaAnnotationJSONRequestBody = SchemaAnnotationInput

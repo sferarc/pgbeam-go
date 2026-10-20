@@ -6,6 +6,8 @@ import (
 	"errors"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
+	"reflect"
 	"sync/atomic"
 	"testing"
 	"time"
@@ -107,6 +109,35 @@ func TestRetry_IdempotencyKey_POST(t *testing.T) {
 		}
 		if k != keys[0] {
 			t.Fatalf("attempt %d: key %q differs from first attempt key %q", i, k, keys[0])
+		}
+	}
+}
+
+func TestScanText_NoIdempotencyKeyWithDefaultRetry(t *testing.T) {
+	var keys []string
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		keys = append(keys, r.Header.Get("Idempotency-Key"))
+		if len(keys) < 2 {
+			w.Header().Set("Retry-After", "0")
+			w.WriteHeader(http.StatusServiceUnavailable)
+			return
+		}
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(map[string]string{"action": "allow"})
+	}))
+	defer srv.Close()
+
+	c := NewClient(&ClientOptions{APIKey: "test", BaseURL: srv.URL})
+	if _, err := c.Platform.ScanText(context.Background(), ScanTextRequest{Text: "hello"}); err != nil {
+		t.Fatalf("expected success, got: %v", err)
+	}
+
+	if len(keys) != 2 {
+		t.Fatalf("expected 2 requests, got %d", len(keys))
+	}
+	for i, k := range keys {
+		if k != "" {
+			t.Fatalf("attempt %d: expected no Idempotency-Key on scanText, got %q", i, k)
 		}
 	}
 }
@@ -215,33 +246,101 @@ func TestRetry_RetryAfterHeader(t *testing.T) {
 }
 
 func TestEncodeQuery(t *testing.T) {
-	type params struct {
-		OrgID    string `json:"org_id"`
-		PageSize *int   `json:"page_size,omitempty"`
-	}
+	cest := time.FixedZone("CEST", 2*60*60)
+	ts := time.Date(2026, 10, 13, 22, 19, 28, 123456789, cest)
+	zero, f := 0, false
 
-	ps := 20
-	q := encodeQuery(params{OrgID: "org_123", PageSize: &ps})
-	if q == "" {
-		t.Fatal("expected non-empty query string")
+	type params struct {
+		OrgID       string          `form:"org_id" json:"org_id"`
+		PageSize    *int            `form:"page_size,omitempty" json:"page_size,omitempty"`
+		Archived    *bool           `form:"archived,omitempty" json:"archived,omitempty"`
+		Start       *AuditStart     `form:"start,omitempty" json:"start,omitempty"`
+		Before      *time.Time      `form:"before,omitempty" json:"before,omitempty"`
+		At          time.Time       `form:"at,omitempty" json:"at,omitempty"`
+		Day         openapiDate     `form:"day,omitempty" json:"day,omitempty"`
+		Tags        []string        `form:"tag,omitempty" json:"tag,omitempty"`
+		IfNoneMatch *IfNoneMatch    `json:"If-None-Match,omitempty"`
+		Idempotency *IdempotencyKey `json:"Idempotency-Key,omitempty"`
 	}
-	if !contains(q, "org_id=org_123") {
-		t.Fatalf("expected org_id in query, got: %s", q)
+	etag := IfNoneMatch("abc")
+	key := IdempotencyKey("k1")
+
+	tests := []struct {
+		name   string
+		params any
+		want   url.Values
+	}{
+		{"nil params", (*params)(nil), url.Values{}},
+		{"non-struct", 42, url.Values{}},
+		{"zero value fields skipped", params{}, url.Values{}},
+		{"string and int pointer", params{OrgID: "org_123", PageSize: ptr(20)},
+			url.Values{"org_id": {"org_123"}, "page_size": {"20"}}},
+		{"pointer to zero int is sent", params{PageSize: &zero}, url.Values{"page_size": {"0"}}},
+		{"pointer to false is sent", params{Archived: &f}, url.Values{"archived": {"false"}}},
+		{"bool true", params{Archived: ptr(true)}, url.Values{"archived": {"true"}}},
+		{"time alias pointer", params{Start: &ts}, url.Values{"start": {"2026-10-13T22:19:28.123456789+02:00"}}},
+		{"time pointer", params{Before: &ts}, url.Values{"before": {"2026-10-13T22:19:28.123456789+02:00"}}},
+		{"time value in UTC", params{At: ts.UTC()}, url.Values{"at": {"2026-10-13T20:19:28.123456789Z"}}},
+		{"stringer", params{Day: openapiDate{ts}}, url.Values{"day": {"2026-10-13"}}},
+		{"slice as repeated keys", params{Tags: []string{"a", "b"}}, url.Values{"tag": {"a", "b"}}},
+		{"header-only fields omitted", params{OrgID: "o", IfNoneMatch: &etag, Idempotency: &key}, url.Values{"org_id": {"o"}}},
 	}
-	if !contains(q, "page_size=20") {
-		t.Fatalf("expected page_size in query, got: %s", q)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := url.ParseQuery(encodeQuery(tt.params))
+			if err != nil {
+				t.Fatalf("parse query: %v", err)
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Fatalf("encodeQuery = %v, want %v", got, tt.want)
+			}
+			for _, k := range []string{"start", "before", "at"} {
+				if v := got.Get(k); v != "" {
+					parsed, err := time.Parse(time.RFC3339Nano, v)
+					if err != nil {
+						t.Fatalf("%s=%q is not RFC 3339: %v", k, v, err)
+					}
+					if !parsed.Equal(ts) {
+						t.Fatalf("%s round-tripped to %v, want %v", k, parsed, ts)
+					}
+				}
+			}
+		})
 	}
 }
 
-func TestEncodeQuery_NilPointer(t *testing.T) {
-	type params struct {
-		OrgID    string `json:"org_id"`
-		PageSize *int   `json:"page_size,omitempty"`
-	}
+func ptr[T any](v T) *T { return &v }
 
-	q := encodeQuery(params{OrgID: "org_123"})
-	if contains(q, "page_size") {
-		t.Fatalf("expected no page_size in query, got: %s", q)
+type openapiDate struct{ time.Time }
+
+func (d openapiDate) String() string { return d.Format(time.DateOnly) }
+
+func TestListAuditLogs_EncodesTimeFilters(t *testing.T) {
+	start := time.Date(2026, 10, 13, 22, 19, 28, 0, time.FixedZone("CEST", 2*60*60))
+	var gotStart time.Time
+	var gotQuery url.Values
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		gotQuery = r.URL.Query()
+		var err error
+		if gotStart, err = time.Parse(time.RFC3339Nano, gotQuery.Get("start")); err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+		w.Header().Set("Content-Type", "application/json")
+		w.Write([]byte(`{"entries":[]}`))
+	}))
+	defer srv.Close()
+
+	c := NewClient(&ClientOptions{APIKey: "test", BaseURL: srv.URL})
+	_, err := c.Agents.ListAuditLogs(context.Background(), "prj_1", &ListAuditLogsParams{Start: &start, PageSize: ptr(PageSize(50))})
+	if err != nil {
+		t.Fatalf("ListAuditLogs: %v", err)
+	}
+	if !gotStart.Equal(start) {
+		t.Fatalf("server parsed start=%v, want %v", gotStart, start)
+	}
+	if gotQuery.Get("page_size") != "50" {
+		t.Fatalf("page_size = %q, want 50", gotQuery.Get("page_size"))
 	}
 }
 
