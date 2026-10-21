@@ -6069,21 +6069,6 @@ type SelfHostEnrollmentSecret struct {
 	Token string `json:"token"`
 }
 
-// SlackEventPayload Slack event forwarded from the dashboard webhook handler.
-type SlackEventPayload struct {
-	// ChannelId Slack channel ID where the message was posted.
-	ChannelId string `json:"channel_id"`
-
-	// Text Message text from Slack.
-	Text string `json:"text"`
-
-	// ThreadTs Slack thread timestamp identifying the support case thread.
-	ThreadTs string `json:"thread_ts"`
-
-	// UserId Slack user ID of the message author.
-	UserId string `json:"user_id"`
-}
-
 // StatementRules Per-statement-kind allow/deny lists. Empty allow means all kinds permitted by the access mode.
 type StatementRules struct {
 	// Allow Allowed statement kinds (select, insert, update, delete, ddl, copy, set, show, explain, transaction).
@@ -7609,9 +7594,6 @@ type CreateDemoCredentialJSONRequestBody = CreateDemoCredentialRequest
 
 // ReleaseDemoCredentialJSONRequestBody defines body for ReleaseDemoCredential for application/json ContentType.
 type ReleaseDemoCredentialJSONRequestBody = ReleaseDemoCredentialRequest
-
-// HandleSlackSupportEventJSONRequestBody defines body for HandleSlackSupportEvent for application/json ContentType.
-type HandleSlackSupportEventJSONRequestBody = SlackEventPayload
 
 // McpTransportJSONRequestBody defines body for McpTransport for application/json ContentType.
 type McpTransportJSONRequestBody = McpRequest

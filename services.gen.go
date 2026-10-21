@@ -28,7 +28,6 @@ type Client struct {
 	Batch             *BatchService
 	Demo              *DemoService
 	Honeytokens       *HoneytokensService
-	Internal          *InternalService
 	Payments          *PaymentsService
 	Schemaannotations *SchemaannotationsService
 	Support           *SupportService
@@ -54,7 +53,6 @@ func NewClient(opts *ClientOptions) *Client {
 	c.Batch = &BatchService{t: t}
 	c.Demo = &DemoService{t: t}
 	c.Honeytokens = &HoneytokensService{t: t}
-	c.Internal = &InternalService{t: t}
 	c.Payments = &PaymentsService{t: t}
 	c.Schemaannotations = &SchemaannotationsService{t: t}
 	c.Support = &SupportService{t: t}
@@ -524,13 +522,6 @@ func (s *HoneytokensService) UpdateHoneytoken(ctx context.Context, projectID str
 
 func (s *HoneytokensService) DeleteHoneytoken(ctx context.Context, projectID string, honeytokenID string) error {
 	return doVoid(s.t, ctx, "DELETE", fmt.Sprintf("/v1/projects/%s/honeytokens/%s", url.PathEscape(projectID), url.PathEscape(honeytokenID)), nil)
-}
-
-// InternalService provides internal operations.
-type InternalService struct{ t *transport }
-
-func (s *InternalService) HandleSlackSupportEvent(ctx context.Context, body SlackEventPayload) error {
-	return doVoid(s.t, ctx, "POST", "/v1/internal/support/slack-event", body)
 }
 
 // PaymentsService provides payments operations.
