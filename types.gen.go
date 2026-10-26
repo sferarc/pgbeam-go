@@ -1257,6 +1257,24 @@ func (e PolicyProfileMigrationSafety) Valid() bool {
 	}
 }
 
+// Defines values for PolicyProfileQueryMode.
+const (
+	PolicyProfileQueryModeSql       PolicyProfileQueryMode = "sql"
+	PolicyProfileQueryModeTemplates PolicyProfileQueryMode = "templates"
+)
+
+// Valid indicates whether the value is a known member of the PolicyProfileQueryMode enum.
+func (e PolicyProfileQueryMode) Valid() bool {
+	switch e {
+	case PolicyProfileQueryModeSql:
+		return true
+	case PolicyProfileQueryModeTemplates:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for PolicyProfileWriteMode.
 const (
 	PolicyProfileWriteModeNormal   PolicyProfileWriteMode = "normal"
@@ -1362,6 +1380,24 @@ func (e PolicyProfileInputMigrationSafety) Valid() bool {
 	}
 }
 
+// Defines values for PolicyProfileInputQueryMode.
+const (
+	PolicyProfileInputQueryModeSql       PolicyProfileInputQueryMode = "sql"
+	PolicyProfileInputQueryModeTemplates PolicyProfileInputQueryMode = "templates"
+)
+
+// Valid indicates whether the value is a known member of the PolicyProfileInputQueryMode enum.
+func (e PolicyProfileInputQueryMode) Valid() bool {
+	switch e {
+	case PolicyProfileInputQueryModeSql:
+		return true
+	case PolicyProfileInputQueryModeTemplates:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for PolicyProfileInputWriteMode.
 const (
 	PolicyProfileInputWriteModeNormal   PolicyProfileInputWriteMode = "normal"
@@ -1419,6 +1455,24 @@ func (e PolicyReplaySummaryTrafficScope) Valid() bool {
 	case PolicyReplaySummaryTrafficScopeBoundCredentials:
 		return true
 	case PolicyReplaySummaryTrafficScopeProject:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for PolicyStatementKindsAccessMode.
+const (
+	PolicyStatementKindsAccessModeReadOnly  PolicyStatementKindsAccessMode = "read_only"
+	PolicyStatementKindsAccessModeReadWrite PolicyStatementKindsAccessMode = "read_write"
+)
+
+// Valid indicates whether the value is a known member of the PolicyStatementKindsAccessMode enum.
+func (e PolicyStatementKindsAccessMode) Valid() bool {
+	switch e {
+	case PolicyStatementKindsAccessModeReadOnly:
+		return true
+	case PolicyStatementKindsAccessModeReadWrite:
 		return true
 	default:
 		return false
@@ -4077,10 +4131,15 @@ type DryEvalResult struct {
 	// Example: tenant_id = current_setting('pgbeam.tenant')
 	RowFilterPredicate *string `json:"row_filter_predicate,omitempty"`
 
-	// Rule Machine-readable decision tag. For a block, the blocking rule (e.g. read_only, table_denied, table_not_allowed, statement_denied, row_filter_unsafe). Otherwise "ok".
+	// Rule Machine-readable decision tag. For a block, the blocking rule (e.g. read_only, table_denied, table_not_allowed, statement_denied, row_filter_unsafe, template_required). Otherwise "ok".
 	//
 	// Example: ok
 	Rule string `json:"rule"`
+
+	// Template The name of the project query template the statement matched. Present only when the policy is templates-only and the statement is one of the project's enabled templates; a templates-only policy blocks anything else with rule template_required.
+	//
+	// Example: open_orders
+	Template *string `json:"template,omitempty"`
 
 	// Verdict allow: permitted unchanged; block: rejected; mask: permitted but listed result columns are masked; row-filter: permitted but a WHERE predicate is injected (and any listed columns are also masked).
 	Verdict DryEvalResultVerdict `json:"verdict"`
@@ -5074,6 +5133,9 @@ type PolicyProfile struct {
 	// Example: prj_01h455vb4pex5vsknk084sn02q
 	ProjectId string `json:"project_id"`
 
+	// QueryMode What an agent on this profile may send. sql admits any statement the rest of the profile allows. templates admits only the project's enabled query templates (matched on the parse tree, so spelling and literals in the template's own text count), and refuses everything else with SQLSTATE 42501 and decision rule template_required, MCP query included. A matched template still meets every other rule on this profile: a template narrows what an agent can run and never grants access. The hosted MCP discovery tools (list_tables, describe_table, schema_catalog) keep working under templates.
+	QueryMode PolicyProfileQueryMode `json:"query_mode"`
+
 	// RowFilters Per-relation row filters ANDed into agent reads.
 	RowFilters *[]RowFilter `json:"row_filters,omitempty"`
 
@@ -5107,6 +5169,9 @@ type PolicyProfileContentScanMode string
 
 // PolicyProfileMigrationSafety Migration safety mode. warn surfaces findings, block refuses unsafe DDL.
 type PolicyProfileMigrationSafety string
+
+// PolicyProfileQueryMode What an agent on this profile may send. sql admits any statement the rest of the profile allows. templates admits only the project's enabled query templates (matched on the parse tree, so spelling and literals in the template's own text count), and refuses everything else with SQLSTATE 42501 and decision rule template_required, MCP query included. A matched template still meets every other rule on this profile: a template narrows what an agent can run and never grants access. The hosted MCP discovery tools (list_tables, describe_table, schema_catalog) keep working under templates.
+type PolicyProfileQueryMode string
 
 // PolicyProfileWriteMode How writes are handled. normal commits, rollback auto-rolls back, sandbox routes to an ephemeral branch.
 type PolicyProfileWriteMode string
@@ -5155,6 +5220,9 @@ type PolicyProfileInput struct {
 	// Name Human-readable name for the policy profile.
 	Name string `json:"name"`
 
+	// QueryMode What an agent on this profile may send. sql admits any statement the rest of the profile allows. templates admits only the project's enabled query templates and refuses everything else with SQLSTATE 42501 and decision rule template_required; a matched template still meets every other rule on this profile, so it narrows and never grants access. Setting templates is refused with 400 when the project has no enabled template, since that profile would admit nothing, and with 409 while the organization has a live self-hosted enrollment, since an older self-hosted proxy ignores this field and would run unrestricted SQL. On create, omitting the field means sql. On update, omitting it keeps the stored mode, so a client that predates this field cannot widen a templates profile back to sql by saving it; send sql to do that.
+	QueryMode *PolicyProfileInputQueryMode `json:"query_mode,omitempty"`
+
 	// RowFilters Per-relation row filters ANDed into agent reads.
 	RowFilters *[]RowFilter `json:"row_filters,omitempty"`
 
@@ -5185,6 +5253,9 @@ type PolicyProfileInputContentScanMode string
 
 // PolicyProfileInputMigrationSafety Migration safety mode. warn surfaces findings, block refuses unsafe DDL.
 type PolicyProfileInputMigrationSafety string
+
+// PolicyProfileInputQueryMode What an agent on this profile may send. sql admits any statement the rest of the profile allows. templates admits only the project's enabled query templates and refuses everything else with SQLSTATE 42501 and decision rule template_required; a matched template still meets every other rule on this profile, so it narrows and never grants access. Setting templates is refused with 400 when the project has no enabled template, since that profile would admit nothing, and with 409 while the organization has a live self-hosted enrollment, since an older self-hosted proxy ignores this field and would run unrestricted SQL. On create, omitting the field means sql. On update, omitting it keeps the stored mode, so a client that predates this field cannot widen a templates profile back to sql by saving it; send sql to do that.
+type PolicyProfileInputQueryMode string
 
 // PolicyProfileInputWriteMode How writes are handled. normal commits, rollback auto-rolls back, sandbox routes to an ephemeral branch.
 type PolicyProfileInputWriteMode string
@@ -5347,6 +5418,42 @@ type PolicyReplaySummary struct {
 
 // PolicyReplaySummaryTrafficScope Which recorded traffic the replay covered. "project" is every credential in the project, so some replayed queries may belong to credentials this candidate policy does not govern. "bound_credentials" is only the credentials bound to bound_policy_id, which is what actually changes when that policy is saved.
 type PolicyReplaySummaryTrafficScope string
+
+// PolicyStatementKindVerdict Whether the policy permits one statement kind.
+type PolicyStatementKindVerdict struct {
+	// Allowed Whether a statement of this kind is permitted.
+	Allowed bool `json:"allowed"`
+
+	// Kind The statement kind: select, insert, update, delete, ddl, copy, set, show, explain, transaction or other. other is a statement the analyzer could not classify (LISTEN, DEALLOCATE, cursor statements and the like). Plain string rather than an enum so a kind the proxy learns to classify later does not break an older client.
+	//
+	// Example: select
+	Kind string `json:"kind"`
+
+	// Reason The proxy's own explanation of the refusal. Present only when allowed is false.
+	Reason *string `json:"reason,omitempty"`
+
+	// Rule The machine-readable rule that refuses the kind (for example copy_blocked, statement_denied, statement_not_allowed, unknown_statement or read_only). Present only when allowed is false.
+	//
+	// Example: read_only
+	Rule *string `json:"rule,omitempty"`
+}
+
+// PolicyStatementKinds The policy's verdict for each statement kind on its own, as the data plane decides it.
+type PolicyStatementKinds struct {
+	// AccessMode The access mode enforced. Anything stored that is not read_write is enforced as read_only.
+	AccessMode PolicyStatementKindsAccessMode `json:"access_mode"`
+
+	// PolicyId The policy profile these verdicts are for.
+	//
+	// Example: pol_xxx
+	PolicyId string `json:"policy_id"`
+
+	// StatementKinds One verdict per statement kind, in a fixed order.
+	StatementKinds []PolicyStatementKindVerdict `json:"statement_kinds"`
+}
+
+// PolicyStatementKindsAccessMode The access mode enforced. Anything stored that is not read_write is enforced as read_only.
+type PolicyStatementKindsAccessMode string
 
 // PoolConfig Connection pool configuration.
 type PoolConfig struct {
@@ -5600,7 +5707,8 @@ type QueryTemplate struct {
 
 // QueryTemplateInput Request body for creating or updating a query template.
 type QueryTemplateInput struct {
-	// Description What the template is for, shown to an agent that lists the templates.
+	// Description What the template is for, shown to an agent that lists the templates. Defaults to empty.
+	//
 	//
 	// Example: Open orders for one customer, newest first.
 	Description *string `json:"description,omitempty"`

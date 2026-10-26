@@ -316,7 +316,7 @@ func doQuery[T any](t *transport, ctx context.Context, path string, params any) 
 // Fields without a form tag are header parameters and never reach the URL.
 func encodeQuery(params any) string {
 	v := reflect.ValueOf(params)
-	if v.Kind() == reflect.Ptr {
+	if v.Kind() == reflect.Pointer {
 		if v.IsNil() {
 			return ""
 		}
@@ -339,7 +339,7 @@ func encodeQuery(params any) string {
 		}
 
 		fv := v.Field(i)
-		if fv.Kind() == reflect.Ptr {
+		if fv.Kind() == reflect.Pointer {
 			if fv.IsNil() {
 				continue
 			}
@@ -360,7 +360,7 @@ func encodeQuery(params any) string {
 }
 
 func formatQueryValue(v reflect.Value) string {
-	for v.Kind() == reflect.Ptr || v.Kind() == reflect.Interface {
+	for v.Kind() == reflect.Pointer || v.Kind() == reflect.Interface {
 		if v.IsNil() {
 			return ""
 		}

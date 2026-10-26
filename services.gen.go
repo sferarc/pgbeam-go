@@ -184,6 +184,10 @@ func (s *PoliciesService) DeletePolicyProfile(ctx context.Context, projectID str
 	return doVoid(s.t, ctx, "DELETE", fmt.Sprintf("/v1/projects/%s/policies/%s", url.PathEscape(projectID), url.PathEscape(policyID)), nil)
 }
 
+func (s *PoliciesService) GetPolicyStatementKinds(ctx context.Context, projectID string, policyID string) (*PolicyStatementKinds, error) {
+	return doJSON[PolicyStatementKinds](s.t, ctx, "GET", fmt.Sprintf("/v1/projects/%s/policies/%s/statement-kinds", url.PathEscape(projectID), url.PathEscape(policyID)), nil)
+}
+
 func (s *PoliciesService) DryEvalPolicy(ctx context.Context, projectID string, body DryEvalInput) (*DryEvalResult, error) {
 	return doJSON[DryEvalResult](s.t, ctx, "POST", fmt.Sprintf("/v1/projects/%s/policy-evaluations", url.PathEscape(projectID)), body)
 }

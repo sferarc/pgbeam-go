@@ -1,5 +1,42 @@
 # @pgbeam/go-sdk
 
+## 0.5.0
+
+### Minor Changes
+
+- 796f4a7: Policy profiles carry `query_mode` (`sql` or `templates`). A profile set to `templates` admits only the project's enabled query templates, and every other rule on the profile still applies to what a template runs. Setting `templates` is refused when the project has no enabled template, and while the organization has a live self-hosted enrollment. On update, an omitted `query_mode` keeps the stored mode. In Terraform, Crossplane and Pulumi, removing `query_mode` from a config plans `sql`, and the plan shows that change.
+
+## 0.4.1
+
+### Patch Changes
+
+- 5dbe64b: `DryEvalResult` gains an optional `template` field: the name of the project query template a statement matched, present only when the policy is templates-only.
+- d651ca6: Query templates can be declared as code: `pgbeam_query_template`, the Crossplane `QueryTemplate` and the Pulumi `QueryTemplate`. Removing `description`, `include_sql`, `enabled` or `params` from a config resets it to the API default (empty, false, true, none) rather than keeping the last value. The query template input's `description` now declares its default (empty) in the contract, which is what the API already stored for an omitted one. Nothing restricts a credential to templates yet: the policy profile setting that does arrives in a later release.
+
+## 0.4.0
+
+### Minor Changes
+
+- 307db3d: Path parameters are now escaped with `url.PathEscape`, so an ID containing `/`, `?`, `#` or `%` can no longer rewrite the request path or query.
+
+  Breaking signature changes:
+
+  - `AgentsService.ExportAuditLogs` now returns `([]byte, error)` with the CSV body, and sends its `params` filters. It previously returned only `error`, ignored `params` and discarded the export.
+  - `WebhooksService.TestWebhookEndpoint` now returns `(*WebhookTestResponse, error)` instead of discarding the `202` response.
+
+  `SchemaannotationsService.DeleteSchemaAnnotation` now sends its `params` (`table_name`, `schema_name`, `column_name`) instead of dropping them.
+
+- f17bb94: Bound every call the way the TypeScript and Python SDKs do. Each attempt now times out after `ClientOptions.Timeout` (default 30s, negative disables), and `RetryConfig.TotalBudget` (default 120s) stops retrying once the next wait would land past it, so a `Retry-After: 3600` returns the error instead of sleeping an hour. A truncated response body is retried like a network error, error bodies are read up to 1 MiB, a negative `MaxRetries` makes one attempt, and the User-Agent carries the SDK version.
+- f363bd7: Add the query templates API: create, list, get, update and delete named, parameterized statements on a project (`/v1/projects/{project_id}/query-templates`, under the Policies tag). A template is checked when it is written and refused with 400 if it is not exactly one SELECT, INSERT, UPDATE or DELETE whose `$n` placeholders match its declared parameters. Nothing restricts a credential to templates yet: the policy profile setting that does arrives in a later release.
+- 94466c2: Remove the internal Slack support webhook (`POST /v1/internal/support/slack-event`) from the public SDKs and their docs. It only accepts calls from the dashboard's Slack handler, so `api.internal.handleSlackSupportEvent` (TypeScript), `client.Internal.HandleSlackSupportEvent` and the `SlackEventPayload` type (Go), and `client.internal.handle_slack_support_event` (Python) are gone. This removes public methods, so it would be a breaking change after 1.0; while the SDKs are pre-1.0 it ships as a minor release.
+
+### Patch Changes
+
+- 86e67c7: Query parameters now encode timestamps as RFC 3339, so `start`, `end` and `before` filters on audit logs reach the API in a form it accepts. Header parameters such as `If-None-Match` and `Idempotency-Key` are no longer leaked into the query string, and an explicitly set pointer to `0` or `false` is sent instead of dropped. Slice parameters are encoded as repeated keys.
+- ba058a7: Describe the management MCP endpoint as it behaves: six registered tools, with API operations reached through `call_endpoint`, and the protocol version negotiated at `initialize` rather than pinned.
+- 421ec09: Parse RFC 9457 problem documents into `ApiError`. The message now comes from `detail` (then `title`) instead of falling back to the bare status text, and `code`, `type`, `title`, `detail`, `instance`, `request_id` and `errors` are attributes, so callers can tell a 403 `FORBIDDEN` from a 403 `PLAN_LIMIT_REACHED` without reading `body`.
+- 6cd15fe: Stop sending an automatic `Idempotency-Key` on `POST /v1/scan/text`, which the API rejects with 400. Retries stay on for that call, since a scan has no side effects.
+
 ## 0.3.7
 
 ### Patch Changes
