@@ -674,15 +674,21 @@ func (e DemoWalkthroughStepExpect) Valid() bool {
 
 // Defines values for DryEvalMaskedColumnKind.
 const (
-	DryEvalMaskedColumnKindHash   DryEvalMaskedColumnKind = "hash"
-	DryEvalMaskedColumnKindNull   DryEvalMaskedColumnKind = "null"
-	DryEvalMaskedColumnKindRedact DryEvalMaskedColumnKind = "redact"
+	DryEvalMaskedColumnKindEmailDomain DryEvalMaskedColumnKind = "email_domain"
+	DryEvalMaskedColumnKindHash        DryEvalMaskedColumnKind = "hash"
+	DryEvalMaskedColumnKindLast4       DryEvalMaskedColumnKind = "last4"
+	DryEvalMaskedColumnKindNull        DryEvalMaskedColumnKind = "null"
+	DryEvalMaskedColumnKindRedact      DryEvalMaskedColumnKind = "redact"
 )
 
 // Valid indicates whether the value is a known member of the DryEvalMaskedColumnKind enum.
 func (e DryEvalMaskedColumnKind) Valid() bool {
 	switch e {
+	case DryEvalMaskedColumnKindEmailDomain:
+		return true
 	case DryEvalMaskedColumnKindHash:
+		return true
+	case DryEvalMaskedColumnKindLast4:
 		return true
 	case DryEvalMaskedColumnKindNull:
 		return true
@@ -857,15 +863,21 @@ func (e HoneytokenInputAction) Valid() bool {
 
 // Defines values for MaskingRuleKind.
 const (
-	MaskingRuleKindHash   MaskingRuleKind = "hash"
-	MaskingRuleKindNull   MaskingRuleKind = "null"
-	MaskingRuleKindRedact MaskingRuleKind = "redact"
+	MaskingRuleKindEmailDomain MaskingRuleKind = "email_domain"
+	MaskingRuleKindHash        MaskingRuleKind = "hash"
+	MaskingRuleKindLast4       MaskingRuleKind = "last4"
+	MaskingRuleKindNull        MaskingRuleKind = "null"
+	MaskingRuleKindRedact      MaskingRuleKind = "redact"
 )
 
 // Valid indicates whether the value is a known member of the MaskingRuleKind enum.
 func (e MaskingRuleKind) Valid() bool {
 	switch e {
+	case MaskingRuleKindEmailDomain:
+		return true
 	case MaskingRuleKindHash:
+		return true
+	case MaskingRuleKindLast4:
 		return true
 	case MaskingRuleKindNull:
 		return true
@@ -4532,7 +4544,7 @@ type MaskingRule struct {
 	// Example: email
 	Column string `json:"column"`
 
-	// Kind How to mask. redact replaces with a token, null returns NULL, hash returns a SHA-256 hex.
+	// Kind How to mask. redact replaces with a token, null returns NULL, hash returns a SHA-256 hex, last4 keeps the final four characters behind "****", and email_domain keeps the domain behind "****@". A value too short for last4 or not shaped like an email for email_domain is redacted instead.
 	Kind MaskingRuleKind `json:"kind"`
 
 	// Table Relation name, optionally schema-qualified (e.g. "public.users" or "users").
@@ -4541,7 +4553,7 @@ type MaskingRule struct {
 	Table string `json:"table"`
 }
 
-// MaskingRuleKind How to mask. redact replaces with a token, null returns NULL, hash returns a SHA-256 hex.
+// MaskingRuleKind How to mask. redact replaces with a token, null returns NULL, hash returns a SHA-256 hex, last4 keeps the final four characters behind "****", and email_domain keeps the domain behind "****@". A value too short for last4 or not shaped like an email for email_domain is redacted instead.
 type MaskingRuleKind string
 
 // McpRequest JSON-RPC 2.0 request envelope for MCP over Streamable HTTP.
