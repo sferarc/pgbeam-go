@@ -5067,6 +5067,12 @@ type PlanLimits struct {
 	// MaxQueryShapes Maximum query shapes in cache rules. 0 means unlimited.
 	MaxQueryShapes int `json:"max_query_shapes"`
 
+	// OveragePer1k Price in USD for each 1,000 queries over the daily quota. 0 means the quota is a hard cap and no query overage is billed.
+	OveragePer1k float64 `json:"overage_per_1k"`
+
+	// OveragePerGb Price in USD for each GB transferred over the monthly quota. 0 means the quota is a hard cap and no transfer overage is billed.
+	OveragePerGb float64 `json:"overage_per_gb"`
+
 	// QueriesPerDay Maximum queries per day across all projects. 0 means unlimited.
 	QueriesPerDay int64 `json:"queries_per_day"`
 
