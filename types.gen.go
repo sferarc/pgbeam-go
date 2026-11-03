@@ -5124,6 +5124,9 @@ type PolicyProfile struct {
 	// EgressBytesPerDay Per-day egress budget in bytes. 0 means unlimited.
 	EgressBytesPerDay *int64 `json:"egress_bytes_per_day,omitempty"`
 
+	// FunctionDenylist Functions an agent on this profile may not call, refused with SQLSTATE 42501 and decision rule function_denied. This adds to the proxy's built-in dangerous-function floor, which no profile can relax. Matching is case-insensitive and sees every call in the statement, including inside a CTE, a sub-select or a function argument. A bare entry (recompute) matches the name in every schema. A schema-qualified entry (billing.recompute) matches a call qualified with that schema and also an unqualified call of the same name, since the proxy cannot see where search_path resolves it. A function reached only through an operator, a cast, a view, a trigger or a column default is not matched. A proxy build older than this field ignores it, so the API refuses a non-empty list while the organization has a live self-hosted enrollment.
+	FunctionDenylist []string `json:"function_denylist"`
+
 	// Id Unique policy profile identifier (prefixed).
 	//
 	// Example: pol_01h455vb4pex5vsknk084sn02q
@@ -5222,6 +5225,9 @@ type PolicyProfileInput struct {
 
 	// EgressBytesPerDay Per-day egress budget in bytes. 0 means unlimited.
 	EgressBytesPerDay *int64 `json:"egress_bytes_per_day,omitempty"`
+
+	// FunctionDenylist Functions an agent on this profile may not call, on top of the proxy's built-in dangerous-function floor. Each entry is a bare name (recompute) or one schema-qualified name (billing.recompute), with no whitespace, quotes or parentheses and at most 63 bytes per part. A bare entry matches the name in every schema; a qualified entry also matches an unqualified call of the same name. On create, omitting the field means an empty list. On update, omitting it keeps the stored list, so a client that predates this field cannot clear it by saving the profile; send an empty array to do that. A non-empty list is refused with 409 while the organization has a live self-hosted enrollment, since an older self-hosted proxy ignores this field and would let those calls run. An empty list is always accepted.
+	FunctionDenylist *[]string `json:"function_denylist,omitempty"`
 
 	// MaskingRules Column masking rules applied to query results.
 	MaskingRules *[]MaskingRule `json:"masking_rules,omitempty"`
