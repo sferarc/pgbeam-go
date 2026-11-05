@@ -6803,9 +6803,9 @@ type ListReplicasParams struct {
 type CreateReplicaParams struct {
 	// IdempotencyKey Client-generated key that makes a retry of this request safe. The first request carrying a given key executes normally and its response (status, content type and body) is stored for 24 hours; a later request with the same key returns that stored response without running the operation again, so a retry after a lost or timed-out response cannot create a second resource.
 	//
-	// Reusing a key with a different request body returns `409 Conflict`: a key is a promise about one specific request, so a changed body is a client bug rather than a retry. Keys are scoped to the calling organization (or to the user, for account-scoped tokens), so one tenant can never read another's stored response.
+	// Reusing a key with a different request body returns `409 Conflict`: a key is a promise about one specific request, so a changed body is a client bug rather than a retry. Keys are scoped to the calling organization (or to the user, for account-scoped tokens, or to the agent MCP token, for a budget top-up), so one tenant can never read another's stored response.
 	//
-	// A `5xx`, `408` or `429` is never stored, because those describe a request that produced no settled answer and the next attempt with the same key must run for real. A `4xx` is stored: it is the server's settled answer about this exact request.
+	// A `5xx`, `402`, `408` or `429` is never stored, because those describe a request that produced no settled answer and the next attempt with the same key must run for real: a `402` asks for that next attempt to carry a payment. Any other `4xx` is stored: it is the server's settled answer about this exact request.
 	//
 	// Use a fresh UUID per logical operation. The PgBeam SDKs generate one per call and reuse it across their own automatic retries.
 	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
@@ -6827,6 +6827,18 @@ type ListOrganizationsParams struct {
 	IfNoneMatch *IfNoneMatch `json:"If-None-Match,omitempty"`
 }
 
+// SubmitCancellationFeedbackParams defines parameters for SubmitCancellationFeedback.
+type SubmitCancellationFeedbackParams struct {
+	// IdempotencyKey Client-generated key that makes a retry of this request safe. The first request carrying a given key executes normally and its response (status, content type and body) is stored for 24 hours; a later request with the same key returns that stored response without running the operation again, so a retry after a lost or timed-out response cannot create a second resource.
+	//
+	// Reusing a key with a different request body returns `409 Conflict`: a key is a promise about one specific request, so a changed body is a client bug rather than a retry. Keys are scoped to the calling organization (or to the user, for account-scoped tokens, or to the agent MCP token, for a budget top-up), so one tenant can never read another's stored response.
+	//
+	// A `5xx`, `402`, `408` or `429` is never stored, because those describe a request that produced no settled answer and the next attempt with the same key must run for real: a `402` asks for that next attempt to carry a payment. Any other `4xx` is stored: it is the server's settled answer about this exact request.
+	//
+	// Use a fresh UUID per logical operation. The PgBeam SDKs generate one per call and reuse it across their own automatic retries.
+	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
+}
+
 // ListOrgInvitationsParams defines parameters for ListOrgInvitations.
 type ListOrgInvitationsParams struct {
 	// Status Filter to a single status. Omit to list every invitation.
@@ -6846,6 +6858,18 @@ type ListOrgInvitationsParams struct {
 
 // ListOrgInvitationsParamsStatus defines parameters for ListOrgInvitations.
 type ListOrgInvitationsParamsStatus string
+
+// CreateOrgInvitationParams defines parameters for CreateOrgInvitation.
+type CreateOrgInvitationParams struct {
+	// IdempotencyKey Client-generated key that makes a retry of this request safe. The first request carrying a given key executes normally and its response (status, content type and body) is stored for 24 hours; a later request with the same key returns that stored response without running the operation again, so a retry after a lost or timed-out response cannot create a second resource.
+	//
+	// Reusing a key with a different request body returns `409 Conflict`: a key is a promise about one specific request, so a changed body is a client bug rather than a retry. Keys are scoped to the calling organization (or to the user, for account-scoped tokens, or to the agent MCP token, for a budget top-up), so one tenant can never read another's stored response.
+	//
+	// A `5xx`, `402`, `408` or `429` is never stored, because those describe a request that produced no settled answer and the next attempt with the same key must run for real: a `402` asks for that next attempt to carry a payment. Any other `4xx` is stored: it is the server's settled answer about this exact request.
+	//
+	// Use a fresh UUID per logical operation. The PgBeam SDKs generate one per call and reuse it across their own automatic retries.
+	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
+}
 
 // ListOrgMembersParams defines parameters for ListOrgMembers.
 type ListOrgMembersParams struct {
@@ -6895,9 +6919,9 @@ type ListSelfHostEnrollmentsParams struct {
 type CreateSelfHostEnrollmentParams struct {
 	// IdempotencyKey Client-generated key that makes a retry of this request safe. The first request carrying a given key executes normally and its response (status, content type and body) is stored for 24 hours; a later request with the same key returns that stored response without running the operation again, so a retry after a lost or timed-out response cannot create a second resource.
 	//
-	// Reusing a key with a different request body returns `409 Conflict`: a key is a promise about one specific request, so a changed body is a client bug rather than a retry. Keys are scoped to the calling organization (or to the user, for account-scoped tokens), so one tenant can never read another's stored response.
+	// Reusing a key with a different request body returns `409 Conflict`: a key is a promise about one specific request, so a changed body is a client bug rather than a retry. Keys are scoped to the calling organization (or to the user, for account-scoped tokens, or to the agent MCP token, for a budget top-up), so one tenant can never read another's stored response.
 	//
-	// A `5xx`, `408` or `429` is never stored, because those describe a request that produced no settled answer and the next attempt with the same key must run for real. A `4xx` is stored: it is the server's settled answer about this exact request.
+	// A `5xx`, `402`, `408` or `429` is never stored, because those describe a request that produced no settled answer and the next attempt with the same key must run for real: a `402` asks for that next attempt to carry a payment. Any other `4xx` is stored: it is the server's settled answer about this exact request.
 	//
 	// Use a fresh UUID per logical operation. The PgBeam SDKs generate one per call and reuse it across their own automatic retries.
 	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
@@ -6907,9 +6931,9 @@ type CreateSelfHostEnrollmentParams struct {
 type RotateSelfHostEnrollmentParams struct {
 	// IdempotencyKey Client-generated key that makes a retry of this request safe. The first request carrying a given key executes normally and its response (status, content type and body) is stored for 24 hours; a later request with the same key returns that stored response without running the operation again, so a retry after a lost or timed-out response cannot create a second resource.
 	//
-	// Reusing a key with a different request body returns `409 Conflict`: a key is a promise about one specific request, so a changed body is a client bug rather than a retry. Keys are scoped to the calling organization (or to the user, for account-scoped tokens), so one tenant can never read another's stored response.
+	// Reusing a key with a different request body returns `409 Conflict`: a key is a promise about one specific request, so a changed body is a client bug rather than a retry. Keys are scoped to the calling organization (or to the user, for account-scoped tokens, or to the agent MCP token, for a budget top-up), so one tenant can never read another's stored response.
 	//
-	// A `5xx`, `408` or `429` is never stored, because those describe a request that produced no settled answer and the next attempt with the same key must run for real. A `4xx` is stored: it is the server's settled answer about this exact request.
+	// A `5xx`, `402`, `408` or `429` is never stored, because those describe a request that produced no settled answer and the next attempt with the same key must run for real: a `402` asks for that next attempt to carry a payment. Any other `4xx` is stored: it is the server's settled answer about this exact request.
 	//
 	// Use a fresh UUID per logical operation. The PgBeam SDKs generate one per call and reuse it across their own automatic retries.
 	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
@@ -6942,9 +6966,9 @@ type ListSupportCasesParams struct {
 type CreateSupportCaseParams struct {
 	// IdempotencyKey Client-generated key that makes a retry of this request safe. The first request carrying a given key executes normally and its response (status, content type and body) is stored for 24 hours; a later request with the same key returns that stored response without running the operation again, so a retry after a lost or timed-out response cannot create a second resource.
 	//
-	// Reusing a key with a different request body returns `409 Conflict`: a key is a promise about one specific request, so a changed body is a client bug rather than a retry. Keys are scoped to the calling organization (or to the user, for account-scoped tokens), so one tenant can never read another's stored response.
+	// Reusing a key with a different request body returns `409 Conflict`: a key is a promise about one specific request, so a changed body is a client bug rather than a retry. Keys are scoped to the calling organization (or to the user, for account-scoped tokens, or to the agent MCP token, for a budget top-up), so one tenant can never read another's stored response.
 	//
-	// A `5xx`, `408` or `429` is never stored, because those describe a request that produced no settled answer and the next attempt with the same key must run for real. A `4xx` is stored: it is the server's settled answer about this exact request.
+	// A `5xx`, `402`, `408` or `429` is never stored, because those describe a request that produced no settled answer and the next attempt with the same key must run for real: a `402` asks for that next attempt to carry a payment. Any other `4xx` is stored: it is the server's settled answer about this exact request.
 	//
 	// Use a fresh UUID per logical operation. The PgBeam SDKs generate one per call and reuse it across their own automatic retries.
 	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
@@ -6962,9 +6986,9 @@ type GetSupportCaseParams struct {
 type CreateSupportMessageParams struct {
 	// IdempotencyKey Client-generated key that makes a retry of this request safe. The first request carrying a given key executes normally and its response (status, content type and body) is stored for 24 hours; a later request with the same key returns that stored response without running the operation again, so a retry after a lost or timed-out response cannot create a second resource.
 	//
-	// Reusing a key with a different request body returns `409 Conflict`: a key is a promise about one specific request, so a changed body is a client bug rather than a retry. Keys are scoped to the calling organization (or to the user, for account-scoped tokens), so one tenant can never read another's stored response.
+	// Reusing a key with a different request body returns `409 Conflict`: a key is a promise about one specific request, so a changed body is a client bug rather than a retry. Keys are scoped to the calling organization (or to the user, for account-scoped tokens, or to the agent MCP token, for a budget top-up), so one tenant can never read another's stored response.
 	//
-	// A `5xx`, `408` or `429` is never stored, because those describe a request that produced no settled answer and the next attempt with the same key must run for real. A `4xx` is stored: it is the server's settled answer about this exact request.
+	// A `5xx`, `402`, `408` or `429` is never stored, because those describe a request that produced no settled answer and the next attempt with the same key must run for real: a `402` asks for that next attempt to carry a payment. Any other `4xx` is stored: it is the server's settled answer about this exact request.
 	//
 	// Use a fresh UUID per logical operation. The PgBeam SDKs generate one per call and reuse it across their own automatic retries.
 	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
@@ -7003,6 +7027,15 @@ type CreateBudgetTopupParams struct {
 	// AcceptPayment Payment method and intent preferences, for example `stripe/charge`.
 	// Ignored when it matches nothing this endpoint offers.
 	AcceptPayment *string `json:"Accept-Payment,omitempty"`
+
+	// IdempotencyKey Client-generated key that makes a retry of this request safe. The first request carrying a given key executes normally and its response (status, content type and body) is stored for 24 hours; a later request with the same key returns that stored response without running the operation again, so a retry after a lost or timed-out response cannot create a second resource.
+	//
+	// Reusing a key with a different request body returns `409 Conflict`: a key is a promise about one specific request, so a changed body is a client bug rather than a retry. Keys are scoped to the calling organization (or to the user, for account-scoped tokens, or to the agent MCP token, for a budget top-up), so one tenant can never read another's stored response.
+	//
+	// A `5xx`, `402`, `408` or `429` is never stored, because those describe a request that produced no settled answer and the next attempt with the same key must run for real: a `402` asks for that next attempt to carry a payment. Any other `4xx` is stored: it is the server's settled answer about this exact request.
+	//
+	// Use a fresh UUID per logical operation. The PgBeam SDKs generate one per call and reuse it across their own automatic retries.
+	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
 }
 
 // ListPlansParams defines parameters for ListPlans.
@@ -7040,9 +7073,9 @@ type ListProjectsParamsSortBy string
 type CreateProjectParams struct {
 	// IdempotencyKey Client-generated key that makes a retry of this request safe. The first request carrying a given key executes normally and its response (status, content type and body) is stored for 24 hours; a later request with the same key returns that stored response without running the operation again, so a retry after a lost or timed-out response cannot create a second resource.
 	//
-	// Reusing a key with a different request body returns `409 Conflict`: a key is a promise about one specific request, so a changed body is a client bug rather than a retry. Keys are scoped to the calling organization (or to the user, for account-scoped tokens), so one tenant can never read another's stored response.
+	// Reusing a key with a different request body returns `409 Conflict`: a key is a promise about one specific request, so a changed body is a client bug rather than a retry. Keys are scoped to the calling organization (or to the user, for account-scoped tokens, or to the agent MCP token, for a budget top-up), so one tenant can never read another's stored response.
 	//
-	// A `5xx`, `408` or `429` is never stored, because those describe a request that produced no settled answer and the next attempt with the same key must run for real. A `4xx` is stored: it is the server's settled answer about this exact request.
+	// A `5xx`, `402`, `408` or `429` is never stored, because those describe a request that produced no settled answer and the next attempt with the same key must run for real: a `402` asks for that next attempt to carry a payment. Any other `4xx` is stored: it is the server's settled answer about this exact request.
 	//
 	// Use a fresh UUID per logical operation. The PgBeam SDKs generate one per call and reuse it across their own automatic retries.
 	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
@@ -7084,9 +7117,9 @@ type ListAgentCredentialsParams struct {
 type CreateAgentCredentialParams struct {
 	// IdempotencyKey Client-generated key that makes a retry of this request safe. The first request carrying a given key executes normally and its response (status, content type and body) is stored for 24 hours; a later request with the same key returns that stored response without running the operation again, so a retry after a lost or timed-out response cannot create a second resource.
 	//
-	// Reusing a key with a different request body returns `409 Conflict`: a key is a promise about one specific request, so a changed body is a client bug rather than a retry. Keys are scoped to the calling organization (or to the user, for account-scoped tokens), so one tenant can never read another's stored response.
+	// Reusing a key with a different request body returns `409 Conflict`: a key is a promise about one specific request, so a changed body is a client bug rather than a retry. Keys are scoped to the calling organization (or to the user, for account-scoped tokens, or to the agent MCP token, for a budget top-up), so one tenant can never read another's stored response.
 	//
-	// A `5xx`, `408` or `429` is never stored, because those describe a request that produced no settled answer and the next attempt with the same key must run for real. A `4xx` is stored: it is the server's settled answer about this exact request.
+	// A `5xx`, `402`, `408` or `429` is never stored, because those describe a request that produced no settled answer and the next attempt with the same key must run for real: a `402` asks for that next attempt to carry a payment. Any other `4xx` is stored: it is the server's settled answer about this exact request.
 	//
 	// Use a fresh UUID per logical operation. The PgBeam SDKs generate one per call and reuse it across their own automatic retries.
 	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
@@ -7114,9 +7147,9 @@ type UpdateAgentCredentialStatusParams struct {
 type RotateAgentCredentialParams struct {
 	// IdempotencyKey Client-generated key that makes a retry of this request safe. The first request carrying a given key executes normally and its response (status, content type and body) is stored for 24 hours; a later request with the same key returns that stored response without running the operation again, so a retry after a lost or timed-out response cannot create a second resource.
 	//
-	// Reusing a key with a different request body returns `409 Conflict`: a key is a promise about one specific request, so a changed body is a client bug rather than a retry. Keys are scoped to the calling organization (or to the user, for account-scoped tokens), so one tenant can never read another's stored response.
+	// Reusing a key with a different request body returns `409 Conflict`: a key is a promise about one specific request, so a changed body is a client bug rather than a retry. Keys are scoped to the calling organization (or to the user, for account-scoped tokens, or to the agent MCP token, for a budget top-up), so one tenant can never read another's stored response.
 	//
-	// A `5xx`, `408` or `429` is never stored, because those describe a request that produced no settled answer and the next attempt with the same key must run for real. A `4xx` is stored: it is the server's settled answer about this exact request.
+	// A `5xx`, `402`, `408` or `429` is never stored, because those describe a request that produced no settled answer and the next attempt with the same key must run for real: a `402` asks for that next attempt to carry a payment. Any other `4xx` is stored: it is the server's settled answer about this exact request.
 	//
 	// Use a fresh UUID per logical operation. The PgBeam SDKs generate one per call and reuse it across their own automatic retries.
 	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
@@ -7163,9 +7196,9 @@ type ListAnomalyRulesParams struct {
 type CreateAnomalyRuleParams struct {
 	// IdempotencyKey Client-generated key that makes a retry of this request safe. The first request carrying a given key executes normally and its response (status, content type and body) is stored for 24 hours; a later request with the same key returns that stored response without running the operation again, so a retry after a lost or timed-out response cannot create a second resource.
 	//
-	// Reusing a key with a different request body returns `409 Conflict`: a key is a promise about one specific request, so a changed body is a client bug rather than a retry. Keys are scoped to the calling organization (or to the user, for account-scoped tokens), so one tenant can never read another's stored response.
+	// Reusing a key with a different request body returns `409 Conflict`: a key is a promise about one specific request, so a changed body is a client bug rather than a retry. Keys are scoped to the calling organization (or to the user, for account-scoped tokens, or to the agent MCP token, for a budget top-up), so one tenant can never read another's stored response.
 	//
-	// A `5xx`, `408` or `429` is never stored, because those describe a request that produced no settled answer and the next attempt with the same key must run for real. A `4xx` is stored: it is the server's settled answer about this exact request.
+	// A `5xx`, `402`, `408` or `429` is never stored, because those describe a request that produced no settled answer and the next attempt with the same key must run for real: a `402` asks for that next attempt to carry a payment. Any other `4xx` is stored: it is the server's settled answer about this exact request.
 	//
 	// Use a fresh UUID per logical operation. The PgBeam SDKs generate one per call and reuse it across their own automatic retries.
 	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
@@ -7207,9 +7240,9 @@ type ListApprovalRulesParams struct {
 type CreateApprovalRuleParams struct {
 	// IdempotencyKey Client-generated key that makes a retry of this request safe. The first request carrying a given key executes normally and its response (status, content type and body) is stored for 24 hours; a later request with the same key returns that stored response without running the operation again, so a retry after a lost or timed-out response cannot create a second resource.
 	//
-	// Reusing a key with a different request body returns `409 Conflict`: a key is a promise about one specific request, so a changed body is a client bug rather than a retry. Keys are scoped to the calling organization (or to the user, for account-scoped tokens), so one tenant can never read another's stored response.
+	// Reusing a key with a different request body returns `409 Conflict`: a key is a promise about one specific request, so a changed body is a client bug rather than a retry. Keys are scoped to the calling organization (or to the user, for account-scoped tokens, or to the agent MCP token, for a budget top-up), so one tenant can never read another's stored response.
 	//
-	// A `5xx`, `408` or `429` is never stored, because those describe a request that produced no settled answer and the next attempt with the same key must run for real. A `4xx` is stored: it is the server's settled answer about this exact request.
+	// A `5xx`, `402`, `408` or `429` is never stored, because those describe a request that produced no settled answer and the next attempt with the same key must run for real: a `402` asks for that next attempt to carry a payment. Any other `4xx` is stored: it is the server's settled answer about this exact request.
 	//
 	// Use a fresh UUID per logical operation. The PgBeam SDKs generate one per call and reuse it across their own automatic retries.
 	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
@@ -7337,6 +7370,18 @@ type VerifyAuditChainParams struct {
 	IfNoneMatch *IfNoneMatch `json:"If-None-Match,omitempty"`
 }
 
+// ExecuteBatchParams defines parameters for ExecuteBatch.
+type ExecuteBatchParams struct {
+	// IdempotencyKey Client-generated key that makes a retry of this request safe. The first request carrying a given key executes normally and its response (status, content type and body) is stored for 24 hours; a later request with the same key returns that stored response without running the operation again, so a retry after a lost or timed-out response cannot create a second resource.
+	//
+	// Reusing a key with a different request body returns `409 Conflict`: a key is a promise about one specific request, so a changed body is a client bug rather than a retry. Keys are scoped to the calling organization (or to the user, for account-scoped tokens, or to the agent MCP token, for a budget top-up), so one tenant can never read another's stored response.
+	//
+	// A `5xx`, `402`, `408` or `429` is never stored, because those describe a request that produced no settled answer and the next attempt with the same key must run for real: a `402` asks for that next attempt to carry a payment. Any other `4xx` is stored: it is the server's settled answer about this exact request.
+	//
+	// Use a fresh UUID per logical operation. The PgBeam SDKs generate one per call and reuse it across their own automatic retries.
+	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
+}
+
 // ListDatabaseBranchesParams defines parameters for ListDatabaseBranches.
 type ListDatabaseBranchesParams struct {
 	// Status Filter to a single status.
@@ -7375,9 +7420,9 @@ type ListDatabasesParams struct {
 type CreateDatabaseParams struct {
 	// IdempotencyKey Client-generated key that makes a retry of this request safe. The first request carrying a given key executes normally and its response (status, content type and body) is stored for 24 hours; a later request with the same key returns that stored response without running the operation again, so a retry after a lost or timed-out response cannot create a second resource.
 	//
-	// Reusing a key with a different request body returns `409 Conflict`: a key is a promise about one specific request, so a changed body is a client bug rather than a retry. Keys are scoped to the calling organization (or to the user, for account-scoped tokens), so one tenant can never read another's stored response.
+	// Reusing a key with a different request body returns `409 Conflict`: a key is a promise about one specific request, so a changed body is a client bug rather than a retry. Keys are scoped to the calling organization (or to the user, for account-scoped tokens, or to the agent MCP token, for a budget top-up), so one tenant can never read another's stored response.
 	//
-	// A `5xx`, `408` or `429` is never stored, because those describe a request that produced no settled answer and the next attempt with the same key must run for real. A `4xx` is stored: it is the server's settled answer about this exact request.
+	// A `5xx`, `402`, `408` or `429` is never stored, because those describe a request that produced no settled answer and the next attempt with the same key must run for real: a `402` asks for that next attempt to carry a payment. Any other `4xx` is stored: it is the server's settled answer about this exact request.
 	//
 	// Use a fresh UUID per logical operation. The PgBeam SDKs generate one per call and reuse it across their own automatic retries.
 	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
@@ -7441,9 +7486,9 @@ type ListCustomDomainsParams struct {
 type CreateCustomDomainParams struct {
 	// IdempotencyKey Client-generated key that makes a retry of this request safe. The first request carrying a given key executes normally and its response (status, content type and body) is stored for 24 hours; a later request with the same key returns that stored response without running the operation again, so a retry after a lost or timed-out response cannot create a second resource.
 	//
-	// Reusing a key with a different request body returns `409 Conflict`: a key is a promise about one specific request, so a changed body is a client bug rather than a retry. Keys are scoped to the calling organization (or to the user, for account-scoped tokens), so one tenant can never read another's stored response.
+	// Reusing a key with a different request body returns `409 Conflict`: a key is a promise about one specific request, so a changed body is a client bug rather than a retry. Keys are scoped to the calling organization (or to the user, for account-scoped tokens, or to the agent MCP token, for a budget top-up), so one tenant can never read another's stored response.
 	//
-	// A `5xx`, `408` or `429` is never stored, because those describe a request that produced no settled answer and the next attempt with the same key must run for real. A `4xx` is stored: it is the server's settled answer about this exact request.
+	// A `5xx`, `402`, `408` or `429` is never stored, because those describe a request that produced no settled answer and the next attempt with the same key must run for real: a `402` asks for that next attempt to carry a payment. Any other `4xx` is stored: it is the server's settled answer about this exact request.
 	//
 	// Use a fresh UUID per logical operation. The PgBeam SDKs generate one per call and reuse it across their own automatic retries.
 	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
@@ -7467,9 +7512,9 @@ type ListHoneytokensParams struct {
 type CreateHoneytokenParams struct {
 	// IdempotencyKey Client-generated key that makes a retry of this request safe. The first request carrying a given key executes normally and its response (status, content type and body) is stored for 24 hours; a later request with the same key returns that stored response without running the operation again, so a retry after a lost or timed-out response cannot create a second resource.
 	//
-	// Reusing a key with a different request body returns `409 Conflict`: a key is a promise about one specific request, so a changed body is a client bug rather than a retry. Keys are scoped to the calling organization (or to the user, for account-scoped tokens), so one tenant can never read another's stored response.
+	// Reusing a key with a different request body returns `409 Conflict`: a key is a promise about one specific request, so a changed body is a client bug rather than a retry. Keys are scoped to the calling organization (or to the user, for account-scoped tokens, or to the agent MCP token, for a budget top-up), so one tenant can never read another's stored response.
 	//
-	// A `5xx`, `408` or `429` is never stored, because those describe a request that produced no settled answer and the next attempt with the same key must run for real. A `4xx` is stored: it is the server's settled answer about this exact request.
+	// A `5xx`, `402`, `408` or `429` is never stored, because those describe a request that produced no settled answer and the next attempt with the same key must run for real: a `402` asks for that next attempt to carry a payment. Any other `4xx` is stored: it is the server's settled answer about this exact request.
 	//
 	// Use a fresh UUID per logical operation. The PgBeam SDKs generate one per call and reuse it across their own automatic retries.
 	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
@@ -7542,9 +7587,9 @@ type ListPolicyProfilesParams struct {
 type CreatePolicyProfileParams struct {
 	// IdempotencyKey Client-generated key that makes a retry of this request safe. The first request carrying a given key executes normally and its response (status, content type and body) is stored for 24 hours; a later request with the same key returns that stored response without running the operation again, so a retry after a lost or timed-out response cannot create a second resource.
 	//
-	// Reusing a key with a different request body returns `409 Conflict`: a key is a promise about one specific request, so a changed body is a client bug rather than a retry. Keys are scoped to the calling organization (or to the user, for account-scoped tokens), so one tenant can never read another's stored response.
+	// Reusing a key with a different request body returns `409 Conflict`: a key is a promise about one specific request, so a changed body is a client bug rather than a retry. Keys are scoped to the calling organization (or to the user, for account-scoped tokens, or to the agent MCP token, for a budget top-up), so one tenant can never read another's stored response.
 	//
-	// A `5xx`, `408` or `429` is never stored, because those describe a request that produced no settled answer and the next attempt with the same key must run for real. A `4xx` is stored: it is the server's settled answer about this exact request.
+	// A `5xx`, `402`, `408` or `429` is never stored, because those describe a request that produced no settled answer and the next attempt with the same key must run for real: a `402` asks for that next attempt to carry a payment. Any other `4xx` is stored: it is the server's settled answer about this exact request.
 	//
 	// Use a fresh UUID per logical operation. The PgBeam SDKs generate one per call and reuse it across their own automatic retries.
 	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
@@ -7586,9 +7631,9 @@ type ListQueryTemplatesParams struct {
 type CreateQueryTemplateParams struct {
 	// IdempotencyKey Client-generated key that makes a retry of this request safe. The first request carrying a given key executes normally and its response (status, content type and body) is stored for 24 hours; a later request with the same key returns that stored response without running the operation again, so a retry after a lost or timed-out response cannot create a second resource.
 	//
-	// Reusing a key with a different request body returns `409 Conflict`: a key is a promise about one specific request, so a changed body is a client bug rather than a retry. Keys are scoped to the calling organization (or to the user, for account-scoped tokens), so one tenant can never read another's stored response.
+	// Reusing a key with a different request body returns `409 Conflict`: a key is a promise about one specific request, so a changed body is a client bug rather than a retry. Keys are scoped to the calling organization (or to the user, for account-scoped tokens, or to the agent MCP token, for a budget top-up), so one tenant can never read another's stored response.
 	//
-	// A `5xx`, `408` or `429` is never stored, because those describe a request that produced no settled answer and the next attempt with the same key must run for real. A `4xx` is stored: it is the server's settled answer about this exact request.
+	// A `5xx`, `402`, `408` or `429` is never stored, because those describe a request that produced no settled answer and the next attempt with the same key must run for real: a `402` asks for that next attempt to carry a payment. Any other `4xx` is stored: it is the server's settled answer about this exact request.
 	//
 	// Use a fresh UUID per logical operation. The PgBeam SDKs generate one per call and reuse it across their own automatic retries.
 	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
@@ -7684,9 +7729,9 @@ type ListWebhookEndpointsParams struct {
 type CreateWebhookEndpointParams struct {
 	// IdempotencyKey Client-generated key that makes a retry of this request safe. The first request carrying a given key executes normally and its response (status, content type and body) is stored for 24 hours; a later request with the same key returns that stored response without running the operation again, so a retry after a lost or timed-out response cannot create a second resource.
 	//
-	// Reusing a key with a different request body returns `409 Conflict`: a key is a promise about one specific request, so a changed body is a client bug rather than a retry. Keys are scoped to the calling organization (or to the user, for account-scoped tokens), so one tenant can never read another's stored response.
+	// Reusing a key with a different request body returns `409 Conflict`: a key is a promise about one specific request, so a changed body is a client bug rather than a retry. Keys are scoped to the calling organization (or to the user, for account-scoped tokens, or to the agent MCP token, for a budget top-up), so one tenant can never read another's stored response.
 	//
-	// A `5xx`, `408` or `429` is never stored, because those describe a request that produced no settled answer and the next attempt with the same key must run for real. A `4xx` is stored: it is the server's settled answer about this exact request.
+	// A `5xx`, `402`, `408` or `429` is never stored, because those describe a request that produced no settled answer and the next attempt with the same key must run for real: a `402` asks for that next attempt to carry a payment. Any other `4xx` is stored: it is the server's settled answer about this exact request.
 	//
 	// Use a fresh UUID per logical operation. The PgBeam SDKs generate one per call and reuse it across their own automatic retries.
 	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
