@@ -1,5 +1,12 @@
 # @pgbeam/go-sdk
 
+## 0.8.1
+
+### Patch Changes
+
+- 2981e78: Declare `Idempotency-Key` on budget top-ups, organization invitations, batch and cancellation feedback. A top-up's key is scoped to its agent token, and a `402` is no longer stored, so a paid retry under the key that met the challenge runs instead of replaying it.
+- 61fbe14: Drop the internal Slack support event operation, its `SlackEventPayload` schema and the `InternalSecret` scheme from the public spec and SDKs. It is a dashboard-to-API call no customer can make.
+
 ## 0.8.0
 
 ### Minor Changes
