@@ -1,5 +1,11 @@
 # @pgbeam/go-sdk
 
+## 0.8.2
+
+### Patch Changes
+
+- 1d62792: Add `grantAgentCredentialForOAuth`, the dashboard's call to mint or reuse the agent credential a database MCP OAuth grant runs as.
+
 ## 0.8.1
 
 ### Patch Changes
