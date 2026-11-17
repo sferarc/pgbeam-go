@@ -1,5 +1,11 @@
 # @pgbeam/go-sdk
 
+## 0.8.3
+
+### Patch Changes
+
+- ef9ac74: chore(deps): update dependencies to their latest versions
+
 ## 0.8.2
 
 ### Patch Changes
